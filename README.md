@@ -229,6 +229,7 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 16. **EPIC-19** — Permissions avancées (grants par page)
 17. **EPIC-20** — Sécurité & anti-abus
 18. **EPIC-21** — Internationalisation (i18n)
+19. **EPIC-22** — Cache Redis (pages & recherche)
 
 ---
 
@@ -722,6 +723,30 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 
 ---
 
+### EPIC-22 — Cache Redis (pages & recherche)
+
+**BE-122 — Setup Redis (docker-compose + config)**
+
+- Description : service `redis` (image `redis:7-alpine`) ajouté à `docker-compose.yml`, avec volume persistant. Variables `REDIS_HOST`/`REDIS_PORT`/`REDIS_PASSWORD` dans `backend/.env`/`.env.example`, client Redis initialisé au démarrage du backend (`onModuleInit`, sur le modèle de `storage.service.ts` pour Minio).
+- AC : `docker compose up -d` démarre un conteneur `redis` sain (`redis-cli ping` → `PONG`) ; le backend démarre normalement quand Redis est down (dégrade en cache-miss permanent plutôt que de crash au boot).
+
+**BE-123 — Cache de lecture des pages publiées**
+
+- Description : `GET /pages/:slug` (page publiée, selon visibilité) lit d'abord Redis (clé dérivée du path complet + visibilité de l'utilisateur), retombe sur MySQL en cas de cache-miss et repeuple le cache avec un TTL court (ex. 5 min).
+- AC : deux lectures successives de la même page ne déclenchent qu'une seule requête MySQL ; une page non publiée ou privée n'est jamais écrite dans le cache.
+
+**BE-124 — Invalidation du cache à l'écriture**
+
+- Description : toute mutation d'une page (édition, restore de version, déplacement, suppression, changement de visibilité/publication) invalide la ou les clés cache correspondantes (page elle-même, et ses descendants si le path change suite à un déplacement).
+- AC : éditer une page puis la relire immédiatement renvoie le nouveau contenu — jamais une version obsolète servie depuis le cache.
+
+**BE-125 — Cache des résultats de recherche**
+
+- Description : `GET /search` met en cache les résultats par clé `(query, filtres, page)` avec un TTL court (ex. 60s) ; pas d'invalidation fine à l'écriture, le contenu de recherche tolère l'expiration naturelle du TTL.
+- AC : une requête identique répétée sous le TTL est servie depuis le cache (pas de requête MySQL/moteur de recherche) ; passé le TTL, une nouvelle requête est exécutée.
+
+---
+
 ## 7. Récapitulatif complet des endpoints API
 
 ### Auth
@@ -834,4 +859,5 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 9. EPIC-19 (Permissions avancées) — une fois EPIC-03 (Pages) et EPIC-02 (Auth) stabilisés, car le resolver s'appuie sur l'arborescence et les rôles existants
 10. EPIC-20 (Sécurité & anti-abus) — dès que EPIC-02/EPIC-11 (Auth backend + frontend) sont en place, avant une mise en prod
 11. EPIC-21 (i18n) — en parallèle du reste du frontend, une fois EPIC-16 (Administration) posé pour le sélecteur de langue
-12. EPIC-17 (Tests & CI/CD) — en continu dès le début, formalisé à la fin
+12. EPIC-22 (Cache Redis) — une fois EPIC-03 (Pages) et EPIC-06 (Recherche) stabilisés, en optimisation avant une mise en prod à trafic significatif
+13. EPIC-17 (Tests & CI/CD) — en continu dès le début, formalisé à la fin
