@@ -281,6 +281,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.16
 
 <details>
+<summary>0.16.5 — 2026-09-07</summary>
+
+- Journal d'audit des actions admin sensibles (\`AdminAuditLog\` : admin, action, cible, métadonnées bornées) : chaque changement de rôle et suppression d'utilisateur (REST \`/admin/users\` comme MCP \`wiki_update_user_role\`) crée une entrée. \`GET /admin/audit-log\` (admin, filtrable par \`adminId\`/\`action\`, paginé).
+
+</details>
+
+<details>
 <summary>0.16.4 — 2026-09-07</summary>
 
 - Headers de sécurité HTTP standard sur toutes les réponses via \`helmet\` (config par défaut : \`Strict-Transport-Security\`, \`X-Content-Type-Options\`, \`X-Frame-Options\`, etc.). CORS déjà strict (origine limitée à \`FRONTEND_URL\`, pas de wildcard).
