@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PagesModule } from '../pages/pages.module.js';
 import { StorageModule } from '../storage/storage.module.js';
@@ -14,6 +15,12 @@ import { MediaService } from './services/media.service.js';
     {
       provide: 'AttachmentsRepository',
       useClass: TypeormAttachmentsRepository,
+    },
+    {
+      provide: 'MediaBucket',
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) =>
+        config.get<string>('MINIO_BUCKET')!,
     },
     MediaService,
   ],

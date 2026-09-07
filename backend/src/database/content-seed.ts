@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.17
 
 <details>
+<summary>0.17.13 — 2026-09-07</summary>
+
+- \`storage/\` passe au pattern port/adapter déjà utilisé pour les repositories (\`StorageService\` devient une interface, \`MinioStorageService\` son implémentation, injectée via le token \`'StorageService'\`). Les deux clients Minio (interne / présigné public) et la liste des buckets à initialiser au démarrage sont désormais fournis par \`storage.module.ts\` via des providers \`useFactory\`, plutôt que construits dans le constructeur du service. Ajout de \`download\`/\`exists\` à l'interface (non utilisés pour l'instant, mais posés pour un futur besoin). Chaque bucket est maintenant un paramètre explicite des méthodes (\`upload\`/\`download\`/\`getPresignedUrl\`/\`delete\`/\`exists\`) plutôt qu'un champ privé du service — \`MediaService\` reçoit son bucket via un nouveau token \`'MediaBucket'\`. Suppression de \`media.service.spec.ts\` (déjà obsolète vis-à-vis de ce changement de signature, et les fichiers de test ne sont pas d'usage dans ce projet).
+
+</details>
+
+<details>
 <summary>0.17.12 — 2026-09-07</summary>
 
 - Correctif \`SignatureDoesNotMatch\` sur l'upload d'images via le MCP (\`wiki_upload_image\`) : \`ConfigService.get<number>('MINIO_PUBLIC_PORT')\` ne caste jamais réellement la valeur (\`process.env\` reste une string, le générique TypeScript est purement cosmétique). Le SDK \`minio-js\` compare le port à \`443\`/\`80\` avec \`!==\` strict pour décider d'ajouter le port au \`Host\` signé — une string \`"443"\` déclenchait donc un \`Host: <hôte>:443\` signé à tort, que Cloudflare Tunnel normalise sans le port en le forwardant à l'origine, d'où la signature invalide côté Minio. \`storage.service.ts\` caste désormais explicitement \`MINIO_PORT\`/\`MINIO_PUBLIC_PORT\` en nombre. L'upload lui-même (\`putObject\`) n'était jamais affecté (port 9000, jamais "par défaut" donc jamais concerné par ce bug) — seule la génération de l'URL présignée juste après l'upload cassait.

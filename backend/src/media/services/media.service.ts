@@ -13,7 +13,7 @@ import {
   UUID_REGEX,
 } from '../../common/variables.global.js';
 import { PagesService } from '../../pages/services/pages.service.js';
-import { StorageService } from '../../storage/services/storage.service.js';
+import type { StorageService } from '../../storage/services/storage.service.js';
 import { UploadMediaDto } from '../dto/in/upload-media.dto.js';
 import { Attachment } from '../entities/attachment.entity.js';
 import type { AttachmentsRepository } from '../persistence/attachment.repository.js';
@@ -30,7 +30,10 @@ export class MediaService {
   constructor(
     @Inject('AttachmentsRepository')
     private readonly attachmentsRepository: AttachmentsRepository,
+    @Inject('StorageService')
     private readonly storageService: StorageService,
+    @Inject('MediaBucket')
+    private readonly bucket: string,
     private readonly pagesService: PagesService,
   ) {}
 
@@ -48,7 +51,12 @@ export class MediaService {
     const pageId = dto.pageId ?? null;
     const minioKey = `pages/${pageId ?? 'unassigned'}/${randomUUID()}-${file.originalname}`;
 
-    await this.storageService.uploadFile(minioKey, file.buffer, file.mimetype);
+    await this.storageService.upload(
+      this.bucket,
+      minioKey,
+      file.buffer,
+      file.mimetype,
+    );
 
     const attachment = await this.attachmentsRepository.create({
       pageId,
@@ -60,6 +68,7 @@ export class MediaService {
     });
 
     const url = await this.storageService.getPresignedUrl(
+      this.bucket,
       minioKey,
       MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
     );
@@ -84,6 +93,7 @@ export class MediaService {
       attachments.map(async (attachment) => ({
         attachment,
         url: await this.storageService.getPresignedUrl(
+          this.bucket,
           attachment.minioKey,
           MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
         ),
@@ -109,6 +119,7 @@ export class MediaService {
     }
 
     const url = await this.storageService.getPresignedUrl(
+      this.bucket,
       attachment.minioKey,
       MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
     );
@@ -127,7 +138,7 @@ export class MediaService {
     }
 
     try {
-      await this.storageService.deleteFile(attachment.minioKey);
+      await this.storageService.delete(this.bucket, attachment.minioKey);
     } catch {
       throw new StorageDeleteFailedException();
     }
