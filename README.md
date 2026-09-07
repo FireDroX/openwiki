@@ -351,6 +351,8 @@ Deux versions du `docker-compose` sont disponibles :
 
 `backend`/`frontend` se construisent depuis `backend/Dockerfile`/`frontend/Dockerfile` (contexte = racine du dépôt, pour le workspace pnpm) dans les deux cas. `backend/Dockerfile` exécute `backend/entrypoint.sh` au démarrage du conteneur : `pnpm run migration:run` puis `pnpm run seed:content` puis `node dist/main.js` — si une migration échoue, le conteneur ne démarre pas (`set -e`), plutôt que de tourner sur un schéma incohérent. Le seed de contenu, lui, échoue sans bloquer le démarrage (`|| echo ...`, pas de `set -e` dessus) — utile sur le tout premier déploiement, où aucun utilisateur n'existe encore pour lui servir d'auteur ; il repasse au déploiement suivant, une fois le premier admin créé. Les deux sont idempotents : redémarrer sans changement ne fait rien.
 
+**Images/médias affichés dans les pages** : `MINIO_ENDPOINT` sert au backend pour parler à Minio en interne (ex. le nom du service Docker, injoignable depuis un navigateur) — si les images n'apparaissent pas côté client, c'est qu'il manque `MINIO_PUBLIC_ENDPOINT` (+ `MINIO_PUBLIC_PORT`/`MINIO_PUBLIC_USE_SSL`) dans `backend/.env`, pointant vers un hôte Minio joignable publiquement (ex. tunnel Cloudflare dédié) : c'est cette valeur, et seulement elle, qui sert à signer les URLs présignées données au navigateur. Sans elle, `getPresignedUrl` retombe sur `MINIO_ENDPOINT`, ce qui casse toute image en prod si celui-ci n'est pas un hôte public.
+
 **Sur le serveur, une seule fois (version complète) :**
 
 ```bash

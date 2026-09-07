@@ -49,7 +49,7 @@ pnpm run seed:content        # (re)seed la page arborescence documentation/notes
 Config : trois fichiers `.env` séparés (chacun avec un `.env.example` à copier) :
 
 - racine du dépôt — `MYSQL_ROOT_PASSWORD`/`MYSQL_DATABASE`, `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY` pour `docker-compose.yml`.
-- `backend/.env` — `PORT`, `FRONTEND_URL` (origine CORS), `DB_HOST`/`DB_PORT`/`DB_USERNAME`/`DB_PASSWORD`/`DB_DATABASE`, `MINIO_ENDPOINT`/`MINIO_PORT`/`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/`MINIO_USE_SSL`. Lu via `@nestjs/config` dans `app.module.ts`, et directement via `dotenv` dans `src/config/data-source.ts` pour le CLI TypeORM.
+- `backend/.env` — `PORT`, `FRONTEND_URL` (origine CORS), `DB_HOST`/`DB_PORT`/`DB_USERNAME`/`DB_PASSWORD`/`DB_DATABASE`, `MINIO_ENDPOINT`/`MINIO_PORT`/`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/`MINIO_USE_SSL`, optionnellement `MINIO_PUBLIC_ENDPOINT`/`MINIO_PUBLIC_PORT`/`MINIO_PUBLIC_USE_SSL` (voir `storage.service.ts` — `MINIO_ENDPOINT` sert au backend pour parler à Minio en interne, ex. le nom du service Docker, injoignable depuis un navigateur ; `MINIO_PUBLIC_ENDPOINT`, quand défini, est l'hôte public utilisé uniquement pour signer les URLs présignées données au client, sinon retombe sur `MINIO_ENDPOINT`). Lu via `@nestjs/config` dans `app.module.ts`, et directement via `dotenv` dans `src/config/data-source.ts` pour le CLI TypeORM.
 - `frontend/.env` — `VITE_API_URL` (URL de base de l'API backend, préfixe `/api` inclus — le backend a `app.setGlobalPrefix('api')` dans `main.ts` — ex. `http://localhost:3000/api`). Lu via `import.meta.env` (Vite), consommé par `src/lib/api-client.ts`.
 
 ## Versioning & changelog

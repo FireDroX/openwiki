@@ -6,17 +6,38 @@ import { Client } from 'minio';
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
   private readonly client: Client;
+  private readonly presignClient: Client;
   private readonly bucket: string;
 
   constructor(config: ConfigService) {
     this.bucket = config.get<string>('MINIO_BUCKET')!;
+    const accessKey = config.get<string>('MINIO_ACCESS_KEY');
+    const secretKey = config.get<string>('MINIO_SECRET_KEY');
     this.client = new Client({
       endPoint: config.get<string>('MINIO_ENDPOINT')!,
       port: config.get<number>('MINIO_PORT'),
-      accessKey: config.get<string>('MINIO_ACCESS_KEY'),
-      secretKey: config.get<string>('MINIO_SECRET_KEY'),
+      accessKey,
+      secretKey,
       useSSL: config.get<string>('MINIO_USE_SSL') === 'true',
     });
+
+    // MINIO_ENDPOINT is the address the backend uses to reach Minio
+    // server-to-server (the Docker service name in production) — not
+    // reachable from a browser, so it can't be embedded in a presigned
+    // URL handed to a client. MINIO_PUBLIC_ENDPOINT, when set, is the
+    // publicly routable host (e.g. a Cloudflare-tunnelled domain) used
+    // only to generate presigned URLs; unset, it falls back to
+    // MINIO_ENDPOINT (dev default, where both usually coincide).
+    const publicEndpoint = config.get<string>('MINIO_PUBLIC_ENDPOINT');
+    this.presignClient = publicEndpoint
+      ? new Client({
+          endPoint: publicEndpoint,
+          port: config.get<number>('MINIO_PUBLIC_PORT') ?? 443,
+          accessKey,
+          secretKey,
+          useSSL: config.get<string>('MINIO_PUBLIC_USE_SSL') !== 'false',
+        })
+      : this.client;
   }
 
   async onModuleInit(): Promise<void> {
@@ -42,7 +63,11 @@ export class StorageService implements OnModuleInit {
   }
 
   async getPresignedUrl(key: string, expirySeconds: number): Promise<string> {
-    return this.client.presignedGetObject(this.bucket, key, expirySeconds);
+    return this.presignClient.presignedGetObject(
+      this.bucket,
+      key,
+      expirySeconds,
+    );
   }
 
   async deleteFile(key: string): Promise<void> {
