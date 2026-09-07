@@ -63,11 +63,13 @@ export class AuthController {
   async register(
     @Body() dto: RegisterDto,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<ResponseDto<UserResponseDto>> {
-    const user = await this.authService.register(
+    const { user, tokens } = await this.authService.register(
       dto,
       AuthController.resolveClientIp(req),
     );
+    this.setAuthCookies(res, tokens);
     return UserMapper.toRegisterResponse(user);
   }
 

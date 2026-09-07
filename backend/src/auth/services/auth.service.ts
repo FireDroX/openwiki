@@ -43,6 +43,11 @@ export interface TokenPair {
   refreshToken: string;
 }
 
+export interface RegisterResult {
+  user: User;
+  tokens: TokenPair;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -53,7 +58,10 @@ export class AuthService {
     private readonly pwnedPasswordService: PwnedPasswordService,
   ) {}
 
-  async register(dto: RegisterDto, remoteIp?: string): Promise<User> {
+  async register(
+    dto: RegisterDto,
+    remoteIp?: string,
+  ): Promise<RegisterResult> {
     if (!(await this.turnstileService.verify(dto.turnstileToken, remoteIp))) {
       throw new InvalidTurnstileTokenException();
     }
@@ -72,8 +80,9 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
+    let user: User;
     try {
-      return await this.usersService.create({
+      user = await this.usersService.create({
         email: dto.email,
         passwordHash,
         displayName: dto.displayName,
@@ -85,6 +94,8 @@ export class AuthService {
       }
       throw error;
     }
+
+    return { user, tokens: this.generateTokens(user) };
   }
 
   async login(dto: LoginDto, remoteIp?: string): Promise<TokenPair> {

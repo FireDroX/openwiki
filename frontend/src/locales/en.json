@@ -24,6 +24,7 @@
       "emailInvalid": "Invalid email address",
       "passwordRequired": "Password is required",
       "passwordMinLength": "Password must be at least {{count}} characters",
+      "passwordComplexity": "Password must contain an uppercase letter, a digit and a special character",
       "displayNameMinLength": "Name must be at least {{count}} characters",
       "displayNameMaxLength": "Name cannot exceed {{count}} characters"
     }

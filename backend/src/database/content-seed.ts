@@ -281,6 +281,14 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.16
 
 <details>
+<summary>0.16.7 — 2026-09-07</summary>
+
+- Widget Cloudflare Turnstile sur les formulaires de connexion et d'inscription : le formulaire ne peut pas être soumis tant que le widget n'a pas produit de token valide, transmis dans le payload de soumission. Variable \`VITE_TURNSTILE_SITE_KEY\` (\`frontend/.env\`).
+- \`POST /auth/register\` délivre désormais directement les cookies d'authentification (comme \`/auth/login\`) au lieu de nécessiter un second appel à \`/auth/login\` juste après l'inscription — un token Turnstile est à usage unique, le réutiliser pour une seconde vérification aurait échoué.
+
+</details>
+
+<details>
 <summary>0.16.6 — 2026-09-07</summary>
 
 - Politique de mot de passe renforcée sur \`POST /auth/register\` : en plus des 8 caractères minimum, le mot de passe doit contenir une majuscule, un chiffre et un caractère spécial (\`400\` sinon). Détection de fuite via l'API haveibeenpwned (k-anonymity, seul un préfixe SHA-1 à 5 caractères est transmis) — mot de passe déjà compromis → \`400\` ; API injoignable → inscription non bloquée (fail-open), erreur loguée côté serveur.

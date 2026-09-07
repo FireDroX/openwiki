@@ -4,12 +4,14 @@ import type { ResponseDto } from '#api/response-dto'
 export interface LoginPayload {
   email: string
   password: string
+  turnstileToken: string
 }
 
 export interface RegisterPayload {
   email: string
   password: string
   displayName: string
+  turnstileToken: string
 }
 
 export const UserRole = {

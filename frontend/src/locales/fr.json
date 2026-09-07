@@ -24,6 +24,7 @@
       "emailInvalid": "Adresse e-mail invalide",
       "passwordRequired": "Le mot de passe est requis",
       "passwordMinLength": "Le mot de passe doit contenir au moins {{count}} caractères",
+      "passwordComplexity": "Le mot de passe doit contenir une majuscule, un chiffre et un caractère spécial",
       "displayNameMinLength": "Le nom doit contenir au moins {{count}} caractères",
       "displayNameMaxLength": "Le nom ne peut pas dépasser {{count}} caractères"
     }
