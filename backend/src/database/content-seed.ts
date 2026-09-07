@@ -281,6 +281,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.17
 
 <details>
+<summary>0.17.4 — 2026-09-07</summary>
+
+- Pipeline CI (\`.github/workflows/ci.yml\`) : lint backend/frontend en parallèle, tests backend (unitaires + e2e, services \`mysql:8\` et \`bitnami/minio\` — \`minio/minio\` seul n'est pas utilisable comme service container GitHub Actions, son CMD par défaut n'affiche que l'aide) et tests frontend sur chaque PR vers \`main\` ; build Docker (\`backend/Dockerfile\`, \`frontend/Dockerfile\`, tous deux ajoutés et testés localement) uniquement sur push vers \`main\`, après succès des jobs précédents. Pas de déploiement automatique dans ce pipeline.
+
+</details>
+
+<details>
 <summary>0.17.3 — 2026-09-07</summary>
 
 - Tests frontend (Vitest + Testing Library + jsdom, \`frontend/src/**/*.test.tsx\`) : soumission du formulaire de connexion (appel de \`login()\`, message d'erreur affiché en cas d'échec), auto-génération du slug depuis le titre dans le formulaire de métadonnées de page, rendu et surbrillance du nœud actif dans l'arborescence sur plusieurs niveaux. Les dépendances des composants (auth, arbre de pages) sont injectées directement via leurs contextes React plutôt que par un appel API réel.
