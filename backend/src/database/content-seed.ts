@@ -281,6 +281,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.16
 
 <details>
+<summary>0.16.10 — 2026-09-07</summary>
+
+- Alertes de sécurité Dependabot traitées : \`undici\`, \`tmp\`, \`decode-uri-component\`, \`qs\`, \`stream-json\` (dépendances transitives) forcés vers leurs versions corrigées via \`pnpm-workspace.yaml\` (\`overrides\`). \`.github/dependabot.yml\` ajouté (npm, \`/backend\` et \`/frontend\`, hebdomadaire, groupé sur les mises à jour de sécurité) pour un suivi automatique.
+
+</details>
+
+<details>
 <summary>0.16.9 — 2026-09-07</summary>
 
 - Page journal d'audit admin (\`/admin/audit-log\`, réservée admin) : historique paginé des actions admin sensibles (date, admin, action, cible), filtrable par admin et par type d'action.
