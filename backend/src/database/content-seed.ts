@@ -283,7 +283,7 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 <details>
 <summary>0.16.10 — 2026-09-07</summary>
 
-- Alertes de sécurité Dependabot traitées : \`undici\`, \`tmp\`, \`decode-uri-component\`, \`qs\`, \`stream-json\` (dépendances transitives) forcés vers leurs versions corrigées via \`pnpm-workspace.yaml\` (\`overrides\`). \`.github/dependabot.yml\` ajouté (npm, \`/backend\` et \`/frontend\`, hebdomadaire, groupé sur les mises à jour de sécurité) pour un suivi automatique.
+- Alertes de sécurité Dependabot traitées : \`undici\`, \`tmp\`, \`decode-uri-component\`, \`qs\`, \`stream-json\` (dépendances transitives) forcés vers leurs versions corrigées via \`pnpm-workspace.yaml\` (\`overrides\`). \`.github/dependabot.yml\` ajouté (npm, une seule entrée à la racine du monorepo pnpm — \`pnpm-lock.yaml\` et \`pnpm-workspace.yaml\` y vivent, une entrée par sous-dossier casse la mise à jour du lockfile partagé — hebdomadaire, groupé sur les mises à jour de sécurité) : couvre les *version updates* pnpm (scan hebdomadaire), GitHub ne proposant pas encore de *security updates* automatiques (PR déclenchée par une alerte) pour cet écosystème.
 
 </details>
 
