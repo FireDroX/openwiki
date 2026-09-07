@@ -159,6 +159,7 @@
     "settingsTab": "Settings",
     "mcpKeysTab": "MCP API keys",
     "mcpAuditTab": "MCP log",
+    "auditLogTab": "Audit log",
     "users": {
       "filterPlaceholder": "Filter users...",
       "loadError": "Failed to load users.",
@@ -234,6 +235,20 @@
       "statusFailure": "Failure",
       "detailInput": "Input",
       "detailOutput": "Output"
+    },
+    "auditLog": {
+      "allAdmins": "All admins",
+      "allActions": "All actions",
+      "loadError": "Failed to load the log.",
+      "empty": "No actions recorded.",
+      "columnDate": "Date",
+      "columnAdmin": "Admin",
+      "columnAction": "Action",
+      "columnTarget": "Target",
+      "actions": {
+        "user.role.update": "Role change",
+        "user.delete": "User deletion"
+      }
     }
   },
   "permissions": {

@@ -281,6 +281,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.16
 
 <details>
+<summary>0.16.9 — 2026-09-07</summary>
+
+- Page journal d'audit admin (\`/admin/audit-log\`, réservée admin) : historique paginé des actions admin sensibles (date, admin, action, cible), filtrable par admin et par type d'action.
+
+</details>
+
+<details>
 <summary>0.16.8 — 2026-09-07</summary>
 
 - Affichage dédié du verrouillage de compte (\`423\`) sur le formulaire de connexion : message explicite avec décompte jusqu'au déverrouillage (lu depuis le header \`Retry-After\`), plutôt que l'erreur générique de mauvais mot de passe. CORS expose désormais \`Retry-After\` (\`exposedHeaders\`) pour que le frontend puisse le lire.
