@@ -43,18 +43,6 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
-      # bitnami/minio rather than minio/minio: GitHub Actions service
-      # containers can't override CMD, and minio/minio's default CMD
-      # (bare `minio`, no `server /data`) just prints usage and exits —
-      # bitnami's image starts the server from env vars alone.
-      minio:
-        image: bitnami/minio:latest
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-          MINIO_DEFAULT_BUCKETS: openwiki
-        ports:
-          - 9000:9000
     env:
       DB_HOST: localhost
       DB_PORT: 3306
@@ -79,6 +67,24 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Not a `services:` container: GitHub Actions services can't
+      # override CMD, and minio/minio's default CMD (bare `minio`, no
+      # `server /data`) just prints usage and exits — bitnami/minio
+      # used to work around this without a command override, but that
+      # image was pulled from Docker Hub entirely in 2025. Starting it
+      # by hand sidesteps depending on any third-party image's startup
+      # behavior.
+      - name: Start Minio
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && exit 0
+            sleep 1
+          done
+          echo "Minio did not become healthy in time" >&2
+          exit 1
       - run: pnpm --filter backend run test
       - run: pnpm --filter backend run test:e2e
 
