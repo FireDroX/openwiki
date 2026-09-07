@@ -41,6 +41,12 @@ jobs:
       # so `docker compose up` has nothing to read env vars from until
       # someone creates them by hand on the server. Every deploy after
       # that succeeds.
-      - name: git pull && docker compose up -d --build
+      #
+      # docker-compose.external.yml (not the full docker-compose.yml):
+      # this deploy target reuses an already-existing mariadb/minio
+      # rather than running its own — see the Déploiement wiki page.
+      # DEPLOY_PATH is intentionally unquoted below so `~` in it still
+      # expands remotely (quoted, bash treats `~` as a literal char).
+      - name: git pull && docker compose (external) up -d --build
         run: |
-          ssh deploy-target "cd '${{ secrets.DEPLOY_PATH }}' && git pull && docker compose up -d --build"
+          ssh deploy-target "cd ${{ secrets.DEPLOY_PATH }} && git pull && docker compose -f docker-compose.external.yml up -d --build"

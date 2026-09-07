@@ -154,8 +154,8 @@ pnpm run front:dev  # frontend sur http://localhost:5173
 
 Deux versions du \`docker-compose\` sont disponibles :
 
-- **\`docker-compose.yml\`** — version complète (\`mysql\`, \`minio\`, \`backend\`, \`frontend\`), pour un serveur vierge qui n'a encore ni base de données ni stockage objet. C'est celle-ci qu'utilise \`.github/workflows/deploy.yml\` (il lance toujours \`docker compose up -d --build\` sans \`-f\`).
-- **\`docker-compose.external.yml\`** — version allégée (\`backend\`, \`frontend\` seulement), pour réutiliser un MariaDB/MySQL et un Minio déjà existants sur le serveur (ex. mutualisés avec d'autres apps) plutôt que d'en relancer une paire dédiée. Rejoint le réseau Docker **externe** \`mariadb-network\` où vivent déjà ces conteneurs, au lieu d'en créer un nouveau — adaptez le nom du réseau dans le fichier si le vôtre s'appelle différemment. Usage manuel uniquement, non branché sur le déploiement continu.
+- **\`docker-compose.yml\`** — version complète (\`mysql\`, \`minio\`, \`backend\`, \`frontend\`), pour un serveur vierge qui n'a encore ni base de données ni stockage objet. Usage manuel uniquement (\`docker compose up -d --build\`), non branché sur le déploiement continu.
+- **\`docker-compose.external.yml\`** — version allégée (\`backend\`, \`frontend\` seulement), pour réutiliser un MariaDB/MySQL et un Minio déjà existants sur le serveur (ex. mutualisés avec d'autres apps) plutôt que d'en relancer une paire dédiée. Rejoint le réseau Docker **externe** \`mariadb-network\` où vivent déjà ces conteneurs, au lieu d'en créer un nouveau — adaptez le nom du réseau dans le fichier si le vôtre s'appelle différemment. **C'est celle-ci qu'utilise \`.github/workflows/deploy.yml\`** (\`docker compose -f docker-compose.external.yml up -d --build\`) — le déploiement continu part donc du principe que le mariadb/minio cible existe déjà sur le serveur ; adapter le workflow si un déploiement doit un jour repartir de la version complète.
 
 \`backend\`/\`frontend\` se construisent depuis \`backend/Dockerfile\`/\`frontend/Dockerfile\` (contexte = racine du dépôt, pour le workspace pnpm) dans les deux cas. \`backend/Dockerfile\` exécute \`backend/entrypoint.sh\` au démarrage du conteneur : \`pnpm run migration:run\` puis \`node dist/main.js\` — si une migration échoue, le conteneur ne démarre pas (\`set -e\`), plutôt que de tourner sur un schéma incohérent. Idempotent : redémarrer sans nouvelle migration ne fait rien.
 
@@ -356,6 +356,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         content: `# Notes de version
 
 ## Version 0.17
+
+<details>
+<summary>0.17.8 — 2026-09-07</summary>
+
+- Déploiement continu : \`.github/workflows/deploy.yml\` bascule sur \`docker compose -f docker-compose.external.yml\` (au lieu de la version complète) — le serveur cible de la CD réutilise déjà un mariadb/minio existants, plus besoin d'en relancer une paire dédiée à chaque déploiement. Corrige au passage un bug de quoting : \`DEPLOY_PATH\` était entre guillemets simples dans la commande SSH distante, empêchant l'expansion de \`~\` (échec \`cd: no such file or directory\` même avec un chemin valide) — désormais non quoté côté distant.
+
+</details>
 
 <details>
 <summary>0.17.7 — 2026-09-07</summary>

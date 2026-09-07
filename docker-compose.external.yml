@@ -7,10 +7,11 @@
 # `backend/.env` doit pointer DB_HOST/MINIO_ENDPOINT vers les noms de
 # conteneur réels de ce mariadb/minio existants, pas `mysql`/`minio`.
 #
-# Non branché sur le déploiement continu (.github/workflows/deploy.yml
-# lance toujours `docker compose up -d --build` sans -f, donc la version
-# complète) — usage manuel uniquement : `docker compose -f
-# docker-compose.external.yml up -d --build`.
+# C'est cette version qu'utilise .github/workflows/deploy.yml (le
+# déploiement continu part du principe que le mariadb/minio cible
+# existe déjà) : `docker compose -f docker-compose.external.yml up -d
+# --build`. Pour un serveur vierge sans mariadb/minio, voir
+# docker-compose.yml (usage manuel, non branché sur ce workflow).
 services:
   backend:
     build:
