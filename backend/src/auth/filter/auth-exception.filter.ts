@@ -50,6 +50,10 @@ export class AuthExceptionFilter implements ExceptionFilter {
         };
       case 'InvalidTurnstileTokenException':
         return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
+      case 'WeakPasswordException':
+        return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
+      case 'CompromisedPasswordException':
+        return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
       default:
         return {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

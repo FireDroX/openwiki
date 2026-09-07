@@ -4,10 +4,12 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { QueryFailedError } from 'typeorm';
 import { AccountLockedException } from '../../common/exceptions/auth/account-locked.exception.js';
+import { CompromisedPasswordException } from '../../common/exceptions/auth/compromised-password.exception.js';
 import { EmailAlreadyExistsException } from '../../common/exceptions/auth/email-already-exists.exception.js';
 import { InvalidCredentialsException } from '../../common/exceptions/auth/invalid-credentials.exception.js';
 import { InvalidRefreshTokenException } from '../../common/exceptions/auth/invalid-refresh-token.exception.js';
 import { InvalidTurnstileTokenException } from '../../common/exceptions/auth/invalid-turnstile-token.exception.js';
+import { WeakPasswordException } from '../../common/exceptions/auth/weak-password.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import {
   ACCOUNT_LOCKOUT_DURATION_MINUTES,
@@ -16,7 +18,9 @@ import {
   EMAIL_REGEX,
   MAX_FAILED_LOGIN_ATTEMPTS,
   MIN_PASSWORD_LENGTH,
+  PASSWORD_COMPLEXITY_REGEX,
 } from '../../common/variables.global.js';
+import { PwnedPasswordService } from '../../security/services/pwned-password.service.js';
 import { TurnstileService } from '../../security/services/turnstile.service.js';
 import { User } from '../../users/entities/user.entity.js';
 import { UsersService } from '../../users/services/users.service.js';
@@ -46,6 +50,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly turnstileService: TurnstileService,
+    private readonly pwnedPasswordService: PwnedPasswordService,
   ) {}
 
   async register(dto: RegisterDto, remoteIp?: string): Promise<User> {
@@ -54,6 +59,11 @@ export class AuthService {
     }
 
     this.validate(dto);
+    AuthService.validatePasswordComplexity(dto.password);
+
+    if (await this.pwnedPasswordService.checkPassword(dto.password)) {
+      throw new CompromisedPasswordException();
+    }
 
     const existing = await this.usersService.findByEmail(dto.email);
     if (existing) {
@@ -208,6 +218,12 @@ export class AuthService {
 
     if (errors.length > 0) {
       throw new ValidationException(errors.join(', '));
+    }
+  }
+
+  private static validatePasswordComplexity(password: string): void {
+    if (!PASSWORD_COMPLEXITY_REGEX.test(password)) {
+      throw new WeakPasswordException();
     }
   }
 
