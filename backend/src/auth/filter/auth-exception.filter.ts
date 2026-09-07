@@ -35,6 +35,8 @@ export class AuthExceptionFilter implements ExceptionFilter {
           statusCode: HttpStatus.UNAUTHORIZED,
           error: exception.message,
         };
+      case 'InvalidTurnstileTokenException':
+        return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
       default:
         return {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

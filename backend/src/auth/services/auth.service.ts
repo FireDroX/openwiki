@@ -6,6 +6,7 @@ import { QueryFailedError } from 'typeorm';
 import { EmailAlreadyExistsException } from '../../common/exceptions/auth/email-already-exists.exception.js';
 import { InvalidCredentialsException } from '../../common/exceptions/auth/invalid-credentials.exception.js';
 import { InvalidRefreshTokenException } from '../../common/exceptions/auth/invalid-refresh-token.exception.js';
+import { InvalidTurnstileTokenException } from '../../common/exceptions/auth/invalid-turnstile-token.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import {
   DISPLAY_NAME_MAX_LENGTH,
@@ -13,6 +14,7 @@ import {
   EMAIL_REGEX,
   MIN_PASSWORD_LENGTH,
 } from '../../common/variables.global.js';
+import { TurnstileService } from '../../security/services/turnstile.service.js';
 import { User } from '../../users/entities/user.entity.js';
 import { UsersService } from '../../users/services/users.service.js';
 import { LoginDto } from '../dto/in/login.dto.js';
@@ -40,9 +42,14 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly turnstileService: TurnstileService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<User> {
+  async register(dto: RegisterDto, remoteIp?: string): Promise<User> {
+    if (!(await this.turnstileService.verify(dto.turnstileToken, remoteIp))) {
+      throw new InvalidTurnstileTokenException();
+    }
+
     this.validate(dto);
 
     const existing = await this.usersService.findByEmail(dto.email);
@@ -67,7 +74,11 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto): Promise<TokenPair> {
+  async login(dto: LoginDto, remoteIp?: string): Promise<TokenPair> {
+    if (!(await this.turnstileService.verify(dto.turnstileToken, remoteIp))) {
+      throw new InvalidTurnstileTokenException();
+    }
+
     this.validateLogin(dto);
 
     const user = await this.validateUser(dto.email, dto.password);

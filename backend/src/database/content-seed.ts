@@ -281,6 +281,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.16
 
 <details>
+<summary>0.16.2 — 2026-09-07</summary>
+
+- Vérification Cloudflare Turnstile sur \`POST /auth/login\` et \`POST /auth/register\` : le token \`turnstileToken\` transmis dans le body est validé auprès de Cloudflare avant toute vérification d'email/mot de passe. Token manquant ou invalide → \`400\`, sans fuite d'information sur l'existence d'un compte. Nouvelle variable \`TURNSTILE_SECRET_KEY\` (\`backend/.env\`) — si absente, la vérification est ignorée (utile en dev tant que la clé n'est pas configurée).
+
+</details>
+
+<details>
 <summary>0.16.1 — 2026-09-07</summary>
 
 - Rate limiting dédié, plus strict que la limite globale, sur \`POST /auth/register\`, \`POST /auth/login\` et \`POST /auth/refresh\` : 5 requêtes/minute/IP.

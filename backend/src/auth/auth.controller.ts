@@ -62,8 +62,12 @@ export class AuthController {
   })
   async register(
     @Body() dto: RegisterDto,
+    @Req() req: Request,
   ): Promise<ResponseDto<UserResponseDto>> {
-    const user = await this.authService.register(dto);
+    const user = await this.authService.register(
+      dto,
+      AuthController.resolveClientIp(req),
+    );
     return UserMapper.toRegisterResponse(user);
   }
 
@@ -83,9 +87,13 @@ export class AuthController {
   })
   async login(
     @Body() dto: LoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ResponseDto<null>> {
-    const tokens = await this.authService.login(dto);
+    const tokens = await this.authService.login(
+      dto,
+      AuthController.resolveClientIp(req),
+    );
     this.setAuthCookies(res, tokens);
     return new ResponseDto(null);
   }
@@ -159,5 +167,13 @@ export class AuthController {
       path: '/',
       maxAge,
     });
+  }
+
+  private static resolveClientIp(req: Request): string | undefined {
+    const forwardedFor = req.headers['x-forwarded-for'];
+    if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+      return forwardedFor.split(',')[0].trim();
+    }
+    return req.ip;
   }
 }
