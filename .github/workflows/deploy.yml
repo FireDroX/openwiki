@@ -10,7 +10,6 @@ on:
 
 jobs:
   deploy:
-    environment: env
     name: deploy
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
