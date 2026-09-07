@@ -281,6 +281,16 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.17
 
 <details>
+<summary>0.17.5 — 2026-09-07</summary>
+
+- Migrations automatiques au déploiement : \`backend/entrypoint.sh\` (\`pnpm run migration:run\` puis \`node dist/main.js\`, \`set -e\` — le conteneur ne démarre pas si une migration échoue) ; \`docker-compose.yml\` gagne les services \`backend\`/\`frontend\`.
+- Déploiement continu : \`.github/workflows/deploy.yml\`, déclenché uniquement après succès de la CI sur \`main\` (\`workflow_run\`, jamais sur une PR) — connexion SSH au serveur via tunnel Cloudflare (\`cloudflared\`), \`git pull\` puis \`docker compose up -d --build\`. Premier déploiement sur un serveur vierge : échec attendu (les \`.env\` ne sont pas commités) jusqu'à leur création manuelle une fois.
+- \`README.md\` §9 : guide d'installation locale et de déploiement (prérequis, secrets GitHub, configuration Cloudflare Tunnel/Access).
+- Corrigé au passage : \`minio@8.0.7\` importe \`stream-json/jsonl/Parser.js\` (casse pré-3.x) alors que le \`stream-json: 3.6.0\` imposé par le correctif de sécurité Dependabot (OPS-010) a renommé ce fichier en minuscules — silencieusement toléré sur système de fichiers insensible à la casse (Windows/macOS, donc invisible en dev), mais faisait planter tout conteneur Docker (Linux) au démarrage. Patché via \`patches/stream-json@3.6.0.patch\` (\`pnpm patch\`) plutôt que de rétrograder la dépendance.
+
+</details>
+
+<details>
 <summary>0.17.4 — 2026-09-07</summary>
 
 - Pipeline CI (\`.github/workflows/ci.yml\`) : lint backend/frontend en parallèle, tests backend (unitaires + e2e, services \`mysql:8\` et \`bitnami/minio\` — \`minio/minio\` seul n'est pas utilisable comme service container GitHub Actions, son CMD par défaut n'affiche que l'aide) et tests frontend sur chaque PR vers \`main\` ; build Docker (\`backend/Dockerfile\`, \`frontend/Dockerfile\`, tous deux ajoutés et testés localement) uniquement sur push vers \`main\`, après succès des jobs précédents. Pas de déploiement automatique dans ce pipeline.

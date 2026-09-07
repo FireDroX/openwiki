@@ -15,3 +15,14 @@ overrides:
   decode-uri-component: 0.5.0
   qs: 6.16.0
   stream-json: 3.6.0
+patchedDependencies:
+  # minio@8.0.7 imports the pre-3.x PascalCase path
+  # (stream-json/jsonl/Parser.js); 3.x lowercased the filename to
+  # parser.js. Silently tolerated on case-insensitive filesystems
+  # (Windows/macOS), fatal (ERR_MODULE_NOT_FOUND) on case-sensitive
+  # ones — every production Docker image. Adds explicit "exports" map
+  # entries pointing at differently-named shim files (not same-named
+  # files differing only by case — those can't coexist on
+  # Windows/macOS) rather than downgrading stream-json, which would
+  # undo the OPS-010 Dependabot security fix this override exists for.
+  stream-json@3.6.0: patches/stream-json@3.6.0.patch

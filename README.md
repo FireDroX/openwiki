@@ -861,3 +861,79 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 11. EPIC-21 (i18n) — en parallèle du reste du frontend, une fois EPIC-16 (Administration) posé pour le sélecteur de langue
 12. EPIC-22 (Cache Redis) — une fois EPIC-03 (Pages) et EPIC-06 (Recherche) stabilisés, en optimisation avant une mise en prod à trafic significatif
 13. EPIC-17 (Tests & CI/CD) — en continu dès le début, formalisé à la fin
+
+## 9. Installation
+
+### Prérequis
+
+- Node.js 22+, [pnpm](https://pnpm.io/) (version pinnée dans `packageManager`, `package.json` racine)
+- Docker + Docker Compose
+
+### Installation locale (développement)
+
+```bash
+git clone <url-du-dépôt>
+cd wiki
+
+# MySQL + Minio
+docker compose up -d
+
+# Copier les 3 fichiers .env.example -> .env et renseigner les valeurs
+cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+pnpm install
+
+cd backend
+pnpm run migration:run    # crée le schéma
+pnpm run seed:dev         # utilisateur admin de dev
+pnpm run seed:content     # arborescence de doc/notes de version/FAQ
+cd ..
+
+pnpm run back:dev   # terminal 1 — backend sur :3000
+pnpm run front:dev  # terminal 2 — frontend sur :5173
+```
+
+### Déploiement en production
+
+`docker-compose.yml` définit la stack complète (`mysql`, `minio`, `backend`, `frontend`) — `backend`/`frontend` se construisent depuis `backend/Dockerfile`/`frontend/Dockerfile` (contexte = racine du dépôt, pour le workspace pnpm). `backend/Dockerfile` exécute `backend/entrypoint.sh` au démarrage du conteneur : `pnpm run migration:run` puis `node dist/main.js` — si une migration échoue, le conteneur ne démarre pas (`set -e`), plutôt que de tourner sur un schéma incohérent. Idempotent : redémarrer sans nouvelle migration ne fait rien.
+
+**Sur le serveur, une seule fois :**
+
+```bash
+git clone <url-du-dépôt> /chemin/vers/openwiki
+cd /chemin/vers/openwiki
+cp .env.example .env               # MYSQL_*, MINIO_*, VITE_*
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# éditer les 3 .env — en particulier backend/.env : DB_HOST=mysql et
+# MINIO_ENDPOINT=minio (les noms des services docker-compose, pas
+# localhost comme en dev local)
+docker compose up -d --build
+```
+
+Ces trois fichiers `.env` ne sont **jamais commités** (`.gitignore`) : sur un premier `git clone` sans eux, `docker compose up` échoue (variables manquantes) — c'est attendu, pas un bug. Une fois créés à la main comme ci-dessus, tous les déploiements suivants (manuels ou automatiques via CI/CD) fonctionnent.
+
+### CI/CD
+
+- `.github/workflows/ci.yml` — lint + tests (backend + frontend) sur chaque PR vers `main` ; build Docker des deux images en plus sur chaque push vers `main`. Voir la Note de version 0.17.4 pour le détail des jobs.
+- `.github/workflows/deploy.yml` — se déclenche uniquement quand `ci.yml` vient de réussir sur `main` (`workflow_run`, jamais sur une PR) : se connecte en SSH au serveur via un tunnel Cloudflare, puis `git pull && docker compose up -d --build`.
+
+Le déploiement passe par un tunnel Cloudflare (`cloudflared`) plutôt que d'exposer SSH publiquement — sans application Access devant (pas de service token à gérer). À configurer une fois, côté [Cloudflare Zero Trust](https://one.dash.cloudflare.com/) :
+
+1. **Tunnel** — créer un tunnel `cloudflared` sur le serveur, avec une route publique (Public Hostname) vers `ssh://localhost:22`.
+2. **Clé SSH** — générer une paire de clés dédiée au déploiement (`ssh-keygen -t ed25519 -C "openwiki-deploy"`, sans passphrase) et ajouter la clé **publique** à `~/.ssh/authorized_keys` de l'utilisateur de déploiement sur le serveur.
+
+Puis, secrets du dépôt GitHub (Settings → Secrets and variables → Actions) :
+
+| Secret | Contenu |
+| --- | --- |
+| `DEPLOY_SSH_PRIVATE_KEY` | Clé **privée** générée à l'étape 2 |
+| `DEPLOY_SSH_HOSTNAME` | Hostname public du tunnel (étape 1) |
+| `DEPLOY_SSH_USER` | Utilisateur SSH sur le serveur |
+| `DEPLOY_PATH` | Chemin absolu du clone git sur le serveur (ex. `/opt/openwiki`) |
+
+Si une application Access protège un jour ce hostname (service token), `deploy.yml` sait déjà où l'ajouter : `TUNNEL_SERVICE_TOKEN_ID`/`TUNNEL_SERVICE_TOKEN_SECRET` en env du job `deploy`, lus automatiquement par `cloudflared access ssh`.
+
+`deploy.yml` ne configure ni ne modifie la protection de branche `main` (statut check requis pour bloquer un merge sur test cassé) — c'est un réglage du dépôt GitHub (Settings → Branches), pas quelque chose qu'un fichier de workflow puisse exprimer.
