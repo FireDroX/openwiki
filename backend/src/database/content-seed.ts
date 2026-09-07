@@ -157,7 +157,7 @@ Deux versions du \`docker-compose\` sont disponibles :
 - **\`docker-compose.yml\`** — version complète (\`mysql\`, \`minio\`, \`backend\`, \`frontend\`), pour un serveur vierge qui n'a encore ni base de données ni stockage objet. Usage manuel uniquement (\`docker compose up -d --build\`), non branché sur le déploiement continu.
 - **\`docker-compose.external.yml\`** — version allégée (\`backend\`, \`frontend\` seulement), pour réutiliser un MariaDB/MySQL et un Minio déjà existants sur le serveur (ex. mutualisés avec d'autres apps) plutôt que d'en relancer une paire dédiée. Rejoint le réseau Docker **externe** \`mariadb-network\` où vivent déjà ces conteneurs, au lieu d'en créer un nouveau — adaptez le nom du réseau dans le fichier si le vôtre s'appelle différemment. **C'est celle-ci qu'utilise \`.github/workflows/deploy.yml\`** (\`docker compose -f docker-compose.external.yml up -d --build\`) — le déploiement continu part donc du principe que le mariadb/minio cible existe déjà sur le serveur ; adapter le workflow si un déploiement doit un jour repartir de la version complète.
 
-\`backend\`/\`frontend\` se construisent depuis \`backend/Dockerfile\`/\`frontend/Dockerfile\` (contexte = racine du dépôt, pour le workspace pnpm) dans les deux cas. \`backend/Dockerfile\` exécute \`backend/entrypoint.sh\` au démarrage du conteneur : \`pnpm run migration:run\` puis \`node dist/main.js\` — si une migration échoue, le conteneur ne démarre pas (\`set -e\`), plutôt que de tourner sur un schéma incohérent. Idempotent : redémarrer sans nouvelle migration ne fait rien.
+\`backend\`/\`frontend\` se construisent depuis \`backend/Dockerfile\`/\`frontend/Dockerfile\` (contexte = racine du dépôt, pour le workspace pnpm) dans les deux cas. \`backend/Dockerfile\` exécute \`backend/entrypoint.sh\` au démarrage du conteneur : \`pnpm run migration:run\` puis \`pnpm run seed:content\` puis \`node dist/main.js\` — si une migration échoue, le conteneur ne démarre pas (\`set -e\`), plutôt que de tourner sur un schéma incohérent. Le seed de contenu, lui, échoue sans bloquer le démarrage (\`|| echo ...\`, pas de \`set -e\` dessus) — utile sur le tout premier déploiement, où aucun utilisateur n'existe encore pour lui servir d'auteur ; il repasse au déploiement suivant, une fois le premier admin créé. Les deux sont idempotents : redémarrer sans changement ne fait rien.
 
 **Sur le serveur, une seule fois (version complète) :**
 
@@ -356,6 +356,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         content: `# Notes de version
 
 ## Version 0.17
+
+<details>
+<summary>0.17.9 — 2026-09-07</summary>
+
+- \`backend/entrypoint.sh\` lance désormais \`pnpm run seed:content\` à chaque démarrage de conteneur (donc à chaque déploiement), entre les migrations et le démarrage de l'app — la doc et les notes de version restent à jour automatiquement, y compris les modifications apportées au contenu de \`content-seed.ts\` lui-même (nouvelle \`PageVersion\` créée si le contenu ou le titre a changé, jamais de skip silencieux). Contrairement aux migrations, un échec du seed ne bloque pas le démarrage (\`|| echo ...\`) : sur le tout premier déploiement, aucun utilisateur n'existe encore pour servir d'auteur, le seed échoue silencieusement et repasse au déploiement suivant, une fois le premier admin créé à la main.
+
+</details>
 
 <details>
 <summary>0.17.8 — 2026-09-07</summary>
