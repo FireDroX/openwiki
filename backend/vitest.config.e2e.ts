@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { registerStreamJsonCaseLoader } from './vitest.node-options.js';
+
+registerStreamJsonCaseLoader(import.meta.dirname);
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
