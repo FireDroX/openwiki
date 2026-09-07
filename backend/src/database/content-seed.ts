@@ -44,11 +44,11 @@ Bienvenue dans la documentation d'OpenWiki. Utilisez l'arborescence à gauche po
         tags: ['guide', 'documentation'],
         content: `# Guide de démarrage
 
-Ce guide couvre l'installation, la configuration et le premier lancement d'OpenWiki en local, de bout en bout.
+Ce guide couvre l'installation locale, la configuration, et le déploiement en production d'OpenWiki, de bout en bout.
 
 ## Vue d'ensemble
 
-OpenWiki est un monorepo pnpm avec deux packages : \`backend/\` (NestJS + TypeORM + MySQL) et \`frontend/\` (React + Vite). Les pages [Installation](/pages/documentation/guide-demarrage/installation) et [Configuration](/pages/documentation/guide-demarrage/configuration) détaillent chaque étape ; ce qui suit résume le parcours complet.
+OpenWiki est un monorepo pnpm avec deux packages : \`backend/\` (NestJS + TypeORM + MySQL) et \`frontend/\` (React + Vite). Les pages [Installation](/pages/documentation/guide-demarrage/installation), [Configuration](/pages/documentation/guide-demarrage/configuration) et [Déploiement](/pages/documentation/guide-demarrage/deploiement) détaillent chaque étape ; ce qui suit résume le parcours local complet.
 
 ## Étapes
 
@@ -79,7 +79,8 @@ pnpm run front:dev  # frontend sur http://localhost:5173
 ## Étapes suivantes
 
 - Créez votre première page depuis le bouton "Nouvelle page" de la barre latérale.
-- Consultez la page [Endpoints](/pages/documentation/endpoints) pour la référence complète de l'API.`,
+- Consultez la page [Endpoints](/pages/documentation/endpoints) pour la référence complète de l'API.
+- Pour mettre OpenWiki en production, voir [Déploiement](/pages/documentation/guide-demarrage/deploiement).`,
         children: [
           {
             slug: 'installation',
@@ -89,39 +90,36 @@ pnpm run front:dev  # frontend sur http://localhost:5173
 
 ## Prérequis
 
-- Node.js 20+
-- pnpm (voir le champ \`packageManager\` de \`package.json\`)
-- Docker (pour MySQL et Minio)
+- Node.js 22+, [pnpm](https://pnpm.io/) (version pinnée dans le champ \`packageManager\` de \`package.json\`)
+- Docker + Docker Compose (pour MySQL et Minio)
 
-## Étapes
-
-1. Cloner le dépôt :
+## Installation locale (développement)
 
 \`\`\`bash
 git clone <url-du-dépôt>
-cd openwiki
-\`\`\`
+cd wiki
 
-2. Installer les dépendances :
-
-\`\`\`bash
-pnpm install
-\`\`\`
-
-3. Démarrer les services (MySQL + Minio) :
-
-\`\`\`bash
+# MySQL + Minio
 docker compose up -d
-\`\`\`
 
-4. Appliquer les migrations de base de données :
+# Copier les 3 fichiers .env.example -> .env et renseigner les valeurs
+cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 
-\`\`\`bash
+pnpm install
+
 cd backend
-pnpm run migration:run
+pnpm run migration:run    # crée le schéma
+pnpm run seed:dev         # utilisateur admin de dev
+pnpm run seed:content     # arborescence de doc/notes de version/FAQ
+cd ..
+
+pnpm run back:dev   # terminal 1 — backend sur :3000
+pnpm run front:dev  # terminal 2 — frontend sur :5173
 \`\`\`
 
-Passez ensuite à la page [Configuration](/pages/documentation/guide-demarrage/configuration) pour renseigner les fichiers \`.env\`.
+Passez à la page [Configuration](/pages/documentation/guide-demarrage/configuration) pour le détail des trois fichiers \`.env\`, ou à [Déploiement](/pages/documentation/guide-demarrage/deploiement) pour la mise en production.
 
 ![Aperçu du tableau de bord](https://placehold.co/480x240?text=Dashboard)`,
           },
@@ -145,6 +143,55 @@ Une fois les trois fichiers renseignés, démarrez les serveurs de développemen
 pnpm run back:dev   # backend sur http://localhost:3000
 pnpm run front:dev  # frontend sur http://localhost:5173
 \`\`\``,
+          },
+          {
+            slug: 'deploiement',
+            title: 'Déploiement',
+            tags: ['installation', 'configuration'],
+            content: `# Déploiement
+
+## Docker Compose en production
+
+\`docker-compose.yml\` définit la stack complète (\`mysql\`, \`minio\`, \`backend\`, \`frontend\`) — \`backend\`/\`frontend\` se construisent depuis \`backend/Dockerfile\`/\`frontend/Dockerfile\` (contexte = racine du dépôt, pour le workspace pnpm). \`backend/Dockerfile\` exécute \`backend/entrypoint.sh\` au démarrage du conteneur : \`pnpm run migration:run\` puis \`node dist/main.js\` — si une migration échoue, le conteneur ne démarre pas (\`set -e\`), plutôt que de tourner sur un schéma incohérent. Idempotent : redémarrer sans nouvelle migration ne fait rien.
+
+**Sur le serveur, une seule fois :**
+
+\`\`\`bash
+git clone <url-du-dépôt> /chemin/vers/openwiki
+cd /chemin/vers/openwiki
+cp .env.example .env               # MYSQL_*, MINIO_*, VITE_*
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# éditer les 3 .env — en particulier backend/.env : DB_HOST=mysql et
+# MINIO_ENDPOINT=minio (les noms des services docker-compose, pas
+# localhost comme en dev local)
+docker compose up -d --build
+\`\`\`
+
+Ces trois fichiers \`.env\` ne sont **jamais commités** (\`.gitignore\`) : sur un premier \`git clone\` sans eux, \`docker compose up\` échoue (variables manquantes) — c'est attendu, pas un bug. Une fois créés à la main comme ci-dessus, tous les déploiements suivants (manuels ou automatiques via CI/CD) fonctionnent.
+
+## CI/CD
+
+- \`.github/workflows/ci.yml\` — lint + tests (backend + frontend) sur chaque PR vers \`main\` ; build Docker des deux images en plus sur chaque push vers \`main\`. Voir la page [Notes de version](/pages/documentation/notes-de-version) pour le détail des jobs.
+- \`.github/workflows/deploy.yml\` — se déclenche uniquement quand \`ci.yml\` vient de réussir sur \`main\` (\`workflow_run\`, jamais sur une PR) : se connecte en SSH au serveur via un tunnel Cloudflare, puis \`git pull && docker compose up -d --build\`.
+
+Le déploiement passe par un tunnel Cloudflare (\`cloudflared\`) plutôt que d'exposer SSH publiquement — sans application Access devant (pas de service token à gérer). À configurer une fois, côté [Cloudflare Zero Trust](https://one.dash.cloudflare.com/) :
+
+1. **Tunnel** — créer un tunnel \`cloudflared\` sur le serveur, avec une route publique (Public Hostname) vers \`ssh://localhost:22\`.
+2. **Clé SSH** — générer une paire de clés dédiée au déploiement (\`ssh-keygen -t ed25519 -C "openwiki-deploy"\`, sans passphrase) et ajouter la clé **publique** à \`~/.ssh/authorized_keys\` de l'utilisateur de déploiement sur le serveur.
+
+Puis, secrets du dépôt GitHub (Settings → Secrets and variables → Actions) :
+
+| Secret | Contenu |
+| --- | --- |
+| \`DEPLOY_SSH_PRIVATE_KEY\` | Clé **privée** générée à l'étape 2 |
+| \`DEPLOY_SSH_HOSTNAME\` | Hostname public du tunnel (étape 1) |
+| \`DEPLOY_SSH_USER\` | Utilisateur SSH sur le serveur |
+| \`DEPLOY_PATH\` | Chemin absolu du clone git sur le serveur (ex. \`/opt/openwiki\`) |
+
+Si une application Access protège un jour ce hostname (service token), \`deploy.yml\` sait déjà où l'ajouter : \`TUNNEL_SERVICE_TOKEN_ID\`/\`TUNNEL_SERVICE_TOKEN_SECRET\` en env du job \`deploy\`, lus automatiquement par \`cloudflared access ssh\`.
+
+\`deploy.yml\` ne configure ni ne modifie la protection de branche \`main\` (statut check requis pour bloquer un merge sur test cassé) — c'est un réglage du dépôt GitHub (Settings → Branches), pas quelque chose qu'un fichier de workflow puisse exprimer.`,
           },
         ],
       },
@@ -277,6 +324,54 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         title: 'Notes de version',
         tags: ['changelog'],
         content: `# Notes de version
+
+## Version 0.17
+
+<details>
+<summary>0.17.6 — 2026-09-07</summary>
+
+- Corrections CI post-merge : le service \`minio\` (\`bitnami/minio:latest\`) n'existe plus sur Docker Hub (catalogue Bitnami retiré) — remplacé par un démarrage manuel de \`minio/minio\` (\`docker run\` + attente sur \`/minio/health/live\`) dans le job \`test-backend\`. Le correctif \`stream-json\`/minio de la 0.17.5 (module resolve hook) ne s'appliquait qu'à l'entrypoint de production, pas aux tests Vitest eux-mêmes (qui n'y passent jamais) — les deux \`vitest.config.ts\` injectent maintenant le même hook via \`NODE_OPTIONS\` (\`backend/vitest.node-options.ts\`), vérifié sur Linux (conteneur) et Windows.
+- Documentation : la page de wiki [Guide de démarrage](/pages/documentation/guide-demarrage) gagne une page [Déploiement](/pages/documentation/guide-demarrage/deploiement) (production, CI/CD, tunnel Cloudflare — même contenu que \`README.md\` §6) ; le \`README.md\` perd son ancien backlog de tickets (EPIC-01 à EPIC-22, ordre de développement suggéré) devenu obsolète une fois l'essentiel implémenté, ne garde que la référence technique (stack, architecture, modèle de données, endpoints, installation).
+
+</details>
+
+<details>
+<summary>0.17.5 — 2026-09-07</summary>
+
+- Migrations automatiques au déploiement : \`backend/entrypoint.sh\` (\`pnpm run migration:run\` puis \`node dist/main.js\`, \`set -e\` — le conteneur ne démarre pas si une migration échoue) ; \`docker-compose.yml\` gagne les services \`backend\`/\`frontend\`.
+- Déploiement continu : \`.github/workflows/deploy.yml\`, déclenché uniquement après succès de la CI sur \`main\` (\`workflow_run\`, jamais sur une PR) — connexion SSH au serveur via tunnel Cloudflare (\`cloudflared\`), \`git pull\` puis \`docker compose up -d --build\`. Premier déploiement sur un serveur vierge : échec attendu (les \`.env\` ne sont pas commités) jusqu'à leur création manuelle une fois.
+- \`README.md\` §9 : guide d'installation locale et de déploiement (prérequis, secrets GitHub, configuration du tunnel Cloudflare).
+- Corrigé au passage : \`minio@8.0.7\` importe \`stream-json/jsonl/Parser.js\` (casse pré-3.x) alors que le \`stream-json: 3.6.0\` imposé par le correctif de sécurité Dependabot (OPS-010) a renommé ce fichier en minuscules — silencieusement toléré sur système de fichiers insensible à la casse (Windows/macOS, donc invisible en dev), mais faisait planter tout conteneur Docker (Linux) au démarrage. Corrigé par un hook de résolution de module Node natif (\`backend/scripts/\`, chargé via \`node --import\` dans l'entrypoint) plutôt qu'un patch pnpm sur la dépendance ou une rétrogradation.
+
+</details>
+
+<details>
+<summary>0.17.4 — 2026-09-07</summary>
+
+- Pipeline CI (\`.github/workflows/ci.yml\`) : lint backend/frontend en parallèle, tests backend (unitaires + e2e, services \`mysql:8\` et \`bitnami/minio\` — \`minio/minio\` seul n'est pas utilisable comme service container GitHub Actions, son CMD par défaut n'affiche que l'aide) et tests frontend sur chaque PR vers \`main\` ; build Docker (\`backend/Dockerfile\`, \`frontend/Dockerfile\`, tous deux ajoutés et testés localement) uniquement sur push vers \`main\`, après succès des jobs précédents. Pas de déploiement automatique dans ce pipeline.
+
+</details>
+
+<details>
+<summary>0.17.3 — 2026-09-07</summary>
+
+- Tests frontend (Vitest + Testing Library + jsdom, \`frontend/src/**/*.test.tsx\`) : soumission du formulaire de connexion (appel de \`login()\`, message d'erreur affiché en cas d'échec), auto-génération du slug depuis le titre dans le formulaire de métadonnées de page, rendu et surbrillance du nœud actif dans l'arborescence sur plusieurs niveaux. Les dépendances des composants (auth, arbre de pages) sont injectées directement via leurs contextes React plutôt que par un appel API réel.
+
+</details>
+
+<details>
+<summary>0.17.2 — 2026-09-07</summary>
+
+- Tests e2e backend (Vitest + Supertest, \`backend/test/*.e2e-spec.ts\`) sur une base MySQL de test dédiée (\`openwiki_test\`), migrée automatiquement avant la suite : inscription → connexion → profil, page créée → éditée → restaurée (historique de versions vérifié), et les cas d'erreur (email dupliqué, mauvais mot de passe, rôle insuffisant). Chaque test repart d'une base vidée (\`TRUNCATE\`).
+
+</details>
+
+<details>
+<summary>0.17.1 — 2026-09-07</summary>
+
+- Tests unitaires backend sur la logique métier critique (\`pages.service.ts\`, \`media.service.ts\`, \`versions.service.ts\`, \`RolesGuard\`, \`JwtAuthGuard\`), via Vitest + \`@nestjs/testing\` avec repositories mockés — couverture ≥ 70% sur ces fichiers.
+
+</details>
 
 ## Version 0.16
 
