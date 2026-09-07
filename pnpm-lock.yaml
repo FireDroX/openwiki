@@ -223,8 +223,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@7.2.0)
       react-router:
-        specifier: ^7.18.3
-        version: 7.18.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^8.3.1
+        version: 8.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       rehype-raw:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2964,6 +2964,9 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
+  cookie-es@3.1.1:
+    resolution: {integrity: sha512-UaXxwISYJPTr9hwQxMFYZ7kNhSXboMXP+Z3TRX6f1/NyaGPfuNUZOWP1pUEb75B2HjfklIYLVRfWiFZJyC6Npg==}
+
   cookie-parser@1.4.7:
     resolution: {integrity: sha512-nGUvgXnotP3BsjiLX2ypbQnWoGUPIIfHQNZkkC668ntrzGWEZVW70HDEB1qnNGMicPje6EttlIgzo51YSwNQGw==}
     engines: {node: '>= 0.8.0'}
@@ -4791,12 +4794,12 @@ packages:
       '@types/react':
         optional: true
 
-  react-router@7.18.3:
-    resolution: {integrity: sha512-gyXgtdr5uACJ5b1Q4udzjVV+tb/rlHIMJKuJ0e89R4Kzgz47z/rgP0dIKxktqIEUhDHluGTPJJH/wRha7CyqsA==}
-    engines: {node: '>=20.0.0'}
+  react-router@8.3.1:
+    resolution: {integrity: sha512-TEOpiO2g0TJHEOJeRVv4amUFun9v1npCKszvcquNvzETUtJ8udV86ah5eFoHT7g26bsBvT6EiIhqulR8eDF++A==}
+    engines: {node: '>=22.22.0'}
     peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
+      react: '>=19.2.7'
+      react-dom: '>=19.2.7'
     peerDependenciesMeta:
       react-dom:
         optional: true
@@ -4944,9 +4947,6 @@ packages:
   serve-static@2.2.1:
     resolution: {integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==}
     engines: {node: '>= 18'}
-
-  set-cookie-parser@2.7.2:
-    resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
 
   set-cookie-parser@3.1.2:
     resolution: {integrity: sha512-5/r/lTwbJ3zQ+qwdUFZYeRNqda7P5HD8zQKqlSjdGt1/S0cjLAphHusj4Y58ahDtWn/g32xrIS58/ikOvwl0Lw==}
@@ -8251,6 +8251,8 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
+  cookie-es@3.1.1: {}
+
   cookie-parser@1.4.7:
     dependencies:
       cookie: 0.7.2
@@ -8262,7 +8264,8 @@ snapshots:
 
   cookie@0.7.2: {}
 
-  cookie@1.1.1: {}
+  cookie@1.1.1:
+    optional: true
 
   cookiejar@2.1.4: {}
 
@@ -10353,11 +10356,10 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.18
 
-  react-router@7.18.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-router@8.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
-      cookie: 1.1.1
+      cookie-es: 3.1.1
       react: 19.2.8
-      set-cookie-parser: 2.7.2
     optionalDependencies:
       react-dom: 19.2.8(react@19.2.8)
 
@@ -10554,8 +10556,6 @@ snapshots:
       send: 1.2.1(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
-
-  set-cookie-parser@2.7.2: {}
 
   set-cookie-parser@3.1.2:
     optional: true
