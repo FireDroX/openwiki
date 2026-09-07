@@ -48,7 +48,13 @@ export class MediaService {
     const pageId = dto.pageId ?? null;
     const minioKey = `pages/${pageId ?? 'unassigned'}/${randomUUID()}-${file.originalname}`;
 
+    if (process.env.MINIO_DEBUG_TRACE === 'true') {
+      console.log('[uploadFile] step 1: before storageService.uploadFile');
+    }
     await this.storageService.uploadFile(minioKey, file.buffer, file.mimetype);
+    if (process.env.MINIO_DEBUG_TRACE === 'true') {
+      console.log('[uploadFile] step 2: after storageService.uploadFile, before repo.create');
+    }
 
     const attachment = await this.attachmentsRepository.create({
       pageId,
@@ -58,11 +64,17 @@ export class MediaService {
       size: file.size,
       uploadedById,
     });
+    if (process.env.MINIO_DEBUG_TRACE === 'true') {
+      console.log('[uploadFile] step 3: after repo.create, before getPresignedUrl');
+    }
 
     const url = await this.storageService.getPresignedUrl(
       minioKey,
       MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
     );
+    if (process.env.MINIO_DEBUG_TRACE === 'true') {
+      console.log('[uploadFile] step 4: after getPresignedUrl, returning', url);
+    }
 
     return { attachment, url };
   }
