@@ -47,7 +47,11 @@ async function bootstrap() {
     limit: JSON_BODY_LIMIT,
   });
   app.setGlobalPrefix('api');
-  app.enableCors({ origin: process.env.FRONTEND_URL, credentials: true });
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    exposedHeaders: ['Retry-After'],
+  });
   app.use(helmet());
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());

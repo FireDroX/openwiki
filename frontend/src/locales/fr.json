@@ -20,6 +20,7 @@
     "displayNameLabel": "Nom affiché",
     "signIn": "Se connecter",
     "createAccount": "Créer un compte",
+    "accountLocked": "Compte temporairement verrouillé suite à trop de tentatives échouées. Réessayez dans {{seconds}}s.",
     "validation": {
       "emailInvalid": "Adresse e-mail invalide",
       "passwordRequired": "Le mot de passe est requis",

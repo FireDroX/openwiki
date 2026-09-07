@@ -20,6 +20,7 @@
     "displayNameLabel": "Display name",
     "signIn": "Sign in",
     "createAccount": "Create account",
+    "accountLocked": "Account temporarily locked after too many failed attempts. Try again in {{seconds}}s.",
     "validation": {
       "emailInvalid": "Invalid email address",
       "passwordRequired": "Password is required",

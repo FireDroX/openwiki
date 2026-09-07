@@ -58,10 +58,7 @@ export class AuthService {
     private readonly pwnedPasswordService: PwnedPasswordService,
   ) {}
 
-  async register(
-    dto: RegisterDto,
-    remoteIp?: string,
-  ): Promise<RegisterResult> {
+  async register(dto: RegisterDto, remoteIp?: string): Promise<RegisterResult> {
     if (!(await this.turnstileService.verify(dto.turnstileToken, remoteIp))) {
       throw new InvalidTurnstileTokenException();
     }
