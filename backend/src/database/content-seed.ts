@@ -278,6 +278,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.17
+
+<details>
+<summary>0.17.1 — 2026-09-07</summary>
+
+- Tests unitaires backend sur la logique métier critique (\`pages.service.ts\`, \`media.service.ts\`, \`versions.service.ts\`, \`RolesGuard\`, \`JwtAuthGuard\`), via Vitest + \`@nestjs/testing\` avec repositories mockés — couverture ≥ 70% sur ces fichiers.
+
+</details>
+
 ## Version 0.16
 
 <details>
