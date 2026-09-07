@@ -1,0 +1,46 @@
+name: Deploy
+
+# Runs only after the CI workflow completes successfully on main — never
+# on a PR, and never if lint/tests/build failed.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Install cloudflared
+        run: |
+          curl -fsSL -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
+          sudo mv cloudflared /usr/local/bin/cloudflared
+          cloudflared --version
+
+      - name: Configure SSH over the Cloudflare Tunnel
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cat >> ~/.ssh/config <<EOF
+          Host deploy-target
+            HostName ${{ secrets.DEPLOY_SSH_HOSTNAME }}
+            User ${{ secrets.DEPLOY_SSH_USER }}
+            IdentityFile ~/.ssh/id_ed25519
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            ProxyCommand cloudflared access ssh --hostname %h
+          EOF
+
+      # First deploy on a fresh server is expected to fail here: the
+      # .env files (root, backend/, frontend/) aren't committed to git,
+      # so `docker compose up` has nothing to read env vars from until
+      # someone creates them by hand on the server. Every deploy after
+      # that succeeds.
+      - name: git pull && docker compose up -d --build
+        run: |
+          ssh deploy-target "cd '${{ secrets.DEPLOY_PATH }}' && git pull && docker compose up -d --build"

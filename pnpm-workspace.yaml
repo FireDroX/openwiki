@@ -4,6 +4,11 @@ packages:
 allowBuilds:
   '@scarf/scarf': false
   esbuild: true
+  # Pulled in transitively as an optional peer of @vitest/mocker, not a
+  # direct dependency — its build script only matters for setupWorker()
+  # (browser Service Worker registration), unused by our Node-side
+  # vitest tests, so it stays disallowed.
+  msw: false
 overrides:
   undici: 6.28.0
   tmp: 0.2.7
