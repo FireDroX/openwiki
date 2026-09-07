@@ -38,6 +38,17 @@ export class StorageService implements OnModuleInit {
           useSSL: config.get<string>('MINIO_PUBLIC_USE_SSL') !== 'false',
         })
       : this.client;
+
+    // TEMPORARY diagnostic — MINIO_DEBUG_TRACE=true dumps every raw signed
+    // request/response this service makes to stdout (docker logs). Opt-in
+    // only (signed requests include the Authorization header) — revert
+    // once the SignatureDoesNotMatch investigation is closed.
+    if (config.get<string>('MINIO_DEBUG_TRACE') === 'true') {
+      this.client.traceOn(process.stdout);
+      if (this.presignClient !== this.client) {
+        this.presignClient.traceOn(process.stdout);
+      }
+    }
   }
 
   async onModuleInit(): Promise<void> {
