@@ -281,6 +281,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.16
 
 <details>
+<summary>0.16.1 — 2026-09-07</summary>
+
+- Rate limiting dédié, plus strict que la limite globale, sur \`POST /auth/register\`, \`POST /auth/login\` et \`POST /auth/refresh\` : 5 requêtes/minute/IP.
+
+</details>
+
+<details>
 <summary>0.16.0 — 2026-09-07</summary>
 
 - Rate limiting global sur toute l'API : 100 requêtes/minute/IP (\`@nestjs/throttler\`), résolution de l'IP réelle derrière un proxy via \`X-Forwarded-For\`. Dépassement → \`429 Too Many Requests\` avec header \`Retry-After\`.

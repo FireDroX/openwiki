@@ -8,6 +8,7 @@ import {
   Res,
   UseFilters,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -34,6 +35,8 @@ import { AuthService, type TokenPair } from './services/auth.service.js';
 
 const ACCESS_TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const AUTH_THROTTLE_LIMIT = 5;
+const AUTH_THROTTLE_TTL_MS = 60000;
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -43,6 +46,9 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @ApiOperation({ summary: 'Créer un compte utilisateur' })
   @ApiBody({ type: RegisterDto })
   @ApiCreatedResponse({ description: 'Compte créé avec succès.' })
@@ -63,6 +69,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @ApiOperation({ summary: 'Se connecter' })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({
@@ -83,6 +92,9 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @ApiOperation({ summary: "Rafraîchir le token d'accès" })
   @ApiOkResponse({
     description: "Nouveau token d'accès déposé en cookie.",
