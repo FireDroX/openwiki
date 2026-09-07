@@ -37,6 +37,45 @@ services:
     networks:
       - mariadb-network
 
+  # Application containers (production deploy — see README §9). Not
+  # needed for local dev, where the backend/frontend run via `pnpm run
+  # start:dev` / `pnpm run dev` against these same mysql/minio services.
+  #
+  # backend/.env on the server must point DB_HOST/MINIO_ENDPOINT at the
+  # `mysql`/`minio` service names below (not `localhost`, unlike the
+  # local-dev default in backend/.env.example) — see README §9.
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - mariadb-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - mariadb-network
+
 networks:
   mariadb-network:
     driver: bridge
