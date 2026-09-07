@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.17
 
 <details>
+<summary>0.17.12 — 2026-09-07</summary>
+
+- Correctif \`SignatureDoesNotMatch\` sur l'upload d'images via le MCP (\`wiki_upload_image\`) : \`ConfigService.get<number>('MINIO_PUBLIC_PORT')\` ne caste jamais réellement la valeur (\`process.env\` reste une string, le générique TypeScript est purement cosmétique). Le SDK \`minio-js\` compare le port à \`443\`/\`80\` avec \`!==\` strict pour décider d'ajouter le port au \`Host\` signé — une string \`"443"\` déclenchait donc un \`Host: <hôte>:443\` signé à tort, que Cloudflare Tunnel normalise sans le port en le forwardant à l'origine, d'où la signature invalide côté Minio. \`storage.service.ts\` caste désormais explicitement \`MINIO_PORT\`/\`MINIO_PUBLIC_PORT\` en nombre. L'upload lui-même (\`putObject\`) n'était jamais affecté (port 9000, jamais "par défaut" donc jamais concerné par ce bug) — seule la génération de l'URL présignée juste après l'upload cassait.
+
+</details>
+
+<details>
 <summary>0.17.11 — 2026-09-07</summary>
 
 - \`MEDIA_PRESIGNED_URL_EXPIRY_SECONDS\` passe de 1h à 7 jours (le maximum autorisé par une signature SigV4, imposé pareil par Minio) — les URLs présignées embarquées dans le markdown d'une page n'ont pas de mécanisme de rafraîchissement à l'affichage, donc 1h les rendait presque inutilisables pour du contenu durable. Reste une limite dure : au-delà de 7 jours sans ré-upload, l'image casse quand même.

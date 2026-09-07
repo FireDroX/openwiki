@@ -15,7 +15,15 @@ export class StorageService implements OnModuleInit {
     const secretKey = config.get<string>('MINIO_SECRET_KEY');
     this.client = new Client({
       endPoint: config.get<string>('MINIO_ENDPOINT')!,
-      port: config.get<number>('MINIO_PORT'),
+      // ConfigService.get<number>() never actually casts — process.env
+      // values are always strings, the generic is a compile-time-only
+      // assertion. minio-js compares the port against the literal
+      // numbers 80/443 with strict `!==` to decide whether to suffix
+      // the signed Host header; left as a string, "443" !== 443 is
+      // true, so it wrongly appends ":443" to what it signs even on
+      // the default HTTPS port. Number(...) here is load-bearing, not
+      // decorative.
+      port: Number(config.get<string>('MINIO_PORT')),
       accessKey,
       secretKey,
       useSSL: config.get<string>('MINIO_USE_SSL') === 'true',
@@ -32,23 +40,12 @@ export class StorageService implements OnModuleInit {
     this.presignClient = publicEndpoint
       ? new Client({
           endPoint: publicEndpoint,
-          port: config.get<number>('MINIO_PUBLIC_PORT') ?? 443,
+          port: Number(config.get<string>('MINIO_PUBLIC_PORT')) || 443,
           accessKey,
           secretKey,
           useSSL: config.get<string>('MINIO_PUBLIC_USE_SSL') !== 'false',
         })
       : this.client;
-
-    // TEMPORARY diagnostic — MINIO_DEBUG_TRACE=true dumps every raw signed
-    // request/response this service makes to stdout (docker logs). Opt-in
-    // only (signed requests include the Authorization header) — revert
-    // once the SignatureDoesNotMatch investigation is closed.
-    if (config.get<string>('MINIO_DEBUG_TRACE') === 'true') {
-      this.client.traceOn(process.stdout);
-      if (this.presignClient !== this.client) {
-        this.presignClient.traceOn(process.stdout);
-      }
-    }
   }
 
   async onModuleInit(): Promise<void> {

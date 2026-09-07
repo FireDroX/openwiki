@@ -48,13 +48,7 @@ export class MediaService {
     const pageId = dto.pageId ?? null;
     const minioKey = `pages/${pageId ?? 'unassigned'}/${randomUUID()}-${file.originalname}`;
 
-    if (process.env.MINIO_DEBUG_TRACE === 'true') {
-      console.log('[uploadFile] step 1: before storageService.uploadFile');
-    }
     await this.storageService.uploadFile(minioKey, file.buffer, file.mimetype);
-    if (process.env.MINIO_DEBUG_TRACE === 'true') {
-      console.log('[uploadFile] step 2: after storageService.uploadFile, before repo.create');
-    }
 
     const attachment = await this.attachmentsRepository.create({
       pageId,
@@ -64,32 +58,11 @@ export class MediaService {
       size: file.size,
       uploadedById,
     });
-    if (process.env.MINIO_DEBUG_TRACE === 'true') {
-      console.log('[uploadFile] step 3: after repo.create, before getPresignedUrl');
-    }
 
-    let url: string;
-    try {
-      url = await this.storageService.getPresignedUrl(
-        minioKey,
-        MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
-      );
-    } catch (e) {
-      if (process.env.MINIO_DEBUG_TRACE === 'true') {
-        const err = e as Error & { code?: string; region?: string };
-        console.error('[uploadFile] getPresignedUrl THREW:', {
-          name: err.name,
-          code: err.code,
-          region: err.region,
-          message: err.message,
-          stack: err.stack,
-        });
-      }
-      throw e;
-    }
-    if (process.env.MINIO_DEBUG_TRACE === 'true') {
-      console.log('[uploadFile] step 4: after getPresignedUrl, returning', url);
-    }
+    const url = await this.storageService.getPresignedUrl(
+      minioKey,
+      MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
+    );
 
     return { attachment, url };
   }
