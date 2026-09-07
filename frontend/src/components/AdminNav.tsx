@@ -9,6 +9,7 @@ export function AdminNav() {
     { to: '/admin/settings', label: t('admin.settingsTab') },
     { to: '/admin/mcp/api-keys', label: t('admin.mcpKeysTab') },
     { to: '/admin/mcp/audit-log', label: t('admin.mcpAuditTab') },
+    { to: '/admin/audit-log', label: t('admin.auditLogTab') },
   ]
 
   return (

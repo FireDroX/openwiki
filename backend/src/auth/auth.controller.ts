@@ -8,6 +8,7 @@ import {
   Res,
   UseFilters,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -34,6 +35,8 @@ import { AuthService, type TokenPair } from './services/auth.service.js';
 
 const ACCESS_TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const AUTH_THROTTLE_LIMIT = 5;
+const AUTH_THROTTLE_TTL_MS = 60000;
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -43,6 +46,9 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @ApiOperation({ summary: 'Créer un compte utilisateur' })
   @ApiBody({ type: RegisterDto })
   @ApiCreatedResponse({ description: 'Compte créé avec succès.' })
@@ -56,13 +62,22 @@ export class AuthController {
   })
   async register(
     @Body() dto: RegisterDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<ResponseDto<UserResponseDto>> {
-    const user = await this.authService.register(dto);
+    const { user, tokens } = await this.authService.register(
+      dto,
+      AuthController.resolveClientIp(req),
+    );
+    this.setAuthCookies(res, tokens);
     return UserMapper.toRegisterResponse(user);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @ApiOperation({ summary: 'Se connecter' })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({
@@ -74,15 +89,22 @@ export class AuthController {
   })
   async login(
     @Body() dto: LoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ResponseDto<null>> {
-    const tokens = await this.authService.login(dto);
+    const tokens = await this.authService.login(
+      dto,
+      AuthController.resolveClientIp(req),
+    );
     this.setAuthCookies(res, tokens);
     return new ResponseDto(null);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @ApiOperation({ summary: "Rafraîchir le token d'accès" })
   @ApiOkResponse({
     description: "Nouveau token d'accès déposé en cookie.",
@@ -147,5 +169,13 @@ export class AuthController {
       path: '/',
       maxAge,
     });
+  }
+
+  private static resolveClientIp(req: Request): string | undefined {
+    const forwardedFor = req.headers['x-forwarded-for'];
+    if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+      return forwardedFor.split(',')[0].trim();
+    }
+    return req.ip;
   }
 }

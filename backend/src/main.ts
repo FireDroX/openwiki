@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 
@@ -46,7 +47,12 @@ async function bootstrap() {
     limit: JSON_BODY_LIMIT,
   });
   app.setGlobalPrefix('api');
-  app.enableCors({ origin: process.env.FRONTEND_URL, credentials: true });
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    exposedHeaders: ['Retry-After'],
+  });
+  app.use(helmet());
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
   setupSwagger(app);

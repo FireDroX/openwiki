@@ -83,8 +83,8 @@ export function buildUsersTools(
       inputSchema: { userId: z.string(), role: z.enum(USER_ROLES) },
       requiredScopes: [USERS_WRITE_SCOPE],
       hideWithoutScope: true,
-      handler: async (input) => {
-        const user = await usersService.updateRole(input.userId, {
+      handler: async (input, ctx) => {
+        const user = await usersService.updateRole(ctx.userId, input.userId, {
           role: input.role,
         });
         return { id: user.id, role: user.role };

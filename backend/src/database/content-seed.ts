@@ -278,6 +278,86 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.16
+
+<details>
+<summary>0.16.10 — 2026-09-07</summary>
+
+- Alertes de sécurité Dependabot traitées : \`undici\`, \`tmp\`, \`decode-uri-component\`, \`qs\`, \`stream-json\` (dépendances transitives) forcés vers leurs versions corrigées via \`pnpm-workspace.yaml\` (\`overrides\`). \`.github/dependabot.yml\` ajouté (npm, une seule entrée à la racine du monorepo pnpm — \`pnpm-lock.yaml\` et \`pnpm-workspace.yaml\` y vivent, une entrée par sous-dossier casse la mise à jour du lockfile partagé — hebdomadaire, groupé sur les mises à jour de sécurité) : couvre les *version updates* pnpm (scan hebdomadaire), GitHub ne proposant pas encore de *security updates* automatiques (PR déclenchée par une alerte) pour cet écosystème.
+
+</details>
+
+<details>
+<summary>0.16.9 — 2026-09-07</summary>
+
+- Page journal d'audit admin (\`/admin/audit-log\`, réservée admin) : historique paginé des actions admin sensibles (date, admin, action, cible), filtrable par admin et par type d'action.
+
+</details>
+
+<details>
+<summary>0.16.8 — 2026-09-07</summary>
+
+- Affichage dédié du verrouillage de compte (\`423\`) sur le formulaire de connexion : message explicite avec décompte jusqu'au déverrouillage (lu depuis le header \`Retry-After\`), plutôt que l'erreur générique de mauvais mot de passe. CORS expose désormais \`Retry-After\` (\`exposedHeaders\`) pour que le frontend puisse le lire.
+
+</details>
+
+<details>
+<summary>0.16.7 — 2026-09-07</summary>
+
+- Widget Cloudflare Turnstile sur les formulaires de connexion et d'inscription : le formulaire ne peut pas être soumis tant que le widget n'a pas produit de token valide, transmis dans le payload de soumission. Variable \`VITE_TURNSTILE_SITE_KEY\` (\`frontend/.env\`).
+- \`POST /auth/register\` délivre désormais directement les cookies d'authentification (comme \`/auth/login\`) au lieu de nécessiter un second appel à \`/auth/login\` juste après l'inscription — un token Turnstile est à usage unique, le réutiliser pour une seconde vérification aurait échoué.
+
+</details>
+
+<details>
+<summary>0.16.6 — 2026-09-07</summary>
+
+- Politique de mot de passe renforcée sur \`POST /auth/register\` : en plus des 8 caractères minimum, le mot de passe doit contenir une majuscule, un chiffre et un caractère spécial (\`400\` sinon). Détection de fuite via l'API haveibeenpwned (k-anonymity, seul un préfixe SHA-1 à 5 caractères est transmis) — mot de passe déjà compromis → \`400\` ; API injoignable → inscription non bloquée (fail-open), erreur loguée côté serveur.
+
+</details>
+
+<details>
+<summary>0.16.5 — 2026-09-07</summary>
+
+- Journal d'audit des actions admin sensibles (\`AdminAuditLog\` : admin, action, cible, métadonnées bornées) : chaque changement de rôle et suppression d'utilisateur (REST \`/admin/users\` comme MCP \`wiki_update_user_role\`) crée une entrée. \`GET /admin/audit-log\` (admin, filtrable par \`adminId\`/\`action\`, paginé).
+
+</details>
+
+<details>
+<summary>0.16.4 — 2026-09-07</summary>
+
+- Headers de sécurité HTTP standard sur toutes les réponses via \`helmet\` (config par défaut : \`Strict-Transport-Security\`, \`X-Content-Type-Options\`, \`X-Frame-Options\`, etc.). CORS déjà strict (origine limitée à \`FRONTEND_URL\`, pas de wildcard).
+
+</details>
+
+<details>
+<summary>0.16.3 — 2026-09-07</summary>
+
+- Verrouillage de compte après échecs répétés : 5 échecs de connexion consécutifs verrouillent le compte 15 minutes (\`POST /auth/login\` → \`423 Locked\` avec header \`Retry-After\`), même avec le bon mot de passe une fois verrouillé. Une connexion réussie remet le compteur d'échecs à zéro.
+
+</details>
+
+<details>
+<summary>0.16.2 — 2026-09-07</summary>
+
+- Vérification Cloudflare Turnstile sur \`POST /auth/login\` et \`POST /auth/register\` : le token \`turnstileToken\` transmis dans le body est validé auprès de Cloudflare avant toute vérification d'email/mot de passe. Token manquant ou invalide → \`400\`, sans fuite d'information sur l'existence d'un compte. Nouvelle variable \`TURNSTILE_SECRET_KEY\` (\`backend/.env\`) — si absente, la vérification est ignorée (utile en dev tant que la clé n'est pas configurée).
+
+</details>
+
+<details>
+<summary>0.16.1 — 2026-09-07</summary>
+
+- Rate limiting dédié, plus strict que la limite globale, sur \`POST /auth/register\`, \`POST /auth/login\` et \`POST /auth/refresh\` : 5 requêtes/minute/IP.
+
+</details>
+
+<details>
+<summary>0.16.0 — 2026-09-07</summary>
+
+- Rate limiting global sur toute l'API : 100 requêtes/minute/IP (\`@nestjs/throttler\`), résolution de l'IP réelle derrière un proxy via \`X-Forwarded-For\`. Dépassement → \`429 Too Many Requests\` avec header \`Retry-After\`.
+
+</details>
+
 ## Version 0.15
 
 <details>

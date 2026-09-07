@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto.js';
 import { UserNotFoundException } from '../../common/exceptions/users/user-not-found.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
@@ -20,6 +21,7 @@ import type { UserRepository } from '../persistence/user.repository.js';
 export class UsersService {
   constructor(
     @Inject('UsersRepository') private readonly userRepository: UserRepository,
+    private readonly adminAuditLogService: AdminAuditLogService,
   ) {}
 
   async findById(id: string): Promise<User> {
@@ -56,15 +58,46 @@ export class UsersService {
     return { items, total, page, limit };
   }
 
-  async updateRole(id: string, dto: UpdateRoleDto): Promise<User> {
+  async updateRole(
+    adminId: string,
+    id: string,
+    dto: UpdateRoleDto,
+  ): Promise<User> {
     this.validateRole(dto.role);
-    await this.findById(id);
-    return this.userRepository.updateRole(id, dto.role);
+    const previous = await this.findById(id);
+    const updated = await this.userRepository.updateRole(id, dto.role);
+    await this.adminAuditLogService.record({
+      adminId,
+      action: 'user.role.update',
+      targetType: 'user',
+      targetId: id,
+      metadata: { previousRole: previous.role, newRole: updated.role },
+    });
+    return updated;
   }
 
-  async deleteUser(id: string): Promise<void> {
-    await this.findById(id);
+  async deleteUser(adminId: string, id: string): Promise<void> {
+    const user = await this.findById(id);
     await this.userRepository.delete(id);
+    await this.adminAuditLogService.record({
+      adminId,
+      action: 'user.delete',
+      targetType: 'user',
+      targetId: id,
+      metadata: { email: user.email },
+    });
+  }
+
+  incrementFailedLoginAttempts(id: string): Promise<User> {
+    return this.userRepository.incrementFailedLoginAttempts(id);
+  }
+
+  lockAccount(id: string, lockedUntil: Date): Promise<User> {
+    return this.userRepository.lockAccount(id, lockedUntil);
+  }
+
+  resetFailedLoginAttempts(id: string): Promise<User> {
+    return this.userRepository.resetFailedLoginAttempts(id);
   }
 
   private validateRole(role: User['role']): void {

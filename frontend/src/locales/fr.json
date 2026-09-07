@@ -20,10 +20,12 @@
     "displayNameLabel": "Nom affiché",
     "signIn": "Se connecter",
     "createAccount": "Créer un compte",
+    "accountLocked": "Compte temporairement verrouillé suite à trop de tentatives échouées. Réessayez dans {{seconds}}s.",
     "validation": {
       "emailInvalid": "Adresse e-mail invalide",
       "passwordRequired": "Le mot de passe est requis",
       "passwordMinLength": "Le mot de passe doit contenir au moins {{count}} caractères",
+      "passwordComplexity": "Le mot de passe doit contenir une majuscule, un chiffre et un caractère spécial",
       "displayNameMinLength": "Le nom doit contenir au moins {{count}} caractères",
       "displayNameMaxLength": "Le nom ne peut pas dépasser {{count}} caractères"
     }
@@ -157,6 +159,7 @@
     "settingsTab": "Paramètres",
     "mcpKeysTab": "Clés API MCP",
     "mcpAuditTab": "Journal MCP",
+    "auditLogTab": "Journal d'audit",
     "users": {
       "filterPlaceholder": "Filtrer les utilisateurs...",
       "loadError": "Échec du chargement des utilisateurs.",
@@ -232,6 +235,20 @@
       "statusFailure": "Échec",
       "detailInput": "Entrée",
       "detailOutput": "Sortie"
+    },
+    "auditLog": {
+      "allAdmins": "Tous les admins",
+      "allActions": "Toutes les actions",
+      "loadError": "Échec du chargement du journal.",
+      "empty": "Aucune action enregistrée.",
+      "columnDate": "Date",
+      "columnAdmin": "Admin",
+      "columnAction": "Action",
+      "columnTarget": "Cible",
+      "actions": {
+        "user.role.update": "Changement de rôle",
+        "user.delete": "Suppression d'utilisateur"
+      }
     }
   },
   "permissions": {

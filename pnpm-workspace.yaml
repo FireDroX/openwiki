@@ -4,3 +4,9 @@ packages:
 allowBuilds:
   '@scarf/scarf': false
   esbuild: true
+overrides:
+  undici: 6.28.0
+  tmp: 0.2.7
+  decode-uri-component: 0.5.0
+  qs: 6.16.0
+  stream-json: 3.6.0

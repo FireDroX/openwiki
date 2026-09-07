@@ -135,10 +135,11 @@ export class AdminUsersController {
     type: ErrorResponseDto,
   })
   async updateRole(
+    @CurrentUser() admin: AuthenticatedUser,
     @Param('id') id: string,
     @Body() dto: UpdateRoleDto,
   ): Promise<ResponseDto<UserResponseDto>> {
-    const entity = await this.usersService.updateRole(id, dto);
+    const entity = await this.usersService.updateRole(admin.id, id, dto);
     return UserMapper.toResponse(entity);
   }
 
@@ -159,7 +160,10 @@ export class AdminUsersController {
     description: "L'utilisateur n'existe pas.",
     type: ErrorResponseDto,
   })
-  async deleteUser(@Param('id') id: string): Promise<void> {
-    await this.usersService.deleteUser(id);
+  async deleteUser(
+    @CurrentUser() admin: AuthenticatedUser,
+    @Param('id') id: string,
+  ): Promise<void> {
+    await this.usersService.deleteUser(admin.id, id);
   }
 }

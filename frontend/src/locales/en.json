@@ -20,10 +20,12 @@
     "displayNameLabel": "Display name",
     "signIn": "Sign in",
     "createAccount": "Create account",
+    "accountLocked": "Account temporarily locked after too many failed attempts. Try again in {{seconds}}s.",
     "validation": {
       "emailInvalid": "Invalid email address",
       "passwordRequired": "Password is required",
       "passwordMinLength": "Password must be at least {{count}} characters",
+      "passwordComplexity": "Password must contain an uppercase letter, a digit and a special character",
       "displayNameMinLength": "Name must be at least {{count}} characters",
       "displayNameMaxLength": "Name cannot exceed {{count}} characters"
     }
@@ -157,6 +159,7 @@
     "settingsTab": "Settings",
     "mcpKeysTab": "MCP API keys",
     "mcpAuditTab": "MCP log",
+    "auditLogTab": "Audit log",
     "users": {
       "filterPlaceholder": "Filter users...",
       "loadError": "Failed to load users.",
@@ -232,6 +235,20 @@
       "statusFailure": "Failure",
       "detailInput": "Input",
       "detailOutput": "Output"
+    },
+    "auditLog": {
+      "allAdmins": "All admins",
+      "allActions": "All actions",
+      "loadError": "Failed to load the log.",
+      "empty": "No actions recorded.",
+      "columnDate": "Date",
+      "columnAdmin": "Admin",
+      "columnAction": "Action",
+      "columnTarget": "Target",
+      "actions": {
+        "user.role.update": "Role change",
+        "user.delete": "User deletion"
+      }
     }
   },
   "permissions": {

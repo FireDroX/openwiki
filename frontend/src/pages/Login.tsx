@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormError } from '#components/FormError'
+import { TurnstileWidget } from '#components/Turnstile'
 import { Button } from '#components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '#components/ui/field'
 import { Input } from '#components/ui/input'
@@ -12,11 +14,29 @@ import { useAuth } from '#hooks/useAuth'
 import { extractErrorMessage } from '#lib/api-errors'
 import { createLoginSchema, createRegisterSchema, type LoginFormValues, type RegisterFormValues } from '#schemas/auth.schema'
 
+function useLockoutCountdown() {
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (secondsRemaining === null) return
+    if (secondsRemaining <= 0) {
+      setSecondsRemaining(null)
+      return
+    }
+    const timer = setTimeout(() => setSecondsRemaining((s) => (s ?? 0) - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [secondsRemaining])
+
+  return { secondsRemaining, setSecondsRemaining }
+}
+
 function LoginForm() {
   const { t } = useTranslation()
   const { login } = useAuth()
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const { secondsRemaining: lockoutSeconds, setSecondsRemaining: setLockoutSeconds } = useLockoutCountdown()
   const schema = useMemo(() => createLoginSchema(t), [t])
 
   const {
@@ -29,12 +49,19 @@ function LoginForm() {
   })
 
   async function onSubmit(data: LoginFormValues) {
+    if (turnstileToken === null) return
     setSubmitError(null)
+    setLockoutSeconds(null)
     try {
-      await login(data)
+      await login({ ...data, turnstileToken })
       navigate('/', { replace: true })
     } catch (error) {
-      setSubmitError(extractErrorMessage(error))
+      if (isAxiosError(error) && error.response?.status === 423) {
+        const retryAfter = Number(error.response.headers['retry-after'])
+        setLockoutSeconds(Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null)
+      } else {
+        setSubmitError(extractErrorMessage(error))
+      }
     }
   }
 
@@ -63,8 +90,17 @@ function LoginForm() {
             </Field>
           )}
         />
-        <FormError message={submitError} />
-        <Button type="submit" disabled={isSubmitting} className="w-full">
+        <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
+        {lockoutSeconds !== null ? (
+          <p className="text-sm text-destructive">{t('auth.accountLocked', { seconds: lockoutSeconds })}</p>
+        ) : (
+          <FormError message={submitError} />
+        )}
+        <Button
+          type="submit"
+          disabled={isSubmitting || turnstileToken === null || lockoutSeconds !== null}
+          className="w-full"
+        >
           {t('auth.signIn')}
         </Button>
       </FieldGroup>
@@ -77,6 +113,7 @@ function RegisterForm() {
   const { register } = useAuth()
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const schema = useMemo(() => createRegisterSchema(t), [t])
 
   const {
@@ -89,9 +126,10 @@ function RegisterForm() {
   })
 
   async function onSubmit(data: RegisterFormValues) {
+    if (turnstileToken === null) return
     setSubmitError(null)
     try {
-      await register(data)
+      await register({ ...data, turnstileToken })
       navigate('/', { replace: true })
     } catch (error) {
       setSubmitError(extractErrorMessage(error))
@@ -134,8 +172,9 @@ function RegisterForm() {
             </Field>
           )}
         />
+        <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
         <FormError message={submitError} />
-        <Button type="submit" disabled={isSubmitting} className="w-full">
+        <Button type="submit" disabled={isSubmitting || turnstileToken === null} className="w-full">
           {t('auth.createAccount')}
         </Button>
       </FieldGroup>

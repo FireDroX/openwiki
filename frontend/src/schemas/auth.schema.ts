@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASSWORD_LENGTH = 8
+const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/
 const DISPLAY_NAME_MIN_LENGTH = 2
 const DISPLAY_NAME_MAX_LENGTH = 100
 
@@ -18,7 +19,8 @@ export function createRegisterSchema(t: TFunction) {
     email: z.string().regex(EMAIL_REGEX, t('auth.validation.emailInvalid')),
     password: z
       .string()
-      .min(MIN_PASSWORD_LENGTH, t('auth.validation.passwordMinLength', { count: MIN_PASSWORD_LENGTH })),
+      .min(MIN_PASSWORD_LENGTH, t('auth.validation.passwordMinLength', { count: MIN_PASSWORD_LENGTH }))
+      .regex(PASSWORD_COMPLEXITY_REGEX, t('auth.validation.passwordComplexity')),
     displayName: z
       .string()
       .min(DISPLAY_NAME_MIN_LENGTH, t('auth.validation.displayNameMinLength', { count: DISPLAY_NAME_MIN_LENGTH }))

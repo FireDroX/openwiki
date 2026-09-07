@@ -5,6 +5,7 @@ import { GlobalSearchCommand } from '#components/GlobalSearchCommand'
 import { ProtectedRoute } from '#components/ProtectedRoute'
 import { UserRole } from '#api/auth'
 import { useAuth } from '#hooks/useAuth'
+import { AdminAuditLog } from '#pages/AdminAuditLog'
 import { AdminMcpAudit } from '#pages/AdminMcpAudit'
 import { AdminMcpKeys } from '#pages/AdminMcpKeys'
 import { AdminSettings } from '#pages/AdminSettings'
@@ -44,6 +45,7 @@ export function App() {
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/mcp/api-keys" element={<AdminMcpKeys />} />
             <Route path="/admin/mcp/audit-log" element={<AdminMcpAudit />} />
+            <Route path="/admin/audit-log" element={<AdminAuditLog />} />
           </Route>
         </Route>
       </Routes>

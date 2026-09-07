@@ -31,6 +31,12 @@ export class User {
   @Column({ type: 'enum', enum: USER_ROLES, default: 'reader' })
   role: UserRole;
 
+  @Column({ type: 'int', name: 'failed_login_attempts', default: 0 })
+  failedLoginAttempts: number;
+
+  @Column({ type: 'datetime', name: 'locked_until', nullable: true })
+  lockedUntil: Date | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
