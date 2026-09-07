@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "description": "",
   "author": "",
   "private": true,
@@ -43,6 +43,7 @@
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
     "diff": "^9.0.0",
+    "helmet": "^8.3.0",
     "minio": "^8.0.7",
     "mysql2": "^3.24.2",
     "passport": "^0.7.0",
