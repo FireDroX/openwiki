@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.17
 
 <details>
+<summary>0.17.11 — 2026-09-07</summary>
+
+- \`MEDIA_PRESIGNED_URL_EXPIRY_SECONDS\` passe de 1h à 7 jours (le maximum autorisé par une signature SigV4, imposé pareil par Minio) — les URLs présignées embarquées dans le markdown d'une page n'ont pas de mécanisme de rafraîchissement à l'affichage, donc 1h les rendait presque inutilisables pour du contenu durable. Reste une limite dure : au-delà de 7 jours sans ré-upload, l'image casse quand même.
+
+</details>
+
+<details>
 <summary>0.17.10 — 2026-09-07</summary>
 
 - \`storage.service.ts\` sépare désormais l'hôte Minio interne (\`MINIO_ENDPOINT\`, utilisé pour toutes les opérations backend→Minio) de l'hôte utilisé pour signer les URLs présignées données au navigateur (\`MINIO_PUBLIC_ENDPOINT\`, optionnel — retombe sur \`MINIO_ENDPOINT\` si absent). En prod, \`MINIO_ENDPOINT\` est typiquement un nom de service Docker interne (injoignable depuis un navigateur), donc sans \`MINIO_PUBLIC_ENDPOINT\` pointant vers un hôte Minio public (ex. tunnel Cloudflare dédié), aucune image uploadée n'était affichable côté client — bug découvert en migrant du contenu externe via le MCP. Doc mise à jour (README §6 + page wiki Déploiement + \`.env.example\`).

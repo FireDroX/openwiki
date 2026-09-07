@@ -31,7 +31,12 @@ export const ALLOWED_ATTACHMENT_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/zip',
 ];
-export const MEDIA_PRESIGNED_URL_EXPIRY_SECONDS = 3600;
+// 7 days: the max SigV4 allows (AWS-compatible signing, enforced the
+// same way by Minio) — as long as this is the value embedded directly
+// in page markdown (no refresh-on-render mechanism yet), longer is
+// better; still not permanent, a URL embedded and left untouched past
+// this window will break and need re-uploading.
+export const MEDIA_PRESIGNED_URL_EXPIRY_SECONDS = 604800;
 export const SUPPORTED_LOCALES = ['fr', 'en'];
 export const TAG_NAME_MAX_LENGTH = 50;
 export const TAG_COLOR_REGEX = /^#[0-9a-f]{6}$/i;
