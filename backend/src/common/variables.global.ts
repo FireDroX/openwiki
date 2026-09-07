@@ -37,6 +37,8 @@ export const DEFAULT_TAG_COLOR = '#6b7280';
 export const MCP_AUDIT_LOG_DEFAULT_LIMIT = 50;
 export const MCP_AUDIT_LOG_MAX_LIMIT = 200;
 export const MCP_AUDIT_LOG_STRING_MAX_LENGTH = 500;
+export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+export const ACCOUNT_LOCKOUT_DURATION_MINUTES = 15;
 export const MCP_SCOPES = [
   'pages:read',
   'pages:write',

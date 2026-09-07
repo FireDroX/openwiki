@@ -3,15 +3,18 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { QueryFailedError } from 'typeorm';
+import { AccountLockedException } from '../../common/exceptions/auth/account-locked.exception.js';
 import { EmailAlreadyExistsException } from '../../common/exceptions/auth/email-already-exists.exception.js';
 import { InvalidCredentialsException } from '../../common/exceptions/auth/invalid-credentials.exception.js';
 import { InvalidRefreshTokenException } from '../../common/exceptions/auth/invalid-refresh-token.exception.js';
 import { InvalidTurnstileTokenException } from '../../common/exceptions/auth/invalid-turnstile-token.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import {
+  ACCOUNT_LOCKOUT_DURATION_MINUTES,
   DISPLAY_NAME_MAX_LENGTH,
   DISPLAY_NAME_MIN_LENGTH,
   EMAIL_REGEX,
+  MAX_FAILED_LOGIN_ATTEMPTS,
   MIN_PASSWORD_LENGTH,
 } from '../../common/variables.global.js';
 import { TurnstileService } from '../../security/services/turnstile.service.js';
@@ -102,10 +105,36 @@ export class AuthService {
 
   private async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+    if (!user) {
       throw new InvalidCredentialsException();
     }
+
+    if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+      throw new AccountLockedException(user.lockedUntil);
+    }
+
+    if (!(await bcrypt.compare(password, user.passwordHash))) {
+      await this.registerFailedLogin(user);
+      throw new InvalidCredentialsException();
+    }
+
+    if (user.failedLoginAttempts > 0) {
+      await this.usersService.resetFailedLoginAttempts(user.id);
+    }
+
     return user;
+  }
+
+  private async registerFailedLogin(user: User): Promise<void> {
+    const updated = await this.usersService.incrementFailedLoginAttempts(
+      user.id,
+    );
+    if (updated.failedLoginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
+      const lockedUntil = new Date(
+        Date.now() + ACCOUNT_LOCKOUT_DURATION_MINUTES * 60 * 1000,
+      );
+      await this.usersService.lockAccount(user.id, lockedUntil);
+    }
   }
 
   private generateTokens(user: User): TokenPair {

@@ -58,4 +58,22 @@ export class TypeormUserRepository implements UserRepository {
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
+
+  async incrementFailedLoginAttempts(id: string): Promise<User> {
+    await this.repository.increment({ id }, 'failedLoginAttempts', 1);
+    return (await this.findById(id)) as User;
+  }
+
+  async lockAccount(id: string, lockedUntil: Date): Promise<User> {
+    await this.repository.update(id, { lockedUntil });
+    return (await this.findById(id)) as User;
+  }
+
+  async resetFailedLoginAttempts(id: string): Promise<User> {
+    await this.repository.update(id, {
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+    });
+    return (await this.findById(id)) as User;
+  }
 }

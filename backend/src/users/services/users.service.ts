@@ -67,6 +67,18 @@ export class UsersService {
     await this.userRepository.delete(id);
   }
 
+  incrementFailedLoginAttempts(id: string): Promise<User> {
+    return this.userRepository.incrementFailedLoginAttempts(id);
+  }
+
+  lockAccount(id: string, lockedUntil: Date): Promise<User> {
+    return this.userRepository.lockAccount(id, lockedUntil);
+  }
+
+  resetFailedLoginAttempts(id: string): Promise<User> {
+    return this.userRepository.resetFailedLoginAttempts(id);
+  }
+
   private validateRole(role: User['role']): void {
     if (!USER_ROLES.includes(role)) {
       throw new ValidationException(
