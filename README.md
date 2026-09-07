@@ -66,7 +66,8 @@ openwiki/
 │   │   ├── features/      (auth, pages, editor, search, admin)
 │   │   ├── lib/
 │   │   └── main.tsx
-└── docker-compose.yml (mysql, minio, backend, frontend)
+├── docker-compose.yml (mysql, minio, backend, frontend)
+└── docker-compose.external.yml (backend, frontend — réutilise un mariadb/minio existants)
 ```
 
 Chaque module vit directement sous `src/` (pas de dossier `modules/` intermédiaire). À l'intérieur d'un module :
@@ -343,9 +344,14 @@ pnpm run front:dev  # terminal 2 — frontend sur :5173
 
 ### Déploiement en production
 
-`docker-compose.yml` définit la stack complète (`mysql`, `minio`, `backend`, `frontend`) — `backend`/`frontend` se construisent depuis `backend/Dockerfile`/`frontend/Dockerfile` (contexte = racine du dépôt, pour le workspace pnpm). `backend/Dockerfile` exécute `backend/entrypoint.sh` au démarrage du conteneur : `pnpm run migration:run` puis `node dist/main.js` — si une migration échoue, le conteneur ne démarre pas (`set -e`), plutôt que de tourner sur un schéma incohérent. Idempotent : redémarrer sans nouvelle migration ne fait rien.
+Deux versions du `docker-compose` sont disponibles :
 
-**Sur le serveur, une seule fois :**
+- **`docker-compose.yml`** — version complète (`mysql`, `minio`, `backend`, `frontend`), pour un serveur vierge qui n'a encore ni base de données ni stockage objet. C'est celle-ci qu'utilise `.github/workflows/deploy.yml` (il lance toujours `docker compose up -d --build` sans `-f`).
+- **`docker-compose.external.yml`** — version allégée (`backend`, `frontend` seulement), pour réutiliser un MariaDB/MySQL et un Minio déjà existants sur le serveur (ex. mutualisés avec d'autres apps) plutôt que d'en relancer une paire dédiée. Rejoint le réseau Docker **externe** `mariadb-network` où vivent déjà ces conteneurs, au lieu d'en créer un nouveau — adaptez le nom du réseau dans le fichier si le vôtre s'appelle différemment. Usage manuel uniquement, non branché sur le déploiement continu.
+
+`backend`/`frontend` se construisent depuis `backend/Dockerfile`/`frontend/Dockerfile` (contexte = racine du dépôt, pour le workspace pnpm) dans les deux cas. `backend/Dockerfile` exécute `backend/entrypoint.sh` au démarrage du conteneur : `pnpm run migration:run` puis `node dist/main.js` — si une migration échoue, le conteneur ne démarre pas (`set -e`), plutôt que de tourner sur un schéma incohérent. Idempotent : redémarrer sans nouvelle migration ne fait rien.
+
+**Sur le serveur, une seule fois (version complète) :**
 
 ```bash
 git clone <url-du-dépôt> /chemin/vers/openwiki
@@ -357,6 +363,31 @@ cp frontend/.env.example frontend/.env
 # MINIO_ENDPOINT=minio (les noms des services docker-compose, pas
 # localhost comme en dev local)
 docker compose up -d --build
+```
+
+**Version allégée (mariadb/minio déjà existants) :**
+
+```bash
+git clone <url-du-dépôt> /chemin/vers/openwiki
+cd /chemin/vers/openwiki
+cp .env.example .env               # seul VITE_* est lu par cette version
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# backend/.env : DB_HOST/MINIO_ENDPOINT doivent pointer vers les noms de
+# conteneur réels de vos mariadb/minio existants (pas mysql/minio, ni
+# localhost) ; DB_USERNAME/DB_PASSWORD/DB_DATABASE et MINIO_ACCESS_KEY/
+# MINIO_SECRET_KEY/MINIO_BUCKET doivent correspondre à des identifiants
+# déjà valides sur ces instances (ce fichier n'y crée rien pour vous)
+docker compose -f docker-compose.external.yml up -d --build
+```
+
+Si Minio n'existe pas encore et que vous voulez le lancer à part (sans compose), une seule fois sur le serveur :
+
+```bash
+docker run -d --name minio --network mariadb-network --restart unless-stopped \
+  -e MINIO_ROOT_USER=<clé-accès> -e MINIO_ROOT_PASSWORD=<clé-secrète> \
+  -p 9000:9000 -p 9001:9001 -v minio-data:/data \
+  minio/minio server /data --console-address ":9001"
 ```
 
 Ces trois fichiers `.env` ne sont **jamais commités** (`.gitignore`) : sur un premier `git clone` sans eux, `docker compose up` échoue (variables manquantes) — c'est attendu, pas un bug. Une fois créés à la main comme ci-dessus, tous les déploiements suivants (manuels ou automatiques via CI/CD) fonctionnent.

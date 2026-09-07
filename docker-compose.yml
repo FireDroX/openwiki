@@ -1,3 +1,6 @@
+# Version complète (mysql + minio + backend + frontend) — pour un
+# serveur vierge. Si mariadb/minio existent déjà sur le serveur, voir
+# docker-compose.external.yml à la place.
 services:
   mysql:
     image: mysql:8
