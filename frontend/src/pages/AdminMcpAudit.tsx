@@ -67,10 +67,10 @@ export function AdminMcpAudit() {
   }) {
     const params = new URLSearchParams(searchParams)
     const filterKeys = ['apiKeyId', 'dateFrom', 'dateTo', 'search'] as const
-    const touchesFilters = filterKeys.some((key) => next[key] !== undefined)
+    const touchesFilters = filterKeys.some((key) => key in next)
     if (touchesFilters) {
       for (const key of filterKeys) {
-        if (next[key] === undefined) continue
+        if (!(key in next)) continue
         if (next[key]) {
           params.set(key, next[key] as string)
         } else {

@@ -360,6 +360,14 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.18
 
 <details>
+<summary>0.18.5 — 2026-09-08</summary>
+
+- Correctif : les champs de recherche des journaux d'audit (activité utilisateur, admin, MCP) ne se vidaient jamais complètement — effacer le dernier caractère laissait la dernière lettre affichée. \`updateParams\` distinguait mal "ce filtre n'a pas changé" de "ce filtre a été vidé" (les deux se traduisaient par \`undefined\`) ; il teste désormais la présence de la clé (\`key in next\`) plutôt que sa valeur.
+- Correctif CI : \`pages.service.spec.ts\` ne fournissait plus \`UserActivityLogService\` à \`PagesService\` depuis l'ajout du journal d'activité (0.18.0), faisant échouer les 22 tests en résolution de dépendances.
+
+</details>
+
+<details>
 <summary>0.18.4 — 2026-09-08</summary>
 
 - Pages \`/admin/audit-log\` et \`/admin/mcp/audit-log\` : ajout des filtres plage de dates et recherche texte, reflétés dans l'URL comme les autres filtres.

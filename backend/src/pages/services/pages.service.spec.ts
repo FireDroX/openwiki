@@ -1,6 +1,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { CircularReferenceException } from '../../common/exceptions/pages/circular-reference.exception.js';
 import { InsufficientPagePermissionException } from '../../common/exceptions/pages/insufficient-page-permission.exception.js';
 import { PageAccessForbiddenException } from '../../common/exceptions/pages/page-access-forbidden.exception.js';
@@ -69,6 +70,7 @@ describe('PagesService', () => {
   };
   let pagePermissionsService: { canEdit: ReturnType<typeof vi.fn> };
   let eventEmitter: { emit: ReturnType<typeof vi.fn> };
+  let userActivityLogService: { record: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     pagesRepository = {
@@ -85,6 +87,7 @@ describe('PagesService', () => {
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };
+    userActivityLogService = { record: vi.fn().mockResolvedValue(undefined) };
 
     const module = await Test.createTestingModule({
       providers: [
@@ -92,6 +95,7 @@ describe('PagesService', () => {
         { provide: 'PagesRepository', useValue: pagesRepository },
         { provide: PagePermissionsService, useValue: pagePermissionsService },
         { provide: EventEmitter2, useValue: eventEmitter },
+        { provide: UserActivityLogService, useValue: userActivityLogService },
       ],
     }).compile();
 
