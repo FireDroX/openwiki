@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity.js';
 import { AdminAuditLog } from '../entities/admin-audit-log.entity.js';
 import {
@@ -46,6 +46,28 @@ export class TypeormAdminAuditLogRepository implements AdminAuditLogRepository {
     }
     if (filters.action) {
       query.andWhere('log.action = :action', { action: filters.action });
+    }
+    if (filters.dateFrom) {
+      query.andWhere('DATE(log.createdAt) >= :dateFrom', {
+        dateFrom: filters.dateFrom,
+      });
+    }
+    if (filters.dateTo) {
+      query.andWhere('DATE(log.createdAt) <= :dateTo', {
+        dateTo: filters.dateTo,
+      });
+    }
+    if (filters.search) {
+      const search = `%${filters.search}%`;
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('log.action LIKE :search', { search })
+            .orWhere('log.targetType LIKE :search', { search })
+            .orWhere('log.targetId LIKE :search', { search })
+            .orWhere('admin.displayName LIKE :search', { search })
+            .orWhere('admin.email LIKE :search', { search });
+        }),
+      );
     }
 
     const [items, total] = await Promise.all([

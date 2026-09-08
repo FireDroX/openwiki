@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.18
 
 <details>
+<summary>0.18.1 — 2026-09-08</summary>
+
+- \`GET /admin/audit-log\` accepte désormais \`dateFrom\`/\`dateTo\` (plage inclusive sur la date, \`YYYY-MM-DD\`) et \`search\` (action, cible, nom/email de l'admin).
+
+</details>
+
+<details>
 <summary>0.18.0 — 2026-09-08</summary>
 
 - Nouveau journal d'audit \`UserActivityLog\` (\`GET /admin/activity-log\`, admin uniquement, filtrable par utilisateur, action, plage de dates et recherche texte libre) — distinct de \`AdminAuditLog\` qui reste dédié aux actions admin sensibles. \`UserActivityLogService.record()\` est appelé (fire-and-forget, un échec de log ne bloque jamais l'action) depuis \`AuthService.login()\`, \`PagesService\` (création/édition/déplacement/suppression/restauration de page) et \`MediaService\` (upload/suppression de média).

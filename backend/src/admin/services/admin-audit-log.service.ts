@@ -41,7 +41,13 @@ export class AdminAuditLogService {
     const page = AdminAuditLogService.parsePage(query.page);
     const limit = AdminAuditLogService.parseLimit(query.limit);
     return this.auditLogRepository.findAllPaginated(
-      { adminId: query.adminId, action: query.action },
+      {
+        adminId: query.adminId,
+        action: query.action,
+        dateFrom: query.dateFrom,
+        dateTo: query.dateTo,
+        search: query.search,
+      },
       page,
       limit,
     );

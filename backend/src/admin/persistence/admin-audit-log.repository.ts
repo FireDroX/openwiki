@@ -20,6 +20,9 @@ export interface AdminAuditLogRow {
 export interface AdminAuditLogFilters {
   adminId?: string;
   action?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  search?: string;
 }
 
 export interface AdminAuditLogRepository {
