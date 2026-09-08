@@ -357,7 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
-## Version 0.18
+## Version 0.19
+
+<details>
+<summary>0.19.0 — 2026-09-08</summary>
+
+- Image Docker \`backend\` : ~1,2 Go → ~450 Mo. La cause : le stage final lançait un \`pnpm install --frozen-lockfile\` non filtré et non \`--prod\` directement dans le stage runtime, embarquant toutes les devDependencies (backend **et** frontend — React, Vite, Tailwind, shiki...) plus le store pnpm entier. Un nouveau stage \`prod-deps\` (\`--prod --filter backend...\`) isole cette installation ; le stage \`runtime\` ne fait plus que \`COPY --from=\` son \`node_modules\`, donc le store pnpm ne touche jamais les layers de l'image finale. \`tsx\`/\`dotenv\` passent en dependencies (nécessaires en prod pour les migrations/seed via \`entrypoint.sh\`) ; le stage \`base\` pré-télécharge la version de pnpm épinglée pour éviter tout accès réseau au démarrage du conteneur.
+- Image \`frontend\` (nginx + statique, ~118 Mo) : déjà correcte, seul le stage de build est désormais filtré (\`--filter frontend...\`) pour ne pas installer les dépendances du backend inutilement.
+
+</details>
 
 <details>
 <summary>0.18.5 — 2026-09-08</summary>
