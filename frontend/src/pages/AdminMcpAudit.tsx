@@ -21,6 +21,9 @@ export function AdminMcpAudit() {
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const apiKeyId = searchParams.get('apiKeyId') ?? undefined
+  const dateFrom = searchParams.get('dateFrom') ?? undefined
+  const dateTo = searchParams.get('dateTo') ?? undefined
+  const search = searchParams.get('search') ?? undefined
   const page = parsePage(searchParams.get('page'))
 
   const [apiKeys, setApiKeys] = useState<McpApiKeySummary[]>([])
@@ -39,7 +42,7 @@ export function AdminMcpAudit() {
     async function load() {
       setStatus('loading')
       try {
-        const result = await getAuditLog({ apiKeyId, page, limit: PAGE_LIMIT })
+        const result = await getAuditLog({ apiKeyId, dateFrom, dateTo, search, page, limit: PAGE_LIMIT })
         if (cancelled) return
         setItems(result.items)
         setTotal(result.total)
@@ -53,15 +56,26 @@ export function AdminMcpAudit() {
     return () => {
       cancelled = true
     }
-  }, [apiKeyId, page])
+  }, [apiKeyId, dateFrom, dateTo, search, page])
 
-  function updateParams(next: { apiKeyId?: string; page?: number }) {
+  function updateParams(next: {
+    apiKeyId?: string
+    dateFrom?: string
+    dateTo?: string
+    search?: string
+    page?: number
+  }) {
     const params = new URLSearchParams(searchParams)
-    if (next.apiKeyId !== undefined) {
-      if (next.apiKeyId) {
-        params.set('apiKeyId', next.apiKeyId)
-      } else {
-        params.delete('apiKeyId')
+    const filterKeys = ['apiKeyId', 'dateFrom', 'dateTo', 'search'] as const
+    const touchesFilters = filterKeys.some((key) => next[key] !== undefined)
+    if (touchesFilters) {
+      for (const key of filterKeys) {
+        if (next[key] === undefined) continue
+        if (next[key]) {
+          params.set(key, next[key] as string)
+        } else {
+          params.delete(key)
+        }
       }
       params.delete('page')
     }
@@ -80,7 +94,10 @@ export function AdminMcpAudit() {
         <McpAuditLogFilters
           apiKeys={apiKeys}
           apiKeyId={apiKeyId}
-          onChange={(next) => updateParams({ apiKeyId: next ?? '' })}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          search={search}
+          onChange={(next) => updateParams(next)}
         />
       </div>
 

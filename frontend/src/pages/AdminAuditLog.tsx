@@ -22,6 +22,9 @@ export function AdminAuditLog() {
   const [searchParams, setSearchParams] = useSearchParams()
   const adminId = searchParams.get('adminId') ?? undefined
   const action = searchParams.get('action') ?? undefined
+  const dateFrom = searchParams.get('dateFrom') ?? undefined
+  const dateTo = searchParams.get('dateTo') ?? undefined
+  const search = searchParams.get('search') ?? undefined
   const page = parsePage(searchParams.get('page'))
 
   const [admins, setAdmins] = useState<AdminUser[]>([])
@@ -41,7 +44,7 @@ export function AdminAuditLog() {
     async function load() {
       setStatus('loading')
       try {
-        const result = await listAuditLog({ adminId, action, page, limit: PAGE_LIMIT })
+        const result = await listAuditLog({ adminId, action, dateFrom, dateTo, search, page, limit: PAGE_LIMIT })
         if (cancelled) return
         setItems(result.items)
         setTotal(result.total)
@@ -55,23 +58,26 @@ export function AdminAuditLog() {
     return () => {
       cancelled = true
     }
-  }, [adminId, action, page])
+  }, [adminId, action, dateFrom, dateTo, search, page])
 
-  function updateParams(next: { adminId?: string; action?: string; page?: number }) {
+  function updateParams(next: {
+    adminId?: string
+    action?: string
+    dateFrom?: string
+    dateTo?: string
+    search?: string
+    page?: number
+  }) {
     const params = new URLSearchParams(searchParams)
-    if (next.adminId !== undefined || next.action !== undefined) {
-      if (next.adminId !== undefined) {
-        if (next.adminId) {
-          params.set('adminId', next.adminId)
+    const filterKeys = ['adminId', 'action', 'dateFrom', 'dateTo', 'search'] as const
+    const touchesFilters = filterKeys.some((key) => next[key] !== undefined)
+    if (touchesFilters) {
+      for (const key of filterKeys) {
+        if (next[key] === undefined) continue
+        if (next[key]) {
+          params.set(key, next[key] as string)
         } else {
-          params.delete('adminId')
-        }
-      }
-      if (next.action !== undefined) {
-        if (next.action) {
-          params.set('action', next.action)
-        } else {
-          params.delete('action')
+          params.delete(key)
         }
       }
       params.delete('page')
@@ -92,6 +98,9 @@ export function AdminAuditLog() {
           admins={admins}
           adminId={adminId}
           action={action}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          search={search}
           onChange={(next) => updateParams(next)}
         />
       </div>

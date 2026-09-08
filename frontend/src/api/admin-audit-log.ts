@@ -20,6 +20,9 @@ export interface AdminAuditLogPage {
 export async function listAuditLog(params: {
   adminId?: string
   action?: string
+  dateFrom?: string
+  dateTo?: string
+  search?: string
   page?: number
   limit?: number
 }): Promise<AdminAuditLogPage> {
