@@ -8,11 +8,16 @@ on:
     types: [completed]
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   deploy:
     name: deploy
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      packages: read
     steps:
       - name: Install cloudflared
         run: |
@@ -36,6 +41,14 @@ jobs:
             ProxyCommand cloudflared access ssh --hostname %h
           EOF
 
+      # GITHUB_TOKEN is masked in the log automatically. This login is
+      # scoped to the deploy target's docker daemon and only needs to
+      # survive long enough for the `pull` step right after — the
+      # token itself expires with this job run.
+      - name: Log in to the Container registry on the deploy target
+        run: |
+          ssh deploy-target "echo '${{ secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin"
+
       # First deploy on a fresh server is expected to fail here: the
       # .env files (root, backend/, frontend/) aren't committed to git,
       # so `docker compose up` has nothing to read env vars from until
@@ -45,8 +58,10 @@ jobs:
       # docker-compose.external.yml (not the full docker-compose.yml):
       # this deploy target reuses an already-existing mariadb/minio
       # rather than running its own — see the Déploiement wiki page.
-      # DEPLOY_PATH is intentionally unquoted below so `~` in it still
-      # expands remotely (quoted, bash treats `~` as a literal char).
-      - name: git pull && docker compose (external) up -d --build
+      # Images are pulled pre-built from GHCR (job build-and-push-images
+      # in ci.yml), never rebuilt from source here. DEPLOY_PATH is
+      # intentionally unquoted below so `~` in it still expands
+      # remotely (quoted, bash treats `~` as a literal char).
+      - name: git pull && docker compose (external) pull && up -d
         run: |
-          ssh deploy-target "cd ${{ secrets.DEPLOY_PATH }} && git pull && docker compose -f docker-compose.external.yml up -d --build"
+          ssh deploy-target "cd ${{ secrets.DEPLOY_PATH }} && git pull && docker compose -f docker-compose.external.yml pull && docker compose -f docker-compose.external.yml up -d"
