@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { AdminNav } from '#components/AdminNav'
-import { AdminAuditLogFilters } from '#components/AdminAuditLog/AdminAuditLogFilters'
-import { AdminAuditLogTable } from '#components/AdminAuditLog/AdminAuditLogTable'
+import { AdminActivityLogFilters } from '#components/AdminActivityLog/AdminActivityLogFilters'
+import { AdminActivityLogTable } from '#components/AdminActivityLog/AdminActivityLogTable'
 import { Button } from '#components/ui/button'
-import { listAuditLog, type AdminAuditLogItem } from '#api/admin-audit-log'
+import { listActivityLog, type UserActivityLogItem } from '#api/user-activity-log'
 import { listUsers, type AdminUser } from '#api/users'
 
 const PAGE_LIMIT = 50
@@ -17,24 +17,24 @@ function parsePage(raw: string | null): number {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : 1
 }
 
-export function AdminAuditLog() {
+export function AdminActivityLog() {
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const adminId = searchParams.get('adminId') ?? undefined
+  const userId = searchParams.get('userId') ?? undefined
   const action = searchParams.get('action') ?? undefined
   const dateFrom = searchParams.get('dateFrom') ?? undefined
   const dateTo = searchParams.get('dateTo') ?? undefined
   const search = searchParams.get('search') ?? undefined
   const page = parsePage(searchParams.get('page'))
 
-  const [admins, setAdmins] = useState<AdminUser[]>([])
-  const [items, setItems] = useState<AdminAuditLogItem[]>([])
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [items, setItems] = useState<UserActivityLogItem[]>([])
   const [total, setTotal] = useState(0)
   const [status, setStatus] = useState<Status>('loading')
 
   useEffect(() => {
     void listUsers()
-      .then((result) => setAdmins(result.items))
+      .then((result) => setUsers(result.items))
       .catch(() => undefined)
   }, [])
 
@@ -44,7 +44,7 @@ export function AdminAuditLog() {
     async function load() {
       setStatus('loading')
       try {
-        const result = await listAuditLog({ adminId, action, dateFrom, dateTo, search, page, limit: PAGE_LIMIT })
+        const result = await listActivityLog({ userId, action, dateFrom, dateTo, search, page, limit: PAGE_LIMIT })
         if (cancelled) return
         setItems(result.items)
         setTotal(result.total)
@@ -58,10 +58,10 @@ export function AdminAuditLog() {
     return () => {
       cancelled = true
     }
-  }, [adminId, action, dateFrom, dateTo, search, page])
+  }, [userId, action, dateFrom, dateTo, search, page])
 
   function updateParams(next: {
-    adminId?: string
+    userId?: string
     action?: string
     dateFrom?: string
     dateTo?: string
@@ -69,7 +69,7 @@ export function AdminAuditLog() {
     page?: number
   }) {
     const params = new URLSearchParams(searchParams)
-    const filterKeys = ['adminId', 'action', 'dateFrom', 'dateTo', 'search'] as const
+    const filterKeys = ['userId', 'action', 'dateFrom', 'dateTo', 'search'] as const
     const touchesFilters = filterKeys.some((key) => key in next)
     if (touchesFilters) {
       for (const key of filterKeys) {
@@ -94,9 +94,9 @@ export function AdminAuditLog() {
     <div className="p-8">
       <AdminNav />
       <div className="mt-5 mb-4">
-        <AdminAuditLogFilters
-          admins={admins}
-          adminId={adminId}
+        <AdminActivityLogFilters
+          users={users}
+          userId={userId}
           action={action}
           dateFrom={dateFrom}
           dateTo={dateTo}
@@ -106,13 +106,13 @@ export function AdminAuditLog() {
       </div>
 
       {status === 'loading' && <p className="text-sm text-muted-foreground">{t('common.loading')}</p>}
-      {status === 'error' && <p className="text-sm text-destructive">{t('admin.auditLog.loadError')}</p>}
+      {status === 'error' && <p className="text-sm text-destructive">{t('admin.activityLog.loadError')}</p>}
       {status === 'ready' && items.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t('admin.auditLog.empty')}</p>
+        <p className="text-sm text-muted-foreground">{t('admin.activityLog.empty')}</p>
       )}
       {status === 'ready' && items.length > 0 && (
         <>
-          <AdminAuditLogTable items={items} />
+          <AdminActivityLogTable items={items} />
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
               <Button

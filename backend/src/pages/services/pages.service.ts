@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { QueryFailedError } from 'typeorm';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
 import { CircularReferenceException } from '../../common/exceptions/pages/circular-reference.exception.js';
 import { InsufficientPagePermissionException } from '../../common/exceptions/pages/insufficient-page-permission.exception.js';
@@ -42,6 +43,7 @@ export class PagesService {
     private readonly pagesRepository: PagesRepository,
     private readonly pagePermissionsService: PagePermissionsService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   async createPage(
@@ -67,7 +69,7 @@ export class PagesService {
     }
 
     try {
-      return await this.pagesRepository.createWithFirstVersion({
+      const result = await this.pagesRepository.createWithFirstVersion({
         slug: dto.slug,
         title: dto.title,
         content: dto.content,
@@ -75,6 +77,14 @@ export class PagesService {
         visibility: dto.visibility,
         createdById,
       });
+      void this.userActivityLogService.record({
+        userId: createdById,
+        action: 'page.created',
+        targetType: 'page',
+        targetId: result.page.id,
+        metadata: { title: dto.title, slug: dto.slug },
+      });
+      return result;
     } catch (error) {
       if (PagesService.isDuplicateSlugError(error)) {
         throw new SlugAlreadyExistsException();
@@ -180,13 +190,21 @@ export class PagesService {
       throw new PageNotFoundException();
     }
 
-    return this.pagesRepository.updateWithNewVersion({
+    const result = await this.pagesRepository.updateWithNewVersion({
       page,
       title: page.title,
       content,
       changeSummary,
       authorId,
     });
+    void this.userActivityLogService.record({
+      userId: authorId,
+      action: 'page.restored',
+      targetType: 'page',
+      targetId: pageId,
+      metadata: { changeSummary },
+    });
+    return result;
   }
 
   async updatePage(
@@ -213,13 +231,21 @@ export class PagesService {
     const title = dto.title ?? page.title;
     const content = dto.content ?? currentVersion.content;
 
-    return this.pagesRepository.updateWithNewVersion({
+    const result = await this.pagesRepository.updateWithNewVersion({
       page,
       title,
       content,
       changeSummary: dto.changeSummary ?? null,
       authorId,
     });
+    void this.userActivityLogService.record({
+      userId: authorId,
+      action: 'page.updated',
+      targetType: 'page',
+      targetId: id,
+      metadata: { changeSummary: dto.changeSummary ?? null },
+    });
+    return result;
   }
 
   async movePage(
@@ -269,6 +295,13 @@ export class PagesService {
 
     try {
       const moved = await this.pagesRepository.updateParent(page, newParentId);
+      void this.userActivityLogService.record({
+        userId,
+        action: 'page.moved',
+        targetType: 'page',
+        targetId: id,
+        metadata: { newParentId },
+      });
       return { page: moved, version: currentVersion };
     } catch (error) {
       if (PagesService.isDuplicateSlugError(error)) {
@@ -302,6 +335,13 @@ export class PagesService {
     } else {
       await this.pagesRepository.softDelete(id);
     }
+    void this.userActivityLogService.record({
+      userId,
+      action: 'page.deleted',
+      targetType: 'page',
+      targetId: id,
+      metadata: { cascade },
+    });
   }
 
   async setPublishStatus(

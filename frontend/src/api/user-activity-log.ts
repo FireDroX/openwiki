@@ -1,10 +1,10 @@
 import { apiClient } from '#lib/api-client'
 import type { ResponseDto } from '#api/response-dto'
 
-export interface AdminAuditLogItem {
+export interface UserActivityLogItem {
   id: string
-  adminId: string
-  adminDisplayName: string
+  userId: string
+  userDisplayName: string
   action: string
   targetType: string
   targetId: string | null
@@ -12,20 +12,20 @@ export interface AdminAuditLogItem {
   createdAt: string
 }
 
-export interface AdminAuditLogPage {
-  items: AdminAuditLogItem[]
+export interface UserActivityLogPage {
+  items: UserActivityLogItem[]
   total: number
 }
 
-export async function listAuditLog(params: {
-  adminId?: string
+export async function listActivityLog(params: {
+  userId?: string
   action?: string
   dateFrom?: string
   dateTo?: string
   search?: string
   page?: number
   limit?: number
-}): Promise<AdminAuditLogPage> {
-  const { data } = await apiClient.get<ResponseDto<AdminAuditLogPage>>('/admin/audit-log', { params })
+}): Promise<UserActivityLogPage> {
+  const { data } = await apiClient.get<ResponseDto<UserActivityLogPage>>('/admin/activity-log', { params })
   return data.data
 }

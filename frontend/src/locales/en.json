@@ -160,6 +160,7 @@
     "mcpKeysTab": "MCP API keys",
     "mcpAuditTab": "MCP log",
     "auditLogTab": "Audit log",
+    "activityLogTab": "Activity",
     "users": {
       "filterPlaceholder": "Filter users...",
       "loadError": "Failed to load users.",
@@ -234,7 +235,8 @@
       "statusSuccess": "Success",
       "statusFailure": "Failure",
       "detailInput": "Input",
-      "detailOutput": "Output"
+      "detailOutput": "Output",
+      "searchPlaceholder": "Search..."
     },
     "auditLog": {
       "allAdmins": "All admins",
@@ -245,9 +247,31 @@
       "columnAdmin": "Admin",
       "columnAction": "Action",
       "columnTarget": "Target",
+      "searchPlaceholder": "Search...",
       "actions": {
         "user.role.update": "Role change",
         "user.delete": "User deletion"
+      }
+    },
+    "activityLog": {
+      "allUsers": "All users",
+      "allActions": "All actions",
+      "loadError": "Failed to load the log.",
+      "empty": "No activity recorded.",
+      "columnDate": "Date",
+      "columnUser": "User",
+      "columnAction": "Action",
+      "columnTarget": "Target",
+      "searchPlaceholder": "Search...",
+      "actions": {
+        "auth.login": "Login",
+        "page.created": "Page created",
+        "page.updated": "Page updated",
+        "page.moved": "Page moved",
+        "page.deleted": "Page deleted",
+        "page.restored": "Page restored",
+        "media.uploaded": "Media uploaded",
+        "media.deleted": "Media deleted"
       }
     }
   },

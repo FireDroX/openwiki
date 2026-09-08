@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { QueryFailedError } from 'typeorm';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { AccountLockedException } from '../../common/exceptions/auth/account-locked.exception.js';
 import { CompromisedPasswordException } from '../../common/exceptions/auth/compromised-password.exception.js';
 import { EmailAlreadyExistsException } from '../../common/exceptions/auth/email-already-exists.exception.js';
@@ -56,6 +57,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly turnstileService: TurnstileService,
     private readonly pwnedPasswordService: PwnedPasswordService,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   async register(dto: RegisterDto, remoteIp?: string): Promise<RegisterResult> {
@@ -103,6 +105,12 @@ export class AuthService {
     this.validateLogin(dto);
 
     const user = await this.validateUser(dto.email, dto.password);
+    void this.userActivityLogService.record({
+      userId: user.id,
+      action: 'auth.login',
+      targetType: 'user',
+      targetId: user.id,
+    });
     return this.generateTokens(user);
   }
 

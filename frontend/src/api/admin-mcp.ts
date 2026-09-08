@@ -64,6 +64,9 @@ export interface McpAuditLogPage {
 
 export async function getAuditLog(params: {
   apiKeyId?: string
+  dateFrom?: string
+  dateTo?: string
+  search?: string
   page?: number
   limit?: number
 }): Promise<McpAuditLogPage> {

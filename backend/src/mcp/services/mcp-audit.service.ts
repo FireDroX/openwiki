@@ -44,7 +44,12 @@ export class McpAuditService {
     const page = McpAuditService.parsePage(query.page);
     const limit = McpAuditService.parseLimit(query.limit);
     return this.auditLogRepository.findAllPaginated(
-      query.apiKeyId,
+      {
+        apiKeyId: query.apiKeyId,
+        dateFrom: query.dateFrom,
+        dateTo: query.dateTo,
+        search: query.search,
+      },
       page,
       limit,
     );

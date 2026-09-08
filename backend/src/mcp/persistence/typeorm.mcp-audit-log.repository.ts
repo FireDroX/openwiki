@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { McpApiKey } from '../entities/mcp-api-key.entity.js';
 import { McpAuditLog } from '../entities/mcp-audit-log.entity.js';
 import {
   CreateMcpAuditLogInput,
+  McpAuditLogFilters,
   McpAuditLogRepository,
   McpAuditLogRow,
 } from './mcp-audit-log.repository.js';
@@ -21,7 +22,7 @@ export class TypeormMcpAuditLogRepository implements McpAuditLogRepository {
   }
 
   async findAllPaginated(
-    apiKeyId: string | undefined,
+    filters: McpAuditLogFilters,
     page: number,
     limit: number,
   ): Promise<{ items: McpAuditLogRow[]; total: number }> {
@@ -40,8 +41,31 @@ export class TypeormMcpAuditLogRepository implements McpAuditLogRepository {
       .skip((page - 1) * limit)
       .take(limit);
 
-    if (apiKeyId) {
-      query.andWhere('log.apiKeyId = :apiKeyId', { apiKeyId });
+    if (filters.apiKeyId) {
+      query.andWhere('log.apiKeyId = :apiKeyId', {
+        apiKeyId: filters.apiKeyId,
+      });
+    }
+    if (filters.dateFrom) {
+      query.andWhere('DATE(log.createdAt) >= :dateFrom', {
+        dateFrom: filters.dateFrom,
+      });
+    }
+    if (filters.dateTo) {
+      query.andWhere('DATE(log.createdAt) <= :dateTo', {
+        dateTo: filters.dateTo,
+      });
+    }
+    if (filters.search) {
+      const search = `%${filters.search}%`;
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('log.toolName LIKE :search', { search }).orWhere(
+            'key.name LIKE :search',
+            { search },
+          );
+        }),
+      );
     }
 
     const [items, total] = await Promise.all([

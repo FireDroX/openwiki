@@ -1,5 +1,6 @@
-export class AuditLogQueryDto {
-  apiKeyId?: string;
+export class UserActivityLogQueryDto {
+  userId?: string;
+  action?: string;
   dateFrom?: string;
   dateTo?: string;
   search?: string;

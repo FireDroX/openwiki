@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { AttachmentNotFoundException } from '../../common/exceptions/media/attachment-not-found.exception.js';
 import { FileTooLargeException } from '../../common/exceptions/media/file-too-large.exception.js';
 import { StorageDeleteFailedException } from '../../common/exceptions/media/storage-delete-failed.exception.js';
@@ -35,6 +36,7 @@ export class MediaService {
     @Inject('MediaBucket')
     private readonly bucket: string,
     private readonly pagesService: PagesService,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   async uploadFile(
@@ -72,6 +74,14 @@ export class MediaService {
       minioKey,
       MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
     );
+
+    void this.userActivityLogService.record({
+      userId: uploadedById,
+      action: 'media.uploaded',
+      targetType: 'attachment',
+      targetId: attachment.id,
+      metadata: { filename: file.originalname, pageId },
+    });
 
     return { attachment, url };
   }
@@ -127,7 +137,7 @@ export class MediaService {
     return { url, expiresIn: MEDIA_PRESIGNED_URL_EXPIRY_SECONDS };
   }
 
-  async deleteAttachment(id: string): Promise<void> {
+  async deleteAttachment(id: string, deletedById: string): Promise<void> {
     if (!UUID_REGEX.test(id)) {
       throw new ValidationException('id must be a UUID');
     }
@@ -144,6 +154,13 @@ export class MediaService {
     }
 
     await this.attachmentsRepository.delete(attachment.id);
+    void this.userActivityLogService.record({
+      userId: deletedById,
+      action: 'media.deleted',
+      targetType: 'attachment',
+      targetId: id,
+      metadata: { filename: attachment.filename },
+    });
   }
 
   private validateUpload(file: UploadedMediaFile, dto: UploadMediaDto): void {

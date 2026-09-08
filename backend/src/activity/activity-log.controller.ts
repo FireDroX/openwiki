@@ -13,30 +13,31 @@ import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { ResponseDto } from '../common/dto/response.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
-import { AuditLogQueryDto } from './dto/in/audit-log-query.dto.js';
-import { AuditLogListDto } from './dto/out/audit-log-response.dto.js';
-import { McpExceptionFilter } from './filter/mcp.exception.filter.js';
-import { AuditLogMapper } from './mapper/audit-log.mapper.js';
-import { McpAuditService } from './services/mcp-audit.service.js';
+import { UserActivityLogQueryDto } from './dto/in/user-activity-log-query.dto.js';
+import { UserActivityLogListDto } from './dto/out/user-activity-log-response.dto.js';
+import { ActivityExceptionFilter } from './filter/activity.exception.filter.js';
+import { UserActivityLogMapper } from './mapper/user-activity-log.mapper.js';
+import { UserActivityLogService } from './services/user-activity-log.service.js';
 
-@ApiTags('Admin — MCP')
+@ApiTags('Admin — Activity log')
 @ApiBearerAuth()
-@Controller('admin/mcp/audit-log')
+@Controller('admin/activity-log')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
-@UseFilters(McpExceptionFilter)
-export class McpAuditLogController {
-  constructor(private readonly auditService: McpAuditService) {}
+@UseFilters(ActivityExceptionFilter)
+export class ActivityLogController {
+  constructor(private readonly activityLogService: UserActivityLogService) {}
 
   @Get()
-  @ApiOperation({ summary: "Journal d'audit des actions MCP" })
-  @ApiQuery({ name: 'apiKeyId', required: false })
+  @ApiOperation({ summary: "Journal d'activité des utilisateurs" })
+  @ApiQuery({ name: 'userId', required: false })
+  @ApiQuery({ name: 'action', required: false })
   @ApiQuery({ name: 'dateFrom', required: false, description: 'YYYY-MM-DD' })
   @ApiQuery({ name: 'dateTo', required: false, description: 'YYYY-MM-DD' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  @ApiOkResponse({ description: "Journal paginé des appels d'outils MCP." })
+  @ApiOkResponse({ description: "Journal paginé de l'activité utilisateur." })
   @ApiUnauthorizedResponse({
     description: 'Authentification requise.',
     type: ErrorResponseDto,
@@ -46,9 +47,9 @@ export class McpAuditLogController {
     type: ErrorResponseDto,
   })
   async list(
-    @Query() query: AuditLogQueryDto,
-  ): Promise<ResponseDto<AuditLogListDto>> {
-    const { items, total } = await this.auditService.list(query);
-    return AuditLogMapper.toListResponse(items, total);
+    @Query() query: UserActivityLogQueryDto,
+  ): Promise<ResponseDto<UserActivityLogListDto>> {
+    const { items, total } = await this.activityLogService.list(query);
+    return UserActivityLogMapper.toListResponse(items, total);
   }
 }

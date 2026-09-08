@@ -2,36 +2,38 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity.js';
-import { AdminAuditLog } from '../entities/admin-audit-log.entity.js';
+import { UserActivityLog } from '../entities/user-activity-log.entity.js';
 import {
-  AdminAuditLogFilters,
-  AdminAuditLogRepository,
-  AdminAuditLogRow,
-  CreateAdminAuditLogInput,
-} from './admin-audit-log.repository.js';
+  CreateUserActivityLogInput,
+  UserActivityLogFilters,
+  UserActivityLogRepository,
+  UserActivityLogRow,
+} from './user-activity-log.repository.js';
 
 @Injectable()
-export class TypeormAdminAuditLogRepository implements AdminAuditLogRepository {
+export class TypeormUserActivityLogRepository
+  implements UserActivityLogRepository
+{
   constructor(
-    @InjectRepository(AdminAuditLog)
-    private readonly repository: Repository<AdminAuditLog>,
+    @InjectRepository(UserActivityLog)
+    private readonly repository: Repository<UserActivityLog>,
   ) {}
 
-  async create(data: CreateAdminAuditLogInput): Promise<void> {
+  async create(data: CreateUserActivityLogInput): Promise<void> {
     await this.repository.save(this.repository.create(data));
   }
 
   async findAllPaginated(
-    filters: AdminAuditLogFilters,
+    filters: UserActivityLogFilters,
     page: number,
     limit: number,
-  ): Promise<{ items: AdminAuditLogRow[]; total: number }> {
+  ): Promise<{ items: UserActivityLogRow[]; total: number }> {
     const query = this.repository
       .createQueryBuilder('log')
-      .innerJoin(User, 'admin', 'admin.id = log.adminId')
+      .innerJoin(User, 'user', 'user.id = log.userId')
       .select('log.id', 'id')
-      .addSelect('log.adminId', 'adminId')
-      .addSelect('admin.displayName', 'adminDisplayName')
+      .addSelect('log.userId', 'userId')
+      .addSelect('user.displayName', 'userDisplayName')
       .addSelect('log.action', 'action')
       .addSelect('log.targetType', 'targetType')
       .addSelect('log.targetId', 'targetId')
@@ -41,8 +43,8 @@ export class TypeormAdminAuditLogRepository implements AdminAuditLogRepository {
       .skip((page - 1) * limit)
       .take(limit);
 
-    if (filters.adminId) {
-      query.andWhere('log.adminId = :adminId', { adminId: filters.adminId });
+    if (filters.userId) {
+      query.andWhere('log.userId = :userId', { userId: filters.userId });
     }
     if (filters.action) {
       query.andWhere('log.action = :action', { action: filters.action });
@@ -64,14 +66,14 @@ export class TypeormAdminAuditLogRepository implements AdminAuditLogRepository {
           qb.where('log.action LIKE :search', { search })
             .orWhere('log.targetType LIKE :search', { search })
             .orWhere('log.targetId LIKE :search', { search })
-            .orWhere('admin.displayName LIKE :search', { search })
-            .orWhere('admin.email LIKE :search', { search });
+            .orWhere('user.displayName LIKE :search', { search })
+            .orWhere('user.email LIKE :search', { search });
         }),
       );
     }
 
     const [items, total] = await Promise.all([
-      query.getRawMany<AdminAuditLogRow>(),
+      query.getRawMany<UserActivityLogRow>(),
       query.getCount(),
     ]);
 
