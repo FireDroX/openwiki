@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ActivityModule } from '../activity/activity.module.js';
 import { PagesModule } from '../pages/pages.module.js';
 import { StorageModule } from '../storage/storage.module.js';
 import { Attachment } from './entities/attachment.entity.js';
@@ -9,7 +10,12 @@ import { TypeormAttachmentsRepository } from './persistence/typeorm.attachment.r
 import { MediaService } from './services/media.service.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attachment]), StorageModule, PagesModule],
+  imports: [
+    TypeOrmModule.forFeature([Attachment]),
+    StorageModule,
+    PagesModule,
+    ActivityModule,
+  ],
   controllers: [MediaController],
   providers: [
     {

@@ -186,7 +186,10 @@ export class MediaController {
     description: "Le média n'existe pas.",
     type: ErrorResponseDto,
   })
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.mediaService.deleteAttachment(id);
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.mediaService.deleteAttachment(id, user.id);
   }
 }

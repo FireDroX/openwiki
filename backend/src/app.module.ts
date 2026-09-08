@@ -5,6 +5,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { ActivityModule } from './activity/activity.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-proxy.guard.js';
@@ -47,6 +48,7 @@ const GLOBAL_THROTTLE_LIMIT = 100;
     MediaModule,
     SearchModule,
     AdminModule,
+    ActivityModule,
     McpModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard }],
