@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.18
 
 <details>
+<summary>0.18.2 — 2026-09-08</summary>
+
+- \`GET /admin/mcp/audit-log\` accepte désormais \`dateFrom\`/\`dateTo\` et \`search\` (nom du tool, nom de la clé API).
+
+</details>
+
+<details>
 <summary>0.18.1 — 2026-09-08</summary>
 
 - \`GET /admin/audit-log\` accepte désormais \`dateFrom\`/\`dateTo\` (plage inclusive sur la date, \`YYYY-MM-DD\`) et \`search\` (action, cible, nom/email de l'admin).

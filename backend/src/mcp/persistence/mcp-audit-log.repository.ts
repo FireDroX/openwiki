@@ -18,10 +18,17 @@ export interface McpAuditLogRow {
   createdAt: Date;
 }
 
+export interface McpAuditLogFilters {
+  apiKeyId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  search?: string;
+}
+
 export interface McpAuditLogRepository {
   create(data: CreateMcpAuditLogInput): Promise<void>;
   findAllPaginated(
-    apiKeyId: string | undefined,
+    filters: McpAuditLogFilters,
     page: number,
     limit: number,
   ): Promise<{ items: McpAuditLogRow[]; total: number }>;
