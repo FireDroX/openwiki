@@ -160,6 +160,7 @@
     "mcpKeysTab": "Clés API MCP",
     "mcpAuditTab": "Journal MCP",
     "auditLogTab": "Journal d'audit",
+    "activityLogTab": "Activité",
     "users": {
       "filterPlaceholder": "Filtrer les utilisateurs...",
       "loadError": "Échec du chargement des utilisateurs.",
@@ -234,7 +235,8 @@
       "statusSuccess": "Succès",
       "statusFailure": "Échec",
       "detailInput": "Entrée",
-      "detailOutput": "Sortie"
+      "detailOutput": "Sortie",
+      "searchPlaceholder": "Rechercher..."
     },
     "auditLog": {
       "allAdmins": "Tous les admins",
@@ -245,9 +247,31 @@
       "columnAdmin": "Admin",
       "columnAction": "Action",
       "columnTarget": "Cible",
+      "searchPlaceholder": "Rechercher...",
       "actions": {
         "user.role.update": "Changement de rôle",
         "user.delete": "Suppression d'utilisateur"
+      }
+    },
+    "activityLog": {
+      "allUsers": "Tous les utilisateurs",
+      "allActions": "Toutes les actions",
+      "loadError": "Échec du chargement du journal.",
+      "empty": "Aucune activité enregistrée.",
+      "columnDate": "Date",
+      "columnUser": "Utilisateur",
+      "columnAction": "Action",
+      "columnTarget": "Cible",
+      "searchPlaceholder": "Rechercher...",
+      "actions": {
+        "auth.login": "Connexion",
+        "page.created": "Page créée",
+        "page.updated": "Page modifiée",
+        "page.moved": "Page déplacée",
+        "page.deleted": "Page supprimée",
+        "page.restored": "Page restaurée",
+        "media.uploaded": "Média envoyé",
+        "media.deleted": "Média supprimé"
       }
     }
   },

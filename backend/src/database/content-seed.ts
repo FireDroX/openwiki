@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.18
 
 <details>
+<summary>0.18.3 — 2026-09-08</summary>
+
+- Nouvelle page admin \`/admin/activity-log\` (onglet "Activité") affichant le journal d'activité utilisateur, avec filtres par utilisateur, action, plage de dates et recherche texte.
+
+</details>
+
+<details>
 <summary>0.18.2 — 2026-09-08</summary>
 
 - \`GET /admin/mcp/audit-log\` accepte désormais \`dateFrom\`/\`dateTo\` et \`search\` (nom du tool, nom de la clé API).
