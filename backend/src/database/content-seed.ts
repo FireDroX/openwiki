@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.19
 
 <details>
+<summary>0.19.5 — 2026-09-11</summary>
+
+- Correctif de sécurité : \`multer\` (upload de fichiers, dépendance transitive de \`@nestjs/platform-express\`) était épinglé en 2.2.0, vulnérable à 3 failles de déni de service et 1 contournement de limite de taille de fichier. Forcé en 2.3.0 via un override pnpm (\`pnpm-workspace.yaml\`), le correctif amont n'étant pas encore répercuté dans \`@nestjs/platform-express\`.
+
+</details>
+
+<details>
 <summary>0.19.4 — 2026-09-11</summary>
 
 - Un éditeur ou un administrateur peut désormais changer la visibilité (publique/privée) d'une page depuis son édition, pas seulement à la création. Le changement est appliqué en cascade à toutes les pages descendantes.
