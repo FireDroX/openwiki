@@ -8,14 +8,14 @@ import type { PageTreeNode } from '#api/pages'
 interface PageTreeItemProps {
   node: PageTreeNode
   parentPath: string[]
-  activeSlug?: string
+  activeId?: string
   isExpanded: (id: string) => boolean
   onToggle: (id: string) => void
 }
 
-export function PageTreeItem({ node, parentPath, activeSlug, isExpanded, onToggle }: PageTreeItemProps) {
+export function PageTreeItem({ node, parentPath, activeId, isExpanded, onToggle }: PageTreeItemProps) {
   const { t } = useTranslation()
-  const isActive = node.slug === activeSlug
+  const isActive = node.id === activeId
   const hasChildren = node.children.length > 0
   const fullPath = [...parentPath, node.slug]
   const expanded = hasChildren && isExpanded(node.id)
@@ -57,7 +57,7 @@ export function PageTreeItem({ node, parentPath, activeSlug, isExpanded, onToggl
             key={child.id}
             node={child}
             parentPath={fullPath}
-            activeSlug={activeSlug}
+            activeId={activeId}
             isExpanded={isExpanded}
             onToggle={onToggle}
           />

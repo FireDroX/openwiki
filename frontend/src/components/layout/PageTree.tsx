@@ -3,7 +3,7 @@ import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { usePageTree } from '#hooks/usePageTree'
 import { PageTreeItem } from '#components/layout/PageTreeItem'
-import { filterTree, findPathToNode } from '#utils/page-tree'
+import { filterTree, findNodeByPath } from '#utils/page-tree'
 
 interface PageTreeProps {
   filter?: string
@@ -12,19 +12,18 @@ interface PageTreeProps {
 export function PageTree({ filter = '' }: PageTreeProps) {
   const { t } = useTranslation()
   const params = useParams()
-  const slug = params['*']?.split('/').filter(Boolean).pop()
+  const pathKey = params['*'] ?? ''
   const { tree, status } = usePageTree()
   const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map())
   const isFiltering = filter.trim().length > 0
   const visibleTree = useMemo(() => filterTree(tree, filter), [tree, filter])
 
-  const ancestorIds = useMemo(() => {
-    if (!slug) {
-      return []
-    }
-    const path = findPathToNode(tree, (node) => node.slug === slug)
-    return path?.map((node) => node.id) ?? []
-  }, [tree, slug])
+  const activePath = useMemo(() => {
+    const segments = pathKey.split('/').filter(Boolean)
+    return segments.length > 0 ? findNodeByPath(tree, segments) : null
+  }, [tree, pathKey])
+  const ancestorIds = activePath?.map((node) => node.id) ?? []
+  const activeId = activePath?.at(-1)?.id
 
   function isExpanded(id: string): boolean {
     if (isFiltering) {
@@ -60,7 +59,7 @@ export function PageTree({ filter = '' }: PageTreeProps) {
           key={node.id}
           node={node}
           parentPath={[]}
-          activeSlug={slug}
+          activeId={activeId}
           isExpanded={isExpanded}
           onToggle={toggle}
         />

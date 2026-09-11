@@ -66,3 +66,55 @@ describe('PageTree', () => {
     expect(screen.getByText('Installation')).toBeVisible()
   })
 })
+
+const collidingSlugTree: PageTreeNode[] = [
+  {
+    id: 'esgi',
+    slug: 'esgi',
+    title: 'ESGI',
+    children: [
+      {
+        id: 's1',
+        slug: 's1',
+        title: 'S1',
+        children: [{ id: 's1-reseau', slug: 'reseau', title: 'Reseau S1', children: [] }],
+      },
+      {
+        id: 's2',
+        slug: 's2',
+        title: 'S2',
+        children: [{ id: 's2-reseau', slug: 'reseau', title: 'Reseau S2', children: [] }],
+      },
+    ],
+  },
+]
+
+function renderCollidingSlugTree(initialPath: string) {
+  return render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <PageTreeContext.Provider
+        value={{ tree: collidingSlugTree, status: 'success', refresh: async () => {} }}
+      >
+        <Routes>
+          <Route path="/pages/*" element={<PageTree />} />
+        </Routes>
+      </PageTreeContext.Provider>
+    </MemoryRouter>,
+  )
+}
+
+describe('PageTree with the same leaf slug under different parents', () => {
+  it('expands the branch that actually matches the full active path', () => {
+    renderCollidingSlugTree('/pages/esgi/s2/reseau')
+
+    expect(screen.getByText('Reseau S2')).toBeVisible()
+    expect(screen.queryByText('Reseau S1')).not.toBeInTheDocument()
+  })
+
+  it('highlights only the node matching the full active path', () => {
+    renderCollidingSlugTree('/pages/esgi/s2/reseau')
+
+    const activeLink = screen.getByText('Reseau S2').closest('a')
+    expect(activeLink).toHaveClass('bg-sidebar-accent')
+  })
+})

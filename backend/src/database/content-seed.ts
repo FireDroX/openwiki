@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.19
 
 <details>
+<summary>0.19.3 — 2026-09-11</summary>
+
+- Correctif de la barre latérale : deux pages partageant le même slug final mais sous des parents différents (ex. \`esgi/s1/reseau\` et \`esgi/s2/reseau\`) faisaient déplier la mauvaise branche et surligner le mauvais élément comme actif. La détection de la page courante comparait uniquement le dernier segment de l'URL (\`slug\`) au lieu du chemin complet ; elle résout désormais le nœud actif en suivant l'arbre niveau par niveau selon le chemin entier.
+
+</details>
+
+<details>
 <summary>0.19.2 — 2026-09-11</summary>
 
 - SEO / partage social : og-image, meta tags Open Graph et Twitter Card, \`robots.txt\`, et titres d'onglet dynamiques sur les pages et la recherche.
