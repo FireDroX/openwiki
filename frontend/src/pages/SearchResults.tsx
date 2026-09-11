@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '#components/ui/button'
 import { Skeleton } from '#components/ui/skeleton'
 import { SearchResultsList } from '#components/SearchResults/SearchResultsList'
+import { useDocumentTitle } from '#hooks/useDocumentTitle'
 import { SEARCH_RESULTS_LIMIT, useSearchResults } from '#hooks/useSearchResults'
 
 function parsePage(raw: string | null): number {
@@ -19,6 +20,7 @@ export function SearchResults() {
   const { status, items, total } = useSearchResults(q, page)
   const trimmed = q.trim()
   const totalPages = Math.max(1, Math.ceil(total / SEARCH_RESULTS_LIMIT))
+  useDocumentTitle(trimmed ? `${t('search.resultsTitle')}: ${trimmed}` : t('search.resultsTitle'))
 
   function goToPage(nextPage: number) {
     const next = new URLSearchParams(searchParams)

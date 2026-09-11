@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.19
 
 <details>
+<summary>0.19.2 — 2026-09-11</summary>
+
+- SEO / partage social : og-image, meta tags Open Graph et Twitter Card, \`robots.txt\`, et titres d'onglet dynamiques sur les pages et la recherche.
+
+</details>
+
+<details>
 <summary>0.19.1 — 2026-09-11</summary>
 
 - Ajout d'un bouton clair/sombre dans la barre du haut, à droite de la recherche. Le thème s'ouvre en sombre par défaut ; un choix explicite de l'utilisateur (clic sur le bouton) est ensuite mémorisé dans le navigateur (\`localStorage\`).
