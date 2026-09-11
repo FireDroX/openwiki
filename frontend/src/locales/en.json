@@ -35,7 +35,8 @@
     "searchPlaceholder": "Search the wiki...",
     "profile": "Profile",
     "administration": "Administration",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "toggleTheme": "Toggle theme"
   },
   "sidebar": {
     "filterPlaceholder": "Filter pages...",
@@ -77,7 +78,9 @@
     "pageMoved": "Page moved.",
     "moveFailed": "Failed to move the page.",
     "pagePublished": "Page published.",
-    "pageSaved": "Page saved."
+    "pageSaved": "Page saved.",
+    "visibilityChanged": "Visibility updated.",
+    "visibilityChangeFailed": "Failed to change visibility."
   },
   "pageMetadataForm": {
     "titleLabel": "Title",
@@ -93,7 +96,7 @@
     "visibilityLabel": "Visibility",
     "private": "Private",
     "public": "Public",
-    "visibilityImmutable": "Visibility cannot be changed after creation.",
+    "visibilityCascadeNotice": "This page has sub-pages: the visibility change will also apply to them.",
     "choosePage": "Choose the parent page",
     "searchPage": "Search a page...",
     "noPageFound": "No page found."

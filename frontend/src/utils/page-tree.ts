@@ -32,6 +32,25 @@ export function findPathToNode(
   return null
 }
 
+export function findNodeByPath(
+  nodes: PageTreeNode[],
+  pathSegments: string[],
+): PageTreeNode[] | null {
+  const [head, ...rest] = pathSegments
+  if (!head) {
+    return null
+  }
+  const node = nodes.find((candidate) => candidate.slug === head)
+  if (!node) {
+    return null
+  }
+  if (rest.length === 0) {
+    return [node]
+  }
+  const childPath = findNodeByPath(node.children, rest)
+  return childPath ? [node, ...childPath] : null
+}
+
 export function collectSubtreeIds(nodes: PageTreeNode[], rootId: string): string[] {
   const path = findPathToNode(nodes, (node) => node.id === rootId)
   const root = path?.at(-1)

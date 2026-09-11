@@ -9,6 +9,7 @@ import { Skeleton } from '#components/ui/skeleton'
 import { PageBreadcrumb } from '#components/layout/PageBreadcrumb'
 import { PageTagList } from '#components/PageView/PageTagList'
 import { useAuth } from '#hooks/useAuth'
+import { useDocumentTitle } from '#hooks/useDocumentTitle'
 import { usePage } from '#hooks/usePage'
 import { usePageTags } from '#hooks/usePageTags'
 
@@ -66,6 +67,7 @@ export function PageView() {
   const { tags, status: tagsStatus } = usePageTags(page?.id)
   const { user } = useAuth()
   const canEdit = !!user && EDITOR_ROLES.includes(user.role)
+  useDocumentTitle(page?.title)
 
   if (status === 'loading') {
     return <PageViewSkeleton />

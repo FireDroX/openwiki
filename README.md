@@ -241,6 +241,7 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 | PATCH   | /pages/:id/move    | éditeur+         | Déplacer dans l'arbre     |
 | DELETE  | /pages/:id         | éditeur+         | Supprimer                 |
 | PATCH   | /pages/:id/publish | éditeur+         | Publier/dépublier         |
+| PATCH   | /pages/:id/visibility | éditeur+      | Changer la visibilité (cascade aux enfants) |
 
 ### Permissions
 

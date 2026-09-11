@@ -18,6 +18,7 @@ import {
   TITLE_MAX_LENGTH,
   UUID_REGEX,
 } from '../../common/variables.global.js';
+import { ChangeVisibilityDto } from '../dto/in/change-visibility.dto.js';
 import { CreatePageDto } from '../dto/in/create-page.dto.js';
 import { DeletePageQueryDto } from '../dto/in/delete-page-query.dto.js';
 import { MovePageDto } from '../dto/in/move-page.dto.js';
@@ -381,6 +382,55 @@ export class PagesService {
     return { page: updated, version };
   }
 
+  async setVisibility(
+    id: string,
+    dto: ChangeVisibilityDto,
+    userId: string,
+  ): Promise<{ page: Page; version: PageVersion }> {
+    this.validateChangeVisibility(dto);
+
+    const page = await this.pagesRepository.findById(id);
+    if (!page || !page.currentVersionId) {
+      throw new PageNotFoundException();
+    }
+
+    await this.assertCanEdit(id, userId);
+
+    const version = await this.pagesRepository.findVersionById(
+      page.currentVersionId,
+    );
+    if (!version) {
+      throw new PageNotFoundException();
+    }
+
+    const updated = await this.pagesRepository.updateVisibility(
+      page,
+      dto.visibility,
+    );
+    await this.cascadeVisibility(id, dto.visibility);
+
+    void this.userActivityLogService.record({
+      userId,
+      action: 'page.visibility_changed',
+      targetType: 'page',
+      targetId: id,
+      metadata: { visibility: dto.visibility },
+    });
+
+    return { page: updated, version };
+  }
+
+  private async cascadeVisibility(
+    id: string,
+    visibility: Page['visibility'],
+  ): Promise<void> {
+    const children = await this.pagesRepository.findChildren(id);
+    for (const child of children) {
+      await this.pagesRepository.updateVisibility(child, visibility);
+      await this.cascadeVisibility(child.id, visibility);
+    }
+  }
+
   private async assertCanEdit(pageId: string, userId: string): Promise<void> {
     const canEdit = await this.pagePermissionsService.canEdit(userId, pageId);
     if (!canEdit) {
@@ -458,6 +508,14 @@ export class PagesService {
   private validatePublishPage(dto: PublishPageDto): void {
     if (typeof dto.isPublished !== 'boolean') {
       throw new ValidationException('isPublished must be a boolean value');
+    }
+  }
+
+  private validateChangeVisibility(dto: ChangeVisibilityDto): void {
+    if (!PAGE_VISIBILITIES.includes(dto.visibility)) {
+      throw new ValidationException(
+        `visibility must be one of the following values: ${PAGE_VISIBILITIES.join(', ')}`,
+      );
     }
   }
 

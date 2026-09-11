@@ -81,3 +81,7 @@ export async function movePage(id: string, newParentId: string | null): Promise<
 export async function publishPage(id: string, isPublished: boolean): Promise<void> {
   await apiClient.patch(`/pages/${id}/publish`, { isPublished })
 }
+
+export async function changePageVisibility(id: string, visibility: PageVisibility): Promise<void> {
+  await apiClient.patch(`/pages/${id}/visibility`, { visibility })
+}
