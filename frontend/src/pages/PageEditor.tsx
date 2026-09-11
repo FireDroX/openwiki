@@ -15,7 +15,7 @@ import { Field, FieldLabel } from '#components/ui/field'
 import { FormError } from '#components/FormError'
 import { Skeleton } from '#components/ui/skeleton'
 import { Textarea } from '#components/ui/textarea'
-import { movePage, publishPage, updatePage } from '#api/pages'
+import { changePageVisibility, movePage, publishPage, updatePage, type PageVisibility } from '#api/pages'
 import { useAuth } from '#hooks/useAuth'
 import { useEditorState } from '#hooks/useEditorState'
 import { useFileUpload } from '#hooks/useFileUpload'
@@ -96,6 +96,20 @@ export function PageEditor() {
     }
   }
 
+  async function handleVisibilityChange(nextVisibility: PageVisibility) {
+    if (!page) {
+      return
+    }
+    const previousVisibility = getValues('visibility')
+    try {
+      await changePageVisibility(page.id, nextVisibility)
+      toast.success(t('pageEditor.visibilityChanged'))
+    } catch (error) {
+      setValue('visibility', previousVisibility)
+      toast.error(extractErrorMessage(error, t('pageEditor.visibilityChangeFailed')))
+    }
+  }
+
   async function submitSave(action: 'draft' | 'publish') {
     if (!page || pendingAction) {
       return
@@ -173,6 +187,7 @@ export function PageEditor() {
             watch={watch}
             excludePageId={page.id}
             onParentChange={handleParentChange}
+            onVisibilityChange={handleVisibilityChange}
           />
           <Field className="mt-5">
             <FieldLabel htmlFor="change-summary">{t('pageEditor.changeSummaryLabel')}</FieldLabel>

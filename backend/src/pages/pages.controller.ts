@@ -46,6 +46,7 @@ import { VersionDetailResponseDto } from '../versions/dto/out/version-detail-res
 import { VersionSummaryResponseDto } from '../versions/dto/out/version-summary-response.dto.js';
 import { VersionMapper } from '../versions/mapper/version.mapper.js';
 import { VersionsService } from '../versions/services/versions.service.js';
+import { ChangeVisibilityDto } from './dto/in/change-visibility.dto.js';
 import { CreatePageDto } from './dto/in/create-page.dto.js';
 import { DeletePageQueryDto } from './dto/in/delete-page-query.dto.js';
 import { GrantPermissionDto } from './dto/in/grant-permission.dto.js';
@@ -208,6 +209,48 @@ export class PagesController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<PageResponseDto>> {
     const { page, version } = await this.pagesService.setPublishStatus(
+      id,
+      dto,
+      user.id,
+    );
+    return PageMapper.toResponse(page, version);
+  }
+
+  @Patch(':id/visibility')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Changer la visibilité d'une page",
+    description:
+      'La nouvelle visibilité est appliquée en cascade à toutes les pages descendantes.',
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiBody({ type: ChangeVisibilityDto })
+  @ApiOkResponse({
+    description: 'Visibilité mise à jour, cascade appliquée aux descendants.',
+  })
+  @ApiBadRequestResponse({
+    description: 'Visibilité invalide.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: "Droit d'édition insuffisant sur cette page.",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async changeVisibility(
+    @Param('id') id: string,
+    @Body() dto: ChangeVisibilityDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<PageResponseDto>> {
+    const { page, version } = await this.pagesService.setVisibility(
       id,
       dto,
       user.id,

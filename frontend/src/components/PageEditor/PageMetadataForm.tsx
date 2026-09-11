@@ -17,6 +17,7 @@ import { Input } from '#components/ui/input'
 import { usePageTree } from '#hooks/usePageTree'
 import { collectSubtreeIds, findPathToNode, flattenTree } from '#utils/page-tree'
 import { slugify } from '#utils/slug'
+import type { PageVisibility } from '#api/pages'
 import type { PageMetadataFormValues } from '#schemas/page-metadata.schema'
 
 interface PageMetadataFormProps {
@@ -26,6 +27,7 @@ interface PageMetadataFormProps {
   watch: UseFormWatch<PageMetadataFormValues>
   excludePageId?: string | null
   onParentChange?: (newParentId: string | null) => void
+  onVisibilityChange?: (visibility: PageVisibility) => void
 }
 
 export function PageMetadataForm({
@@ -35,6 +37,7 @@ export function PageMetadataForm({
   watch,
   excludePageId,
   onParentChange,
+  onVisibilityChange,
 }: PageMetadataFormProps) {
   const { t } = useTranslation()
   const [slugTouched, setSlugTouched] = useState(false)
@@ -42,6 +45,14 @@ export function PageMetadataForm({
   const { tree } = usePageTree()
 
   const excludedIds = excludePageId ? collectSubtreeIds(tree, excludePageId) : []
+  const hasChildren = excludedIds.length > 1
+
+  function selectVisibility(next: PageVisibility) {
+    setValue('visibility', next, { shouldValidate: true })
+    if (mode === 'edit') {
+      onVisibilityChange?.(next)
+    }
+  }
   const parentOptions = flattenTree(tree).filter((node) => !excludedIds.includes(node.id))
   const parentId = watch('parentId')
   const parentPath = parentId ? findPathToNode(tree, (node) => node.id === parentId) : null
@@ -122,40 +133,32 @@ export function PageMetadataForm({
       <Controller
         control={control}
         name="visibility"
-        render={({ field }) =>
-          mode === 'create' ? (
-            <Field>
-              <FieldLabel>{t('pageMetadataForm.visibilityLabel')}</FieldLabel>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={field.value === 'private' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => field.onChange('private')}
-                >
-                  <Lock /> {t('pageMetadataForm.private')}
-                </Button>
-                <Button
-                  type="button"
-                  variant={field.value === 'public' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => field.onChange('public')}
-                >
-                  <Globe /> {t('pageMetadataForm.public')}
-                </Button>
-              </div>
-            </Field>
-          ) : (
-            <Field>
-              <FieldLabel>{t('pageMetadataForm.visibilityLabel')}</FieldLabel>
-              <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                {field.value === 'private' ? <Lock className="size-4" /> : <Globe className="size-4" />}
-                {field.value === 'private' ? t('pageMetadataForm.private') : t('pageMetadataForm.public')}
-              </p>
-              <FieldDescription>{t('pageMetadataForm.visibilityImmutable')}</FieldDescription>
-            </Field>
-          )
-        }
+        render={({ field }) => (
+          <Field>
+            <FieldLabel>{t('pageMetadataForm.visibilityLabel')}</FieldLabel>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={field.value === 'private' ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => selectVisibility('private')}
+              >
+                <Lock /> {t('pageMetadataForm.private')}
+              </Button>
+              <Button
+                type="button"
+                variant={field.value === 'public' ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => selectVisibility('public')}
+              >
+                <Globe /> {t('pageMetadataForm.public')}
+              </Button>
+            </div>
+            {mode === 'edit' && hasChildren && (
+              <FieldDescription>{t('pageMetadataForm.visibilityCascadeNotice')}</FieldDescription>
+            )}
+          </Field>
+        )}
       />
       <CommandDialog open={parentPickerOpen} onOpenChange={setParentPickerOpen} title={t('pageMetadataForm.choosePage')}>
         <Command>

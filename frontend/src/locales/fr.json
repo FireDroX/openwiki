@@ -78,7 +78,9 @@
     "pageMoved": "Page déplacée.",
     "moveFailed": "Échec du déplacement de la page.",
     "pagePublished": "Page publiée.",
-    "pageSaved": "Page sauvegardée."
+    "pageSaved": "Page sauvegardée.",
+    "visibilityChanged": "Visibilité mise à jour.",
+    "visibilityChangeFailed": "Échec du changement de visibilité."
   },
   "pageMetadataForm": {
     "titleLabel": "Titre",
@@ -94,7 +96,7 @@
     "visibilityLabel": "Visibilité",
     "private": "Privée",
     "public": "Publique",
-    "visibilityImmutable": "La visibilité ne peut pas être modifiée après la création.",
+    "visibilityCascadeNotice": "Cette page a des sous-pages : le changement de visibilité leur sera aussi appliqué.",
     "choosePage": "Choisir la page parente",
     "searchPage": "Rechercher une page...",
     "noPageFound": "Aucune page trouvée."

@@ -84,6 +84,7 @@ describe('PagesService', () => {
       findChildren: vi.fn(),
       softDelete: vi.fn(),
       updatePublishStatus: vi.fn(),
+      updateVisibility: vi.fn(),
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };

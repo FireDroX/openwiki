@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import { PageVersion } from '../entities/page-version.entity.js';
-import { Page } from '../entities/page.entity.js';
+import { Page, PageVisibility } from '../entities/page.entity.js';
 import {
   CreatePageWithFirstVersionInput,
   PagesRepository,
@@ -110,6 +110,11 @@ export class TypeormPagesRepository implements PagesRepository {
 
   async updatePublishStatus(page: Page, isPublished: boolean): Promise<Page> {
     const updated = this.repository.merge(page, { isPublished });
+    return this.repository.save(updated);
+  }
+
+  async updateVisibility(page: Page, visibility: PageVisibility): Promise<Page> {
+    const updated = this.repository.merge(page, { visibility });
     return this.repository.save(updated);
   }
 }
