@@ -1,6 +1,7 @@
-import { LogOut, Menu, Search, Shield, User } from 'lucide-react'
+import { LogOut, Menu, Moon, Search, Shield, Sun, User } from 'lucide-react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { useTheme } from 'next-themes'
 import { Avatar, AvatarFallback } from '#components/ui/avatar'
 import { Button } from '#components/ui/button'
 import {
@@ -24,6 +25,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
   const { t } = useTranslation()
   const user = useCurrentUser()
   const { status, logout } = useAuth()
+  const { resolvedTheme, setTheme } = useTheme()
 
   return (
     <header className="flex h-14 w-full shrink-0 items-center gap-3 border-b border-border bg-background px-4">
@@ -51,6 +53,14 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
           </InputGroupAddon>
         </InputGroup>
       </button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      >
+        {resolvedTheme === 'dark' ? <Sun /> : <Moon />}
+        <span className="sr-only">{t('topbar.toggleTheme')}</span>
+      </Button>
       {status === 'authenticated' ? (
         <DropdownMenu>
           <DropdownMenuTrigger className="ml-auto rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50">

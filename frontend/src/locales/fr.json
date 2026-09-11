@@ -35,7 +35,8 @@
     "searchPlaceholder": "Rechercher dans le wiki...",
     "profile": "Profil",
     "administration": "Administration",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "toggleTheme": "Changer de thème"
   },
   "sidebar": {
     "filterPlaceholder": "Filtrer les pages...",

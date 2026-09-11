@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import { I18nextProvider } from 'react-i18next'
+import { ThemeProvider } from 'next-themes'
 import { App } from './App'
 import { AuthProvider } from '#components/AuthProvider'
 import { PageTreeProvider } from '#components/PageTreeProvider'
@@ -22,16 +23,18 @@ async function bootstrap() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <I18nextProvider i18n={i18n}>
-        <BrowserRouter>
-          <AuthProvider>
-            <PageTreeProvider>
-              <App />
-              <Toaster />
-            </PageTreeProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </I18nextProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark">
+        <I18nextProvider i18n={i18n}>
+          <BrowserRouter>
+            <AuthProvider>
+              <PageTreeProvider>
+                <App />
+                <Toaster />
+              </PageTreeProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </I18nextProvider>
+      </ThemeProvider>
     </StrictMode>,
   )
 }
