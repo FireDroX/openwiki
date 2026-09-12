@@ -7,6 +7,7 @@ import { Button } from '#components/ui/button'
 import { MarkdownRenderer } from '#components/MarkdownRenderer'
 import { Skeleton } from '#components/ui/skeleton'
 import { PageBreadcrumb } from '#components/layout/PageBreadcrumb'
+import { CommentThread } from '#components/PageView/CommentThread'
 import { PageTagList } from '#components/PageView/PageTagList'
 import { useAuth } from '#hooks/useAuth'
 import { useDocumentTitle } from '#hooks/useDocumentTitle'
@@ -127,6 +128,7 @@ export function PageView() {
         <PageTagList tags={tags} />
       </div>
       <MarkdownRenderer content={page.content} />
+      <CommentThread pageId={page.id} />
     </article>
   )
 }

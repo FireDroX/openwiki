@@ -352,6 +352,25 @@
     "responses": "Responses",
     "loadError": "Unable to load the API documentation."
   },
+  "comments": {
+    "title_one": "{{count}} comment",
+    "title_other": "{{count}} comments",
+    "loadError": "Unable to load comments.",
+    "placeholder": "Write a comment...",
+    "submit": "Comment",
+    "reply": "Reply",
+    "save": "Save",
+    "edit": "Edit",
+    "deletedPlaceholder": "[comment deleted]",
+    "unknownAuthor": "Unknown user",
+    "edited": "(edited)",
+    "deleteConfirmTitle": "Delete this comment?",
+    "deleteConfirmAuthorDescription": "It will be replaced with \"[comment deleted]\". This cannot be undone.",
+    "deleteConfirmModeratorDescription": "This will permanently delete the comment. This cannot be undone.",
+    "deleteConfirmModeratorWithRepliesDescription_one": "This will permanently delete the comment and its {{count}} reply. This cannot be undone.",
+    "deleteConfirmModeratorWithRepliesDescription_other": "This will permanently delete the comment and its {{count}} replies. This cannot be undone.",
+    "loginToComment": "Log in to leave a comment."
+  },
   "errors": {
     "generic": "An error occurred, please try again."
   }

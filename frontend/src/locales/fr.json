@@ -352,6 +352,25 @@
     "responses": "Réponses",
     "loadError": "Impossible de charger la documentation de l'API."
   },
+  "comments": {
+    "title_one": "{{count}} commentaire",
+    "title_other": "{{count}} commentaires",
+    "loadError": "Impossible de charger les commentaires.",
+    "placeholder": "Écrire un commentaire...",
+    "submit": "Commenter",
+    "reply": "Répondre",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "deletedPlaceholder": "[commentaire supprimé]",
+    "unknownAuthor": "Utilisateur inconnu",
+    "edited": "(modifié)",
+    "deleteConfirmTitle": "Supprimer ce commentaire ?",
+    "deleteConfirmAuthorDescription": "Il sera remplacé par « [commentaire supprimé] ». Cette action est irréversible.",
+    "deleteConfirmModeratorDescription": "Le commentaire sera définitivement supprimé. Cette action est irréversible.",
+    "deleteConfirmModeratorWithRepliesDescription_one": "Le commentaire et sa {{count}} réponse seront définitivement supprimés. Cette action est irréversible.",
+    "deleteConfirmModeratorWithRepliesDescription_other": "Le commentaire et ses {{count}} réponses seront définitivement supprimés. Cette action est irréversible.",
+    "loginToComment": "Connectez-vous pour laisser un commentaire."
+  },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."
   }

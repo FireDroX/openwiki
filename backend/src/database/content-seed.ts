@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.7 — 2026-09-12</summary>
+
+- Fil de commentaires sur la vue de lecture d'une page : lire, écrire, répondre (1 niveau), éditer et supprimer son propre commentaire, avec suppression modérée pour les éditeurs/admins.
+
+</details>
+
+<details>
 <summary>0.21.6 — 2026-09-12</summary>
 
 - Correctif : \`GET\`/\`POST /pages/:id/comments\` étaient masqués par la route générique \`GET /pages/*path\` (lecture d'une page par chemin) et retournaient toujours "Page not found". Les deux routes vivent maintenant directement sur \`PagesController\`, comme les autres sous-ressources de page (versions, permissions), déclarées avant la route générique.
