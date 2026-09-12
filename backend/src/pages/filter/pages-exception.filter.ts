@@ -37,6 +37,7 @@ export class PagesExceptionFilter implements ExceptionFilter {
       case 'VersionNotFoundException':
       case 'UserNotFoundException':
       case 'PermissionNotFoundException':
+      case 'CommentNotFoundException':
         return { statusCode: HttpStatus.NOT_FOUND, error: exception.message };
       case 'SlugAlreadyExistsException':
       case 'CircularReferenceException':
@@ -47,6 +48,7 @@ export class PagesExceptionFilter implements ExceptionFilter {
       case 'InsufficientPagePermissionException':
         return { statusCode: HttpStatus.FORBIDDEN, error: exception.message };
       case 'ValidationException':
+      case 'ReplyNestingException':
         return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
       default:
         return {

@@ -40,9 +40,7 @@ export class CommentsService {
 
   async findAllByPage(
     pageId: string,
-    currentUser?: AuthenticatedUser,
   ): Promise<{ comments: Comment[]; authorNames: Map<string, string> }> {
-    await this.pagesService.getByIdOrFail(pageId, currentUser);
     const comments = await this.commentsRepository.findAllByPageId(pageId);
     const authorNames = await this.resolveAuthorNames(comments);
     return { comments, authorNames };
@@ -53,7 +51,6 @@ export class CommentsService {
     dto: CreateCommentDto,
     currentUser: AuthenticatedUser,
   ): Promise<{ comment: Comment; authorNames: Map<string, string> }> {
-    await this.pagesService.getByIdOrFail(pageId, currentUser);
     this.validateContent(dto.content);
 
     const parentId = dto.parentId ?? null;

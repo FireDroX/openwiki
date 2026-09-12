@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActivityModule } from '../activity/activity.module.js';
+import { CommentsModule } from '../comments/comments.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { VersionsModule } from '../versions/versions.module.js';
 import { PagePermission } from './entities/page-permission.entity.js';
@@ -18,6 +19,7 @@ import { PagesService } from './services/pages.service.js';
     VersionsModule,
     UsersModule,
     ActivityModule,
+    forwardRef(() => CommentsModule),
   ],
   controllers: [PagesController],
   providers: [

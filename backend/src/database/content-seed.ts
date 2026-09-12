@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.6 — 2026-09-12</summary>
+
+- Correctif : \`GET\`/\`POST /pages/:id/comments\` étaient masqués par la route générique \`GET /pages/*path\` (lecture d'une page par chemin) et retournaient toujours "Page not found". Les deux routes vivent maintenant directement sur \`PagesController\`, comme les autres sous-ressources de page (versions, permissions), déclarées avant la route générique.
+
+</details>
+
+<details>
 <summary>0.21.5 — 2026-09-12</summary>
 
 - Modération admin des commentaires : \`GET /admin/users/:id/comments\` liste tous les commentaires d'un utilisateur (paginé, avec la page d'origine), \`DELETE /admin/users/:id/comments\` purge tout ou une sélection (\`commentIds\`), cascade sur les réponses, tracé dans le journal d'audit.
