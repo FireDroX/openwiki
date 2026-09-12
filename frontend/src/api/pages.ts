@@ -22,6 +22,7 @@ export interface PageDetail {
   content: string
   visibility: PageVisibility
   isPublished: boolean
+  commentsEnabled: boolean
   parentId: string | null
   updatedAt: string
 }
@@ -84,4 +85,8 @@ export async function publishPage(id: string, isPublished: boolean): Promise<voi
 
 export async function changePageVisibility(id: string, visibility: PageVisibility): Promise<void> {
   await apiClient.patch(`/pages/${id}/visibility`, { visibility })
+}
+
+export async function setCommentsEnabled(id: string, commentsEnabled: boolean): Promise<void> {
+  await apiClient.patch(`/pages/${id}/comments-enabled`, { commentsEnabled })
 }

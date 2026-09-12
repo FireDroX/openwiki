@@ -113,8 +113,19 @@ export class TypeormPagesRepository implements PagesRepository {
     return this.repository.save(updated);
   }
 
-  async updateVisibility(page: Page, visibility: PageVisibility): Promise<Page> {
+  async updateVisibility(
+    page: Page,
+    visibility: PageVisibility,
+  ): Promise<Page> {
     const updated = this.repository.merge(page, { visibility });
+    return this.repository.save(updated);
+  }
+
+  async updateCommentsEnabled(
+    page: Page,
+    commentsEnabled: boolean,
+  ): Promise<Page> {
+    const updated = this.repository.merge(page, { commentsEnabled });
     return this.repository.save(updated);
   }
 }

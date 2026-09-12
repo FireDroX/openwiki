@@ -16,7 +16,14 @@ import { Field, FieldLabel } from '#components/ui/field'
 import { FormError } from '#components/FormError'
 import { Skeleton } from '#components/ui/skeleton'
 import { Textarea } from '#components/ui/textarea'
-import { changePageVisibility, movePage, publishPage, updatePage, type PageVisibility } from '#api/pages'
+import {
+  changePageVisibility,
+  movePage,
+  publishPage,
+  setCommentsEnabled,
+  updatePage,
+  type PageVisibility,
+} from '#api/pages'
 import { useAuth } from '#hooks/useAuth'
 import { useEditorState } from '#hooks/useEditorState'
 import { useFileUpload } from '#hooks/useFileUpload'
@@ -57,6 +64,7 @@ export function PageEditor() {
   const [pendingAction, setPendingAction] = useState<'draft' | 'publish' | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [currentParentId, setCurrentParentId] = useState<string | null>(null)
+  const [commentsEnabled, setCommentsEnabledState] = useState(true)
   const schema = useMemo(() => createPageMetadataSchema(t), [t])
 
   const { control, setValue, watch, getValues, reset } = useForm<PageMetadataFormValues>({
@@ -78,6 +86,7 @@ export function PageEditor() {
       editor.reset(page.title, page.content)
       reset({ title: page.title, slug: page.slug, visibility: page.visibility, parentId: page.parentId })
       setCurrentParentId(page.parentId)
+      setCommentsEnabledState(page.commentsEnabled)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
@@ -108,6 +117,23 @@ export function PageEditor() {
     } catch (error) {
       setValue('visibility', previousVisibility)
       toast.error(extractErrorMessage(error, t('pageEditor.visibilityChangeFailed')))
+    }
+  }
+
+  async function handleCommentsEnabledChange(nextCommentsEnabled: boolean) {
+    if (!page) {
+      return
+    }
+    const previousCommentsEnabled = commentsEnabled
+    setCommentsEnabledState(nextCommentsEnabled)
+    try {
+      await setCommentsEnabled(page.id, nextCommentsEnabled)
+      toast.success(
+        nextCommentsEnabled ? t('pageEditor.commentsEnabled') : t('pageEditor.commentsDisabled'),
+      )
+    } catch (error) {
+      setCommentsEnabledState(previousCommentsEnabled)
+      toast.error(extractErrorMessage(error, t('pageEditor.commentsEnabledChangeFailed')))
     }
   }
 
@@ -187,8 +213,10 @@ export function PageEditor() {
             setValue={setValue}
             watch={watch}
             excludePageId={page.id}
+            commentsEnabled={commentsEnabled}
             onParentChange={handleParentChange}
             onVisibilityChange={handleVisibilityChange}
+            onCommentsEnabledChange={handleCommentsEnabledChange}
           />
           <Field className="mt-5">
             <FieldLabel htmlFor="change-summary">{t('pageEditor.changeSummaryLabel')}</FieldLabel>

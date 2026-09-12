@@ -80,7 +80,10 @@
     "pagePublished": "Page published.",
     "pageSaved": "Page saved.",
     "visibilityChanged": "Visibility updated.",
-    "visibilityChangeFailed": "Failed to change visibility."
+    "visibilityChangeFailed": "Failed to change visibility.",
+    "commentsEnabled": "Comments enabled.",
+    "commentsDisabled": "Comments disabled.",
+    "commentsEnabledChangeFailed": "Failed to update comments."
   },
   "pageMetadataForm": {
     "titleLabel": "Title",
@@ -97,6 +100,8 @@
     "private": "Private",
     "public": "Public",
     "visibilityCascadeNotice": "This page has sub-pages: the visibility change will also apply to them.",
+    "commentsLabel": "Comments",
+    "commentsEnabled": "Allow comments on this page",
     "choosePage": "Choose the parent page",
     "searchPage": "Search a page...",
     "noPageFound": "No page found."
@@ -204,7 +209,27 @@
       "roleUpdated": "Role updated.",
       "roleUpdateFailed": "Failed to update the role.",
       "userDeleted": "User deleted.",
-      "userDeleteFailed": "Failed to delete the user."
+      "userDeleteFailed": "Failed to delete the user.",
+      "comments": {
+        "trigger": "Messages",
+        "title": "{{name}}'s comments",
+        "description_one": "{{count}} comment across the wiki.",
+        "description_other": "{{count}} comments across the wiki.",
+        "loadError": "Failed to load comments.",
+        "empty": "This user has no comments.",
+        "purgeSelection_one": "Purge selection ({{count}})",
+        "purgeSelection_other": "Purge selection ({{count}})",
+        "purgeAll": "Purge all",
+        "purgeSelectionConfirmTitle": "Purge selected comments?",
+        "purgeSelectionConfirmDescription_one": "{{count}} comment will be permanently deleted, along with its replies. This cannot be undone.",
+        "purgeSelectionConfirmDescription_other": "{{count}} comments will be permanently deleted, along with their replies. This cannot be undone.",
+        "purgeAllConfirmTitle": "Purge all comments?",
+        "purgeAllConfirmDescription_one": "All {{count}} comment from {{name}} will be permanently deleted, along with any replies. This cannot be undone.",
+        "purgeAllConfirmDescription_other": "All {{count}} comments from {{name}} will be permanently deleted, along with any replies. This cannot be undone.",
+        "purgeSuccess_one": "{{count}} comment purged.",
+        "purgeSuccess_other": "{{count}} comments purged.",
+        "purgeFailed": "Failed to purge comments."
+      }
     },
     "settings": {
       "localeLabel": "Interface language",
@@ -351,6 +376,25 @@
     "requestBody": "Request body",
     "responses": "Responses",
     "loadError": "Unable to load the API documentation."
+  },
+  "comments": {
+    "title_one": "{{count}} comment",
+    "title_other": "{{count}} comments",
+    "loadError": "Unable to load comments.",
+    "placeholder": "Write a comment...",
+    "submit": "Comment",
+    "reply": "Reply",
+    "save": "Save",
+    "edit": "Edit",
+    "deletedPlaceholder": "[comment deleted]",
+    "unknownAuthor": "Unknown user",
+    "edited": "(edited)",
+    "deleteConfirmTitle": "Delete this comment?",
+    "deleteConfirmAuthorDescription": "It will be replaced with \"[comment deleted]\". This cannot be undone.",
+    "deleteConfirmModeratorDescription": "This will permanently delete the comment. This cannot be undone.",
+    "deleteConfirmModeratorWithRepliesDescription_one": "This will permanently delete the comment and its {{count}} reply. This cannot be undone.",
+    "deleteConfirmModeratorWithRepliesDescription_other": "This will permanently delete the comment and its {{count}} replies. This cannot be undone.",
+    "loginToComment": "Log in to leave a comment."
   },
   "errors": {
     "generic": "An error occurred, please try again."

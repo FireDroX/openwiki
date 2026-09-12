@@ -357,6 +357,85 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.21
+
+<details>
+<summary>0.21.10 — 2026-09-12</summary>
+
+- Activation/désactivation des commentaires par page : nouvelle option dans l'édition d'une page (\`PATCH /pages/:id/comments-enabled\`), désactivée par défaut sur les pages seedées (documentation, notes de version, FAQ). Quand c'est désactivé, la section commentaires n'est plus affichée et l'API rejette lecture/écriture de commentaires sur cette page.
+
+</details>
+
+<details>
+<summary>0.21.9 — 2026-09-12</summary>
+
+- Petite icône ajoutée sur le bouton "Répondre" du fil de commentaires, pour cohérence avec les boutons "Modifier"/"Supprimer".
+
+</details>
+
+<details>
+<summary>0.21.8 — 2026-09-12</summary>
+
+- Modération des commentaires côté admin : nouveau bouton "Messages" sur chaque ligne de \`/admin/users\`, ouvrant un panneau listant les commentaires de l'utilisateur (page d'origine, contenu, date), paginé, avec sélection multiple et purge (sélection ou totale), chacune avec sa propre confirmation.
+
+</details>
+
+<details>
+<summary>0.21.7 — 2026-09-12</summary>
+
+- Fil de commentaires sur la vue de lecture d'une page : lire, écrire, répondre (1 niveau), éditer et supprimer son propre commentaire, avec suppression modérée pour les éditeurs/admins.
+
+</details>
+
+<details>
+<summary>0.21.6 — 2026-09-12</summary>
+
+- Correctif : \`GET\`/\`POST /pages/:id/comments\` étaient masqués par la route générique \`GET /pages/*path\` (lecture d'une page par chemin) et retournaient toujours "Page not found". Les deux routes vivent maintenant directement sur \`PagesController\`, comme les autres sous-ressources de page (versions, permissions), déclarées avant la route générique.
+
+</details>
+
+<details>
+<summary>0.21.5 — 2026-09-12</summary>
+
+- Modération admin des commentaires : \`GET /admin/users/:id/comments\` liste tous les commentaires d'un utilisateur (paginé, avec la page d'origine), \`DELETE /admin/users/:id/comments\` purge tout ou une sélection (\`commentIds\`), cascade sur les réponses, tracé dans le journal d'audit.
+
+</details>
+
+<details>
+<summary>0.21.4 — 2026-09-12</summary>
+
+- Nouvel endpoint \`PATCH /comments/:id\` : l'auteur peut éditer son propre commentaire, ce qui pose \`editedAt\` (affiché "(modifié)" côté UI).
+
+</details>
+
+<details>
+<summary>0.21.3 — 2026-09-12</summary>
+
+- Nouvel endpoint \`DELETE /comments/:id\` : l'auteur peut retirer son propre commentaire (suppression douce, affiché "[commentaire supprimé]") ; un éditeur ou un admin peut le supprimer définitivement, avec cascade sur ses réponses. Une suppression par un admin est tracée dans le journal d'audit.
+
+</details>
+
+<details>
+<summary>0.21.2 — 2026-09-12</summary>
+
+- Nouvel endpoint \`POST /pages/:id/comments\` : créer un commentaire, ou une réponse via \`parentId\` (1 seul niveau de nesting). Ouvert à tout utilisateur authentifié ayant accès à la page, avec limitation de fréquence sur la création.
+
+</details>
+
+<details>
+<summary>0.21.1 — 2026-09-12</summary>
+
+- Nouvel endpoint \`GET /pages/:id/comments\` : liste les commentaires d'une page (arbre à un niveau, réponses incluses), en respectant la visibilité de la page.
+
+</details>
+
+<details>
+<summary>0.21.0 — 2026-09-12</summary>
+
+- Nouvelle entité \`Comment\` (page, auteur, réponse à 1 niveau, édition et suppression douce) et sa migration — première brique du système de commentaires sur les pages (EPIC-07).
+
+</details>
+
 ## Version 0.20
 
 <details>
@@ -1194,6 +1273,7 @@ async function seedPage(
         parentId,
         isPublished: true,
         visibility: 'public',
+        commentsEnabled: false,
         createdById: authorId,
       }),
     );
@@ -1217,6 +1297,11 @@ async function seedPage(
     const contentChanged =
       currentVersion?.content !== content || page.title !== seed.title;
     const moved = page.parentId !== parentId;
+    const commentsSettingChanged = page.commentsEnabled !== false;
+
+    if (commentsSettingChanged) {
+      page.commentsEnabled = false;
+    }
 
     if (contentChanged) {
       const version = await versionRepository.save(
@@ -1237,14 +1322,16 @@ async function seedPage(
       page.parentId = parentId;
     }
 
-    if (contentChanged || moved) {
+    if (contentChanged || moved || commentsSettingChanged) {
       page = await pageRepository.save(page);
       if (contentChanged && moved) {
         console.log(`Updated and moved page "${seed.slug}".`);
       } else if (contentChanged) {
         console.log(`Updated page "${seed.slug}".`);
-      } else {
+      } else if (moved) {
         console.log(`Moved page "${seed.slug}".`);
+      } else {
+        console.log(`Disabled comments on page "${seed.slug}".`);
       }
     } else {
       console.log(`Page "${seed.slug}" already up to date, skipping.`);

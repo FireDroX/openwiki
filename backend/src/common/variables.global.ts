@@ -46,6 +46,7 @@ export const MCP_AUDIT_LOG_MAX_LIMIT = 200;
 export const MCP_AUDIT_LOG_STRING_MAX_LENGTH = 500;
 export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 export const ACCOUNT_LOCKOUT_DURATION_MINUTES = 15;
+export const COMMENT_CONTENT_MAX_LENGTH = 2000;
 export const MCP_SCOPES = [
   'pages:read',
   'pages:write',

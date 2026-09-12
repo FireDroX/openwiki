@@ -14,6 +14,7 @@ import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js'
 import { CreatePageDto } from '../dto/in/create-page.dto.js';
 import { MovePageDto } from '../dto/in/move-page.dto.js';
 import { PublishPageDto } from '../dto/in/publish-page.dto.js';
+import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { Page } from '../entities/page.entity.js';
 import { PageVersion } from '../entities/page-version.entity.js';
@@ -42,6 +43,7 @@ function buildPage(overrides: Partial<Page> = {}): Page {
     currentVersionId: 'version-1',
     isPublished: true,
     visibility: 'public',
+    commentsEnabled: true,
     createdById: 'user-1',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -85,6 +87,7 @@ describe('PagesService', () => {
       softDelete: vi.fn(),
       updatePublishStatus: vi.fn(),
       updateVisibility: vi.fn(),
+      updateCommentsEnabled: vi.fn(),
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };
@@ -432,6 +435,70 @@ describe('PagesService', () => {
         service.setPublishStatus(
           'page-1',
           { isPublished: 'yes' } as unknown as PublishPageDto,
+          'user-1',
+        ),
+      ).rejects.toBeInstanceOf(ValidationException);
+    });
+  });
+
+  describe('setCommentsEnabled', () => {
+    it('updates commentsEnabled on the page', async () => {
+      const page = buildPage({ commentsEnabled: true });
+      const version = buildVersion();
+      const dto: SetCommentsEnabledDto = { commentsEnabled: false };
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+      pagesRepository.updateCommentsEnabled.mockResolvedValue({
+        ...page,
+        commentsEnabled: false,
+      });
+
+      const result = await service.setCommentsEnabled(
+        'page-1',
+        dto,
+        'user-1',
+      );
+
+      expect(pagesRepository.updateCommentsEnabled).toHaveBeenCalledWith(
+        page,
+        false,
+      );
+      expect(result.page.commentsEnabled).toBe(false);
+      expect(result.version).toBe(version);
+    });
+
+    it('throws PageNotFoundException when the page does not exist', async () => {
+      pagesRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.setCommentsEnabled(
+          'missing',
+          { commentsEnabled: false },
+          'user-1',
+        ),
+      ).rejects.toBeInstanceOf(PageNotFoundException);
+    });
+
+    it('throws InsufficientPagePermissionException when the user cannot edit', async () => {
+      pagesRepository.findById.mockResolvedValue(buildPage());
+      pagePermissionsService.canEdit.mockResolvedValue(false);
+
+      await expect(
+        service.setCommentsEnabled(
+          'page-1',
+          { commentsEnabled: false },
+          'user-2',
+        ),
+      ).rejects.toBeInstanceOf(InsufficientPagePermissionException);
+      expect(pagesRepository.updateCommentsEnabled).not.toHaveBeenCalled();
+    });
+
+    it('throws ValidationException when commentsEnabled is not a boolean', async () => {
+      await expect(
+        service.setCommentsEnabled(
+          'page-1',
+          { commentsEnabled: 'no' } as unknown as SetCommentsEnabledDto,
           'user-1',
         ),
       ).rejects.toBeInstanceOf(ValidationException);

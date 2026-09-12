@@ -12,6 +12,7 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -33,12 +34,17 @@ import { Roles } from '../common/decorators/roles.decorator.js';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto.js';
 import { ResponseDto } from '../common/dto/response.dto.js';
+import { CommentsDisabledException } from '../common/exceptions/pages/comments-disabled.exception.js';
 import { PageNotFoundException } from '../common/exceptions/pages/page-not-found.exception.js';
 import { VersionNotFoundException } from '../common/exceptions/pages/version-not-found.exception.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
+import { CreateCommentDto } from '../comments/dto/in/create-comment.dto.js';
+import { CommentResponseDto } from '../comments/dto/out/comment-response.dto.js';
+import { CommentMapper } from '../comments/mapper/comment.mapper.js';
+import { CommentsService } from '../comments/services/comments.service.js';
 import { DiffVersionsDto } from '../versions/dto/in/diff-versions.dto.js';
 import { ListVersionsQueryDto } from '../versions/dto/in/list-versions-query.dto.js';
 import { DiffResponseDto } from '../versions/dto/out/diff-response.dto.js';
@@ -52,6 +58,7 @@ import { DeletePageQueryDto } from './dto/in/delete-page-query.dto.js';
 import { GrantPermissionDto } from './dto/in/grant-permission.dto.js';
 import { MovePageDto } from './dto/in/move-page.dto.js';
 import { PublishPageDto } from './dto/in/publish-page.dto.js';
+import { SetCommentsEnabledDto } from './dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from './dto/in/update-page.dto.js';
 import { PageDetailResponseDto } from './dto/out/page-detail-response.dto.js';
 import { PagePermissionResponseDto } from './dto/out/page-permission-response.dto.js';
@@ -64,6 +71,9 @@ import { PageMapper } from './mapper/page.mapper.js';
 import { PagePermissionsService } from './services/page-permissions.service.js';
 import { PagesService } from './services/pages.service.js';
 
+const COMMENT_CREATE_THROTTLE_LIMIT = 10;
+const COMMENT_CREATE_THROTTLE_TTL_MS = 60000;
+
 @ApiTags('Pages')
 @Controller('pages')
 @UseFilters(PagesExceptionFilter)
@@ -72,6 +82,7 @@ export class PagesController {
     private readonly pagesService: PagesService,
     private readonly versionsService: VersionsService,
     private readonly pagePermissionsService: PagePermissionsService,
+    private readonly commentsService: CommentsService,
   ) {}
 
   @Post()
@@ -251,6 +262,44 @@ export class PagesController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<PageResponseDto>> {
     const { page, version } = await this.pagesService.setVisibility(
+      id,
+      dto,
+      user.id,
+    );
+    return PageMapper.toResponse(page, version);
+  }
+
+  @Patch(':id/comments-enabled')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Activer ou désactiver les commentaires d'une page",
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiBody({ type: SetCommentsEnabledDto })
+  @ApiOkResponse({ description: 'État des commentaires mis à jour.' })
+  @ApiBadRequestResponse({
+    description: 'commentsEnabled invalide.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: "Droit d'édition insuffisant sur cette page.",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async setCommentsEnabled(
+    @Param('id') id: string,
+    @Body() dto: SetCommentsEnabledDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<PageResponseDto>> {
+    const { page, version } = await this.pagesService.setCommentsEnabled(
       id,
       dto,
       user.id,
@@ -549,6 +598,86 @@ export class PagesController {
     @Param('userId') userId: string,
   ): Promise<void> {
     await this.pagePermissionsService.revoke(id, userId);
+  }
+
+  @Get(':id/comments')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({
+    summary: "Lister les commentaires d'une page",
+    description:
+      'Arbre à un niveau (commentaires puis réponses). Authentification optionnelle : droits alignés sur la visibilité de la page.',
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiOkResponse({ description: 'Commentaires de la page, triés par date.' })
+  @ApiForbiddenResponse({
+    description: 'Page privée, accès non autorisé, ou commentaires désactivés.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async listComments(
+    @Param('id') id: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<ResponseDto<CommentResponseDto[]>> {
+    const page = await this.pagesService.getByIdOrFail(id, user);
+    if (!page.commentsEnabled) {
+      throw new CommentsDisabledException();
+    }
+    const { comments, authorNames } =
+      await this.commentsService.findAllByPage(id);
+    return CommentMapper.toTreeResponse(comments, authorNames);
+  }
+
+  @Post(':id/comments')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({
+    default: {
+      limit: COMMENT_CREATE_THROTTLE_LIMIT,
+      ttl: COMMENT_CREATE_THROTTLE_TTL_MS,
+    },
+  })
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Créer un commentaire, ou une réponse via parentId',
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiBody({ type: CreateCommentDto })
+  @ApiOkResponse({ description: 'Commentaire créé avec succès.' })
+  @ApiBadRequestResponse({
+    description:
+      'Contenu vide, trop long, ou parentId visant une réponse (1 niveau max).',
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Commentaires désactivés sur cette page.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page ou le commentaire parent n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async createComment(
+    @Param('id') id: string,
+    @Body() dto: CreateCommentDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<CommentResponseDto>> {
+    const page = await this.pagesService.getByIdOrFail(id, user);
+    if (!page.commentsEnabled) {
+      throw new CommentsDisabledException();
+    }
+    const { comment, authorNames } = await this.commentsService.createComment(
+      id,
+      dto,
+      user,
+    );
+    return CommentMapper.toResponse(comment, authorNames);
   }
 
   @Get('*path')

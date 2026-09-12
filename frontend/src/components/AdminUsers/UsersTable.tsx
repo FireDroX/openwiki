@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from '#components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#components/ui/table'
 import { DeleteUserDialog } from '#components/AdminUsers/DeleteUserDialog'
+import { UserCommentsPanel } from '#components/AdminUsers/UserCommentsPanel'
 import { UserRole } from '#api/auth'
 import type { AdminUser } from '#api/users'
 import { toInitials } from '#utils/initials'
@@ -78,7 +79,8 @@ export function UsersTable({ users, currentUserId, pendingUserId, onRoleChange, 
               </TableCell>
               <TableCell className="text-muted-foreground">{formatJoinDate(user.createdAt)}</TableCell>
               <TableCell>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-1">
+                  <UserCommentsPanel user={user} />
                   <DeleteUserDialog user={user} disabled={isSelf} pending={isPending} onConfirm={() => onDelete(user)} />
                 </div>
               </TableCell>

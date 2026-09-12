@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import { ActivityModule } from './activity/activity.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { CommentsModule } from './comments/comments.module.js';
 import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-proxy.guard.js';
 import { JwtAuthModule } from './common/jwt-auth.module.js';
 import { HealthModule } from './health/health.module.js';
@@ -50,6 +51,7 @@ const GLOBAL_THROTTLE_LIMIT = 100;
     AdminModule,
     ActivityModule,
     McpModule,
+    CommentsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard }],
 })

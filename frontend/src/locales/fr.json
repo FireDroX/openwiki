@@ -80,7 +80,10 @@
     "pagePublished": "Page publiée.",
     "pageSaved": "Page sauvegardée.",
     "visibilityChanged": "Visibilité mise à jour.",
-    "visibilityChangeFailed": "Échec du changement de visibilité."
+    "visibilityChangeFailed": "Échec du changement de visibilité.",
+    "commentsEnabled": "Commentaires activés.",
+    "commentsDisabled": "Commentaires désactivés.",
+    "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires."
   },
   "pageMetadataForm": {
     "titleLabel": "Titre",
@@ -97,6 +100,8 @@
     "private": "Privée",
     "public": "Publique",
     "visibilityCascadeNotice": "Cette page a des sous-pages : le changement de visibilité leur sera aussi appliqué.",
+    "commentsLabel": "Commentaires",
+    "commentsEnabled": "Autoriser les commentaires sur cette page",
     "choosePage": "Choisir la page parente",
     "searchPage": "Rechercher une page...",
     "noPageFound": "Aucune page trouvée."
@@ -204,7 +209,27 @@
       "roleUpdated": "Rôle mis à jour.",
       "roleUpdateFailed": "Échec de la mise à jour du rôle.",
       "userDeleted": "Utilisateur supprimé.",
-      "userDeleteFailed": "Échec de la suppression de l'utilisateur."
+      "userDeleteFailed": "Échec de la suppression de l'utilisateur.",
+      "comments": {
+        "trigger": "Messages",
+        "title": "Commentaires de {{name}}",
+        "description_one": "{{count}} commentaire sur l'ensemble du wiki.",
+        "description_other": "{{count}} commentaires sur l'ensemble du wiki.",
+        "loadError": "Échec du chargement des commentaires.",
+        "empty": "Cet utilisateur n'a aucun commentaire.",
+        "purgeSelection_one": "Purger la sélection ({{count}})",
+        "purgeSelection_other": "Purger la sélection ({{count}})",
+        "purgeAll": "Tout purger",
+        "purgeSelectionConfirmTitle": "Purger les commentaires sélectionnés ?",
+        "purgeSelectionConfirmDescription_one": "{{count}} commentaire sera définitivement supprimé, ainsi que ses réponses. Cette action est irréversible.",
+        "purgeSelectionConfirmDescription_other": "{{count}} commentaires seront définitivement supprimés, ainsi que leurs réponses. Cette action est irréversible.",
+        "purgeAllConfirmTitle": "Purger tous les commentaires ?",
+        "purgeAllConfirmDescription_one": "Le seul commentaire ({{count}}) de {{name}} sera définitivement supprimé, ainsi que ses éventuelles réponses. Cette action est irréversible.",
+        "purgeAllConfirmDescription_other": "Les {{count}} commentaires de {{name}} seront définitivement supprimés, ainsi que leurs éventuelles réponses. Cette action est irréversible.",
+        "purgeSuccess_one": "{{count}} commentaire purgé.",
+        "purgeSuccess_other": "{{count}} commentaires purgés.",
+        "purgeFailed": "Échec de la purge des commentaires."
+      }
     },
     "settings": {
       "localeLabel": "Langue de l'interface",
@@ -351,6 +376,25 @@
     "requestBody": "Corps de la requête",
     "responses": "Réponses",
     "loadError": "Impossible de charger la documentation de l'API."
+  },
+  "comments": {
+    "title_one": "{{count}} commentaire",
+    "title_other": "{{count}} commentaires",
+    "loadError": "Impossible de charger les commentaires.",
+    "placeholder": "Écrire un commentaire...",
+    "submit": "Commenter",
+    "reply": "Répondre",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "deletedPlaceholder": "[commentaire supprimé]",
+    "unknownAuthor": "Utilisateur inconnu",
+    "edited": "(modifié)",
+    "deleteConfirmTitle": "Supprimer ce commentaire ?",
+    "deleteConfirmAuthorDescription": "Il sera remplacé par « [commentaire supprimé] ». Cette action est irréversible.",
+    "deleteConfirmModeratorDescription": "Le commentaire sera définitivement supprimé. Cette action est irréversible.",
+    "deleteConfirmModeratorWithRepliesDescription_one": "Le commentaire et sa {{count}} réponse seront définitivement supprimés. Cette action est irréversible.",
+    "deleteConfirmModeratorWithRepliesDescription_other": "Le commentaire et ses {{count}} réponses seront définitivement supprimés. Cette action est irréversible.",
+    "loginToComment": "Connectez-vous pour laisser un commentaire."
   },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."

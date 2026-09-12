@@ -125,4 +125,4 @@ Pas de commentaires de code. Écrire du code auto-explicite (nommage clair, peti
 
 ## Tests
 
-Pas de fichiers `*.spec.ts`/`*.e2e-spec.ts` dans ce projet — ne pas en ajouter, même si les critères d'acceptation d'un ticket mentionnent "tests unitaires", et supprimer ceux qui apparaîtraient. N'en ajouter que si explicitement demandé.
+Fichiers `*.spec.ts`/`*.e2e-spec.ts` autorisés (vitest — scripts `test`/`test:watch`/`test:cov`/`test:e2e`). Suivre le pattern déjà en place plutôt qu'en inventer un nouveau : voir `backend/src/pages/services/pages.service.spec.ts` (`Test.createTestingModule`, repository/services mockés via `vi.fn()`, pas d'accès DB réel dans les tests unitaires).

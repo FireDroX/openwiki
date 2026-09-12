@@ -10,7 +10,7 @@ import type { Response } from 'express';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto.js';
 
 @Catch()
-export class PagesExceptionFilter implements ExceptionFilter {
+export class CommentsExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<Response>();
 
@@ -22,7 +22,7 @@ export class PagesExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    const { statusCode, error } = PagesExceptionFilter.resolve(exception);
+    const { statusCode, error } = CommentsExceptionFilter.resolve(exception);
     const body: ErrorResponseDto = { error };
     response.status(statusCode).json(body);
   }
@@ -32,24 +32,13 @@ export class PagesExceptionFilter implements ExceptionFilter {
     error: string;
   } {
     switch (exception.name) {
-      case 'ParentPageNotFoundException':
-      case 'PageNotFoundException':
-      case 'VersionNotFoundException':
-      case 'UserNotFoundException':
-      case 'PermissionNotFoundException':
       case 'CommentNotFoundException':
+      case 'UserNotFoundException':
         return { statusCode: HttpStatus.NOT_FOUND, error: exception.message };
-      case 'SlugAlreadyExistsException':
-      case 'CircularReferenceException':
-      case 'PageHasChildrenException':
-      case 'PermissionAlreadyExistsException':
-        return { statusCode: HttpStatus.CONFLICT, error: exception.message };
-      case 'PageAccessForbiddenException':
-      case 'InsufficientPagePermissionException':
-      case 'CommentsDisabledException':
+      case 'CommentDeleteForbiddenException':
+      case 'CommentEditForbiddenException':
         return { statusCode: HttpStatus.FORBIDDEN, error: exception.message };
       case 'ValidationException':
-      case 'ReplyNestingException':
         return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
       default:
         return {
