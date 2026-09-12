@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
 import { CommentDeleteForbiddenException } from '../../common/exceptions/comments/comment-delete-forbidden.exception.js';
+import { CommentEditForbiddenException } from '../../common/exceptions/comments/comment-edit-forbidden.exception.js';
 import { CommentNotFoundException } from '../../common/exceptions/comments/comment-not-found.exception.js';
 import { ReplyNestingException } from '../../common/exceptions/comments/reply-nesting.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
@@ -9,6 +10,7 @@ import { COMMENT_CONTENT_MAX_LENGTH } from '../../common/variables.global.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import { UsersService } from '../../users/services/users.service.js';
 import { CreateCommentDto } from '../dto/in/create-comment.dto.js';
+import { UpdateCommentDto } from '../dto/in/update-comment.dto.js';
 import { Comment } from '../entities/comment.entity.js';
 import type { CommentsRepository } from '../persistence/comment.repository.js';
 
@@ -59,6 +61,25 @@ export class CommentsService {
     });
     const authorNames = await this.resolveAuthorNames([comment]);
     return { comment, authorNames };
+  }
+
+  async updateComment(
+    id: string,
+    dto: UpdateCommentDto,
+    currentUser: AuthenticatedUser,
+  ): Promise<{ comment: Comment; authorNames: Map<string, string> }> {
+    const comment = await this.getByIdOrFail(id);
+    if (comment.authorId !== currentUser.id) {
+      throw new CommentEditForbiddenException();
+    }
+    this.validateContent(dto.content);
+    const updated = await this.commentsRepository.updateContent(
+      comment,
+      dto.content,
+      new Date(),
+    );
+    const authorNames = await this.resolveAuthorNames([updated]);
+    return { comment: updated, authorNames };
   }
 
   async deleteComment(

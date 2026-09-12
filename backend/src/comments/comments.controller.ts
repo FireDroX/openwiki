@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   UseFilters,
   UseGuards,
@@ -31,6 +32,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import { CreateCommentDto } from './dto/in/create-comment.dto.js';
+import { UpdateCommentDto } from './dto/in/update-comment.dto.js';
 import { CommentResponseDto } from './dto/out/comment-response.dto.js';
 import { CommentsExceptionFilter } from './filter/comments-exception.filter.js';
 import { CommentMapper } from './mapper/comment.mapper.js';
@@ -119,6 +121,42 @@ export class PageCommentsController {
 @UseFilters(CommentsExceptionFilter)
 export class CommentController {
   constructor(private readonly commentsService: CommentsService) {}
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Modifier son propre commentaire' })
+  @ApiParam({ name: 'id', description: 'Identifiant du commentaire' })
+  @ApiBody({ type: UpdateCommentDto })
+  @ApiOkResponse({ description: 'Commentaire modifié.' })
+  @ApiBadRequestResponse({
+    description: 'Contenu vide ou trop long.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: "Seul l'auteur peut éditer son commentaire.",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "Le commentaire n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCommentDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<CommentResponseDto>> {
+    const { comment, authorNames } = await this.commentsService.updateComment(
+      id,
+      dto,
+      user,
+    );
+    return CommentMapper.toResponse(comment, authorNames);
+  }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)

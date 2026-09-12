@@ -33,6 +33,15 @@ export class TypeormCommentsRepository implements CommentsRepository {
     return this.repository.save(this.repository.create(input));
   }
 
+  updateContent(
+    comment: Comment,
+    content: string,
+    editedAt: Date,
+  ): Promise<Comment> {
+    const updated = this.repository.merge(comment, { content, editedAt });
+    return this.repository.save(updated);
+  }
+
   softDelete(comment: Comment): Promise<Comment> {
     const updated = this.repository.merge(comment, {
       content: '',

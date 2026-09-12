@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.4 — 2026-09-12</summary>
+
+- Nouvel endpoint \`PATCH /comments/:id\` : l'auteur peut éditer son propre commentaire, ce qui pose \`editedAt\` (affiché "(modifié)" côté UI).
+
+</details>
+
+<details>
 <summary>0.21.3 — 2026-09-12</summary>
 
 - Nouvel endpoint \`DELETE /comments/:id\` : l'auteur peut retirer son propre commentaire (suppression douce, affiché "[commentaire supprimé]") ; un éditeur ou un admin peut le supprimer définitivement, avec cascade sur ses réponses. Une suppression par un admin est tracée dans le journal d'audit.

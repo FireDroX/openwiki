@@ -37,6 +37,7 @@ export class CommentsExceptionFilter implements ExceptionFilter {
         return { statusCode: HttpStatus.NOT_FOUND, error: exception.message };
       case 'PageAccessForbiddenException':
       case 'CommentDeleteForbiddenException':
+      case 'CommentEditForbiddenException':
         return { statusCode: HttpStatus.FORBIDDEN, error: exception.message };
       case 'ValidationException':
       case 'ReplyNestingException':

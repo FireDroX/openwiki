@@ -12,6 +12,11 @@ export interface CommentsRepository {
   findAllByPageId(pageId: string): Promise<Comment[]>;
   findRepliesByParentId(parentId: string): Promise<Comment[]>;
   create(input: CreateCommentInput): Promise<Comment>;
+  updateContent(
+    comment: Comment,
+    content: string,
+    editedAt: Date,
+  ): Promise<Comment>;
   softDelete(comment: Comment): Promise<Comment>;
   deleteMany(ids: string[]): Promise<void>;
 }
