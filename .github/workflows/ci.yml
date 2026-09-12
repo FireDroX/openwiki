@@ -70,20 +70,22 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Not a `services:` container: GitHub Actions services can't
-      # override CMD, and minio/minio's default CMD (bare `minio`, no
-      # `server /data`) just prints usage and exits — bitnami/minio
-      # used to work around this without a command override, but that
-      # image was pulled from Docker Hub entirely in 2025. Starting it
-      # by hand sidesteps depending on any third-party image's startup
-      # behavior.
+      # Not a `services:` container: GitHub Actions services can't override
+      # CMD, and this image needs env vars set before its entrypoint runs.
+      # Uses RustFS, not Minio — Minio's Community Edition (server, both
+      # `minio/minio` and `bitnami/minio` on Docker Hub, and the binaries
+      # on dl.min.io) was archived in 2026 and is no longer distributed
+      # anywhere. RustFS is a drop-in, actively maintained, Apache-2.0
+      # S3-compatible replacement — same docker-compose.yml switch, see
+      # that file's `minio` service for the matching prod/dev setup.
       - name: Start Minio
         run: |
-          docker run -d --name minio -p 9000:9000 \
-            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
-            minio/minio server /data
+          docker run -d --name minio -p 9000:9000 -p 9001:9001 \
+            -e RUSTFS_ACCESS_KEY=minioadmin -e RUSTFS_SECRET_KEY=minioadmin \
+            -e RUSTFS_ADDRESS=":9000" -e RUSTFS_CONSOLE_ADDRESS=":9001" \
+            rustfs/rustfs:latest /data
           for i in $(seq 1 30); do
-            curl -sf http://localhost:9000/minio/health/live && exit 0
+            curl -sf http://localhost:9000/health && exit 0
             sleep 1
           done
           echo "Minio did not become healthy in time" >&2

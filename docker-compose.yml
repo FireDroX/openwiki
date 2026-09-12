@@ -25,13 +25,35 @@ services:
       retries: 10
       start_period: 10s
 
+  # Service/volume kept named "minio" even though the image is RustFS —
+  # Minio's Community Edition (server) was archived in 2026 and is no
+  # longer distributed anywhere (Docker Hub, dl.min.io binaries, all of
+  # it). RustFS is a drop-in, actively maintained, Apache-2.0
+  # S3-compatible replacement: same ports, and backend/.env's MINIO_*
+  # variables (MINIO_ENDPOINT=minio, etc.) keep working unchanged since
+  # they name this application's own storage config, not the container
+  # software. Renaming either would orphan the `minio-data` volume on
+  # servers already running the old image.
+  #
+  # UPGRADING AN EXISTING SERVER: RustFS runs as uid 10001, not root like
+  # Minio did — `minio-data` already has files owned by root from the old
+  # image, and RustFS's entrypoint doesn't chown existing directories.
+  # One-time fix before `docker compose up -d` picks up the new image:
+  #   docker compose stop minio
+  #   docker run --rm -v <project-dir-name>_minio-data:/data alpine chown -R 10001:10001 /data
+  # (volume name printed by `docker volume ls`; a brand-new deployment's
+  # empty volume doesn't need this — Docker seeds it from the image's own
+  # ownership on first use.)
   minio:
-    image: minio/minio
+    image: rustfs/rustfs:latest
     restart: unless-stopped
-    command: server /data --console-address ":9001"
+    command: /data
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      RUSTFS_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${MINIO_SECRET_KEY}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
     ports:
       - "9000:9000"
       - "9001:9001"
