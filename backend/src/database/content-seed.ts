@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.20
 
 <details>
+<summary>0.20.4 — 2026-09-12</summary>
+
+- \`GET /media\` devient \`POST /media\` : les filtres (\`pageId\`, \`search\`, \`type\`, \`page\`, \`limit\`) passent désormais dans le corps de la requête plutôt qu'en query string, pour un typage plus simple côté backend et frontend.
+
+</details>
+
+<details>
 <summary>0.20.3 — 2026-09-12</summary>
 
 - Le picker de médiathèque permet désormais de supprimer un média directement (avec confirmation) ; la suppression est refusée avec un message explicite si le média est encore utilisé sur une autre page.

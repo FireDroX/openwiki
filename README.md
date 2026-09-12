@@ -265,10 +265,9 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 | Méthode | Route          | Auth             | Description                                                           |
 | ------- | -------------- | ---------------- | ---------------------------------------------------------------------- |
 | POST    | /media/upload  | éditeur+         | Upload vers Minio                                                     |
-| GET     | /media?pageId= | selon visibilité | Médias d'une page                                                     |
-| GET     | /media         | authentifié      | Médiathèque globale, filtrable (search/type) et paginée (page/limit) |
+| POST    | /media         | selon visibilité | Corps `{ pageId }` : médias d'une page. Corps sans `pageId` : médiathèque globale, filtrable (search/type) et paginée (page/limit), authentifié |
 | GET     | /media/:id/url | selon visibilité | URL présignée                                                         |
-| DELETE  | /media/:id     | éditeur+         | Supprimer (409 si le média est encore référencé par une autre page)  |
+| DELETE  | /media/:id     | éditeur+         | Supprimer (409 si le média est encore référencé ailleurs)             |
 
 ### Tags
 

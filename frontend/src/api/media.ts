@@ -36,9 +36,7 @@ export async function uploadFile(file: File, pageId?: string): Promise<Attachmen
 }
 
 export async function listMediaLibrary(query: MediaLibraryQuery = {}): Promise<MediaLibraryResult> {
-  const { data } = await apiClient.get<ResponseDto<MediaLibraryResult>>('/media', {
-    params: query,
-  })
+  const { data } = await apiClient.post<ResponseDto<MediaLibraryResult>>('/media', query)
   return data.data
 }
 

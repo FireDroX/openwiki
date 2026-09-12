@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query,
   UploadedFile,
   UseFilters,
   UseGuards,
@@ -28,7 +27,6 @@ import {
   ApiOperation,
   ApiParam,
   ApiPayloadTooLargeResponse,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnsupportedMediaTypeResponse,
@@ -42,7 +40,7 @@ import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard.j
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import { MAX_ATTACHMENT_SIZE_MB } from '../common/variables.global.js';
-import { ListMediaQueryDto } from './dto/in/list-media-query.dto.js';
+import { ListMediaDto } from './dto/in/list-media.dto.js';
 import { UploadMediaDto } from './dto/in/upload-media.dto.js';
 import { AttachmentResponseDto } from './dto/out/attachment-response.dto.js';
 import { MediaLibraryResponseDto } from './dto/out/media-library-response.dto.js';
@@ -108,7 +106,8 @@ export class MediaController {
     return AttachmentMapper.toResponse(attachment, url);
   }
 
-  @Get()
+  @Post()
+  @HttpCode(HttpStatus.OK)
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary:
@@ -116,32 +115,7 @@ export class MediaController {
     description:
       'Avec pageId : médias de cette page (inchangé). Sans pageId : médiathèque globale filtrable (search/type) et paginée (page/limit), visibilité selon le rôle de l’utilisateur.',
   })
-  @ApiQuery({
-    name: 'pageId',
-    required: false,
-    description: 'Identifiant de la page (mode page unique)',
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    description: 'Filtre par nom de fichier (mode médiathèque uniquement)',
-  })
-  @ApiQuery({
-    name: 'type',
-    required: false,
-    description: '"image" ou "file" (mode médiathèque uniquement)',
-  })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    description: 'Numéro de page, défaut 1 (mode médiathèque uniquement)',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description:
-      'Taille de page, défaut 20, max 100 (mode médiathèque uniquement)',
-  })
+  @ApiBody({ type: ListMediaDto })
   @ApiOkResponse({ description: 'Liste des médias.' })
   @ApiUnauthorizedResponse({
     description:
@@ -161,17 +135,17 @@ export class MediaController {
     type: ErrorResponseDto,
   })
   async list(
-    @Query() query: ListMediaQueryDto,
+    @Body() dto: ListMediaDto,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<
     ResponseDto<AttachmentResponseDto[]> | ResponseDto<MediaLibraryResponseDto>
   > {
-    if (query.pageId) {
-      const results = await this.mediaService.findAllByPage(query.pageId, user);
+    if (dto.pageId) {
+      const results = await this.mediaService.findAllByPage(dto.pageId, user);
       return AttachmentMapper.toListResponse(results);
     }
 
-    const { items, total } = await this.mediaService.findLibrary(query, user);
+    const { items, total } = await this.mediaService.findLibrary(dto, user);
     return AttachmentMapper.toLibraryResponse(items, total);
   }
 

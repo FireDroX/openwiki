@@ -19,7 +19,7 @@ import {
 } from '../../common/variables.global.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import type { StorageService } from '../../storage/services/storage.service.js';
-import { ListMediaQueryDto } from '../dto/in/list-media-query.dto.js';
+import { ListMediaDto } from '../dto/in/list-media.dto.js';
 import { UploadMediaDto } from '../dto/in/upload-media.dto.js';
 import { Attachment } from '../entities/attachment.entity.js';
 import type { AttachmentsRepository } from '../persistence/attachment.repository.js';
@@ -117,7 +117,7 @@ export class MediaService {
   }
 
   async findLibrary(
-    query: ListMediaQueryDto,
+    query: ListMediaDto,
     currentUser?: AuthenticatedUser,
   ): Promise<{
     items: { attachment: Attachment; url: string }[];
@@ -230,17 +230,15 @@ export class MediaService {
     }
   }
 
-  private static parsePage(raw?: string): number {
-    const parsed = Number(raw);
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_PAGE;
+  private static parsePage(raw?: number): number {
+    return Number.isInteger(raw) && raw! > 0 ? raw! : DEFAULT_PAGE;
   }
 
-  private static parseLimit(raw?: string): number {
-    const parsed = Number(raw);
-    if (!Number.isInteger(parsed) || parsed <= 0) {
+  private static parseLimit(raw?: number): number {
+    if (!Number.isInteger(raw) || raw! <= 0) {
       return DEFAULT_LIMIT;
     }
-    return Math.min(parsed, MAX_LIMIT);
+    return Math.min(raw!, MAX_LIMIT);
   }
 
   private static parseType(raw?: string): 'image' | 'file' | undefined {
