@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.1 — 2026-09-12</summary>
+
+- Nouvel endpoint \`GET /pages/:id/comments\` : liste les commentaires d'une page (arbre à un niveau, réponses incluses), en respectant la visibilité de la page.
+
+</details>
+
+<details>
 <summary>0.21.0 — 2026-09-12</summary>
 
 - Nouvelle entité \`Comment\` (page, auteur, réponse à 1 niveau, édition et suppression douce) et sa migration — première brique du système de commentaires sur les pages (EPIC-07).
