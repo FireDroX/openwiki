@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
+import { CommentDeleteForbiddenException } from '../../common/exceptions/comments/comment-delete-forbidden.exception.js';
 import { CommentNotFoundException } from '../../common/exceptions/comments/comment-not-found.exception.js';
 import { ReplyNestingException } from '../../common/exceptions/comments/reply-nesting.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
@@ -17,6 +19,7 @@ export class CommentsService {
     private readonly commentsRepository: CommentsRepository,
     private readonly pagesService: PagesService,
     private readonly usersService: UsersService,
+    private readonly adminAuditLogService: AdminAuditLogService,
   ) {}
 
   async findAllByPage(
@@ -56,6 +59,55 @@ export class CommentsService {
     });
     const authorNames = await this.resolveAuthorNames([comment]);
     return { comment, authorNames };
+  }
+
+  async deleteComment(
+    id: string,
+    currentUser: AuthenticatedUser,
+  ): Promise<void> {
+    const comment = await this.getByIdOrFail(id);
+    const isAuthor = comment.authorId === currentUser.id;
+    const isModerator =
+      currentUser.role === 'editor' || currentUser.role === 'admin';
+
+    if (isAuthor) {
+      await this.commentsRepository.softDelete(comment);
+      return;
+    }
+
+    if (!isModerator) {
+      throw new CommentDeleteForbiddenException();
+    }
+
+    const deletedIds = await this.hardDeleteWithReplies(comment);
+
+    if (currentUser.role === 'admin') {
+      await this.adminAuditLogService.record({
+        adminId: currentUser.id,
+        action: 'comment.deleted_by_admin',
+        targetType: 'Comment',
+        targetId: comment.id,
+        metadata: { count: deletedIds.length, ids: deletedIds },
+      });
+    }
+  }
+
+  private async getByIdOrFail(id: string): Promise<Comment> {
+    const comment = await this.commentsRepository.findById(id);
+    if (!comment) {
+      throw new CommentNotFoundException();
+    }
+    return comment;
+  }
+
+  private async hardDeleteWithReplies(comment: Comment): Promise<string[]> {
+    const replies =
+      comment.parentId === null
+        ? await this.commentsRepository.findRepliesByParentId(comment.id)
+        : [];
+    const ids = [comment.id, ...replies.map((reply) => reply.id)];
+    await this.commentsRepository.deleteMany(ids);
+    return ids;
   }
 
   private validateContent(content: string): void {

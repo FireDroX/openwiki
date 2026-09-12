@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.3 — 2026-09-12</summary>
+
+- Nouvel endpoint \`DELETE /comments/:id\` : l'auteur peut retirer son propre commentaire (suppression douce, affiché "[commentaire supprimé]") ; un éditeur ou un admin peut le supprimer définitivement, avec cascade sur ses réponses. Une suppression par un admin est tracée dans le journal d'audit.
+
+</details>
+
+<details>
 <summary>0.21.2 — 2026-09-12</summary>
 
 - Nouvel endpoint \`POST /pages/:id/comments\` : créer un commentaire, ou une réponse via \`parentId\` (1 seul niveau de nesting). Ouvert à tout utilisateur authentifié ayant accès à la page, avec limitation de fréquence sur la création.

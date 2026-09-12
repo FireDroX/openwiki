@@ -10,5 +10,8 @@ export interface CreateCommentInput {
 export interface CommentsRepository {
   findById(id: string): Promise<Comment | null>;
   findAllByPageId(pageId: string): Promise<Comment[]>;
+  findRepliesByParentId(parentId: string): Promise<Comment[]>;
   create(input: CreateCommentInput): Promise<Comment>;
+  softDelete(comment: Comment): Promise<Comment>;
+  deleteMany(ids: string[]): Promise<void>;
 }

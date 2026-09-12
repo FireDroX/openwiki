@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -15,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -109,5 +111,42 @@ export class PageCommentsController {
       user,
     );
     return CommentMapper.toResponse(comment, authorNames);
+  }
+}
+
+@ApiTags('Comments')
+@Controller('comments')
+@UseFilters(CommentsExceptionFilter)
+export class CommentController {
+  constructor(private readonly commentsService: CommentsService) {}
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Supprimer un commentaire',
+    description:
+      "Auteur : suppression douce (contenu vidé, réponses intactes). Éditeur/admin non-auteur : suppression définitive, cascade sur les réponses.",
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant du commentaire' })
+  @ApiNoContentResponse({ description: 'Commentaire supprimé.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Ni auteur, ni éditeur, ni admin.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "Le commentaire n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.commentsService.deleteComment(id, user);
   }
 }
