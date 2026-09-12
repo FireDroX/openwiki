@@ -19,6 +19,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -217,6 +218,10 @@ export class MediaController {
   })
   @ApiNotFoundResponse({
     description: "Le média n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: "Le média est encore référencé par d'autres pages.",
     type: ErrorResponseDto,
   })
   async remove(

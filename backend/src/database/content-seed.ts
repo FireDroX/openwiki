@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.20
 
 <details>
+<summary>0.20.1 — 2026-09-12</summary>
+
+- La suppression d'un média (\`DELETE /media/:id\`) est désormais refusée (409) s'il est encore référencé dans le contenu d'une autre page.
+
+</details>
+
+<details>
 <summary>0.20.0 — 2026-09-12</summary>
 
 - Nouvel endpoint \`GET /media\` sans \`pageId\` : médiathèque globale filtrable (recherche par nom, type image/fichier) et paginée, respectant la visibilité des pages.

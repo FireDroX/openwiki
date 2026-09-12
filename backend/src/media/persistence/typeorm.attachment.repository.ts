@@ -99,6 +99,27 @@ export class TypeormAttachmentsRepository implements AttachmentsRepository {
     };
   }
 
+  async findPagesReferencing(
+    minioKey: string,
+    excludePageId: string | null,
+  ): Promise<{ id: string; title: string }[]> {
+    const conditions = ['p.deleted_at IS NULL', 'pv.content LIKE ?'];
+    const values: unknown[] = [`%${minioKey}%`];
+
+    if (excludePageId) {
+      conditions.push('p.id != ?');
+      values.push(excludePageId);
+    }
+
+    return this.dataSource.query<{ id: string; title: string }[]>(
+      `SELECT p.id AS id, pv.title AS title
+       FROM pages p
+       INNER JOIN page_versions pv ON pv.id = p.current_version_id
+       WHERE ${conditions.join(' AND ')}`,
+      values,
+    );
+  }
+
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }

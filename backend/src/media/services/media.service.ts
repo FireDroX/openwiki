@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
+import { AttachmentInUseException } from '../../common/exceptions/media/attachment-in-use.exception.js';
 import { AttachmentNotFoundException } from '../../common/exceptions/media/attachment-not-found.exception.js';
 import { FileTooLargeException } from '../../common/exceptions/media/file-too-large.exception.js';
 import { StorageDeleteFailedException } from '../../common/exceptions/media/storage-delete-failed.exception.js';
@@ -180,6 +181,17 @@ export class MediaService {
     const attachment = await this.attachmentsRepository.findById(id);
     if (!attachment) {
       throw new AttachmentNotFoundException();
+    }
+
+    const referencingPages =
+      await this.attachmentsRepository.findPagesReferencing(
+        attachment.minioKey,
+        attachment.pageId,
+      );
+    if (referencingPages.length > 0) {
+      throw new AttachmentInUseException(
+        referencingPages.map((page) => page.title),
+      );
     }
 
     try {

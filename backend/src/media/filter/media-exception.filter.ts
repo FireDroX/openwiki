@@ -47,6 +47,8 @@ export class MediaExceptionFilter implements ExceptionFilter {
         return { statusCode: HttpStatus.NOT_FOUND, error: exception.message };
       case 'PageAccessForbiddenException':
         return { statusCode: HttpStatus.FORBIDDEN, error: exception.message };
+      case 'AttachmentInUseException':
+        return { statusCode: HttpStatus.CONFLICT, error: exception.message };
       case 'ValidationException':
         return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
       case 'StorageDeleteFailedException':
