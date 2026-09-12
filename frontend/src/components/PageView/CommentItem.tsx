@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Reply, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
@@ -88,7 +88,7 @@ export function CommentItem({ comment, replyCount = 0, onReply, onEdit, onDelete
         <div className="flex gap-1">
           {onReply && (
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsReplying((value) => !value)}>
-              {t('comments.reply')}
+              <Reply /> {t('comments.reply')}
             </Button>
           )}
           {isAuthor && (

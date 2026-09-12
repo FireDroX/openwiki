@@ -360,9 +360,16 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.9 — 2026-09-12</summary>
+
+- Petite icône ajoutée sur le bouton "Répondre" du fil de commentaires, pour cohérence avec les boutons "Modifier"/"Supprimer".
+
+</details>
+
+<details>
 <summary>0.21.8 — 2026-09-12</summary>
 
-- Modération des commentaires côté admin : nouveau bouton "Messages" sur chaque ligne de `/admin/users`, ouvrant un panneau listant les commentaires de l'utilisateur (page d'origine, contenu, date), paginé, avec sélection multiple et purge (sélection ou totale), chacune avec sa propre confirmation.
+- Modération des commentaires côté admin : nouveau bouton "Messages" sur chaque ligne de \`/admin/users\`, ouvrant un panneau listant les commentaires de l'utilisateur (page d'origine, contenu, date), paginé, avec sélection multiple et purge (sélection ou totale), chacune avec sa propre confirmation.
 
 </details>
 
