@@ -7,6 +7,19 @@ export interface AttachmentDto {
   filename: string
   mimeType: string
   size: number
+  pageId: string | null
+}
+
+export interface MediaLibraryQuery {
+  search?: string
+  type?: 'image' | 'file'
+  page?: number
+  limit?: number
+}
+
+export interface MediaLibraryResult {
+  items: AttachmentDto[]
+  total: number
 }
 
 export async function uploadFile(file: File, pageId?: string): Promise<AttachmentDto> {
@@ -18,6 +31,13 @@ export async function uploadFile(file: File, pageId?: string): Promise<Attachmen
 
   const { data } = await apiClient.post<ResponseDto<AttachmentDto>>('/media/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.data
+}
+
+export async function listMediaLibrary(query: MediaLibraryQuery = {}): Promise<MediaLibraryResult> {
+  const { data } = await apiClient.get<ResponseDto<MediaLibraryResult>>('/media', {
+    params: query,
   })
   return data.data
 }
