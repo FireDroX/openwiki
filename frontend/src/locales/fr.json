@@ -204,7 +204,27 @@
       "roleUpdated": "Rôle mis à jour.",
       "roleUpdateFailed": "Échec de la mise à jour du rôle.",
       "userDeleted": "Utilisateur supprimé.",
-      "userDeleteFailed": "Échec de la suppression de l'utilisateur."
+      "userDeleteFailed": "Échec de la suppression de l'utilisateur.",
+      "comments": {
+        "trigger": "Messages",
+        "title": "Commentaires de {{name}}",
+        "description_one": "{{count}} commentaire sur l'ensemble du wiki.",
+        "description_other": "{{count}} commentaires sur l'ensemble du wiki.",
+        "loadError": "Échec du chargement des commentaires.",
+        "empty": "Cet utilisateur n'a aucun commentaire.",
+        "purgeSelection_one": "Purger la sélection ({{count}})",
+        "purgeSelection_other": "Purger la sélection ({{count}})",
+        "purgeAll": "Tout purger",
+        "purgeSelectionConfirmTitle": "Purger les commentaires sélectionnés ?",
+        "purgeSelectionConfirmDescription_one": "{{count}} commentaire sera définitivement supprimé, ainsi que ses réponses. Cette action est irréversible.",
+        "purgeSelectionConfirmDescription_other": "{{count}} commentaires seront définitivement supprimés, ainsi que leurs réponses. Cette action est irréversible.",
+        "purgeAllConfirmTitle": "Purger tous les commentaires ?",
+        "purgeAllConfirmDescription_one": "Le seul commentaire ({{count}}) de {{name}} sera définitivement supprimé, ainsi que ses éventuelles réponses. Cette action est irréversible.",
+        "purgeAllConfirmDescription_other": "Les {{count}} commentaires de {{name}} seront définitivement supprimés, ainsi que leurs éventuelles réponses. Cette action est irréversible.",
+        "purgeSuccess_one": "{{count}} commentaire purgé.",
+        "purgeSuccess_other": "{{count}} commentaires purgés.",
+        "purgeFailed": "Échec de la purge des commentaires."
+      }
     },
     "settings": {
       "localeLabel": "Langue de l'interface",

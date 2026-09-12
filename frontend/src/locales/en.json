@@ -204,7 +204,27 @@
       "roleUpdated": "Role updated.",
       "roleUpdateFailed": "Failed to update the role.",
       "userDeleted": "User deleted.",
-      "userDeleteFailed": "Failed to delete the user."
+      "userDeleteFailed": "Failed to delete the user.",
+      "comments": {
+        "trigger": "Messages",
+        "title": "{{name}}'s comments",
+        "description_one": "{{count}} comment across the wiki.",
+        "description_other": "{{count}} comments across the wiki.",
+        "loadError": "Failed to load comments.",
+        "empty": "This user has no comments.",
+        "purgeSelection_one": "Purge selection ({{count}})",
+        "purgeSelection_other": "Purge selection ({{count}})",
+        "purgeAll": "Purge all",
+        "purgeSelectionConfirmTitle": "Purge selected comments?",
+        "purgeSelectionConfirmDescription_one": "{{count}} comment will be permanently deleted, along with its replies. This cannot be undone.",
+        "purgeSelectionConfirmDescription_other": "{{count}} comments will be permanently deleted, along with their replies. This cannot be undone.",
+        "purgeAllConfirmTitle": "Purge all comments?",
+        "purgeAllConfirmDescription_one": "All {{count}} comment from {{name}} will be permanently deleted, along with any replies. This cannot be undone.",
+        "purgeAllConfirmDescription_other": "All {{count}} comments from {{name}} will be permanently deleted, along with any replies. This cannot be undone.",
+        "purgeSuccess_one": "{{count}} comment purged.",
+        "purgeSuccess_other": "{{count}} comments purged.",
+        "purgeFailed": "Failed to purge comments."
+      }
     },
     "settings": {
       "localeLabel": "Interface language",

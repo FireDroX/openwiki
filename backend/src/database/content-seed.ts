@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.8 — 2026-09-12</summary>
+
+- Modération des commentaires côté admin : nouveau bouton "Messages" sur chaque ligne de `/admin/users`, ouvrant un panneau listant les commentaires de l'utilisateur (page d'origine, contenu, date), paginé, avec sélection multiple et purge (sélection ou totale), chacune avec sa propre confirmation.
+
+</details>
+
+<details>
 <summary>0.21.7 — 2026-09-12</summary>
 
 - Fil de commentaires sur la vue de lecture d'une page : lire, écrire, répondre (1 niveau), éditer et supprimer son propre commentaire, avec suppression modérée pour les éditeurs/admins.
