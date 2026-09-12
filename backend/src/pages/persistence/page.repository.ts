@@ -37,4 +37,5 @@ export interface PagesRepository {
   softDelete(id: string): Promise<void>;
   updatePublishStatus(page: Page, isPublished: boolean): Promise<Page>;
   updateVisibility(page: Page, visibility: PageVisibility): Promise<Page>;
+  updateCommentsEnabled(page: Page, commentsEnabled: boolean): Promise<Page>;
 }

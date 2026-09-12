@@ -34,6 +34,7 @@ import { Roles } from '../common/decorators/roles.decorator.js';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto.js';
 import { ResponseDto } from '../common/dto/response.dto.js';
+import { CommentsDisabledException } from '../common/exceptions/pages/comments-disabled.exception.js';
 import { PageNotFoundException } from '../common/exceptions/pages/page-not-found.exception.js';
 import { VersionNotFoundException } from '../common/exceptions/pages/version-not-found.exception.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -57,6 +58,7 @@ import { DeletePageQueryDto } from './dto/in/delete-page-query.dto.js';
 import { GrantPermissionDto } from './dto/in/grant-permission.dto.js';
 import { MovePageDto } from './dto/in/move-page.dto.js';
 import { PublishPageDto } from './dto/in/publish-page.dto.js';
+import { SetCommentsEnabledDto } from './dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from './dto/in/update-page.dto.js';
 import { PageDetailResponseDto } from './dto/out/page-detail-response.dto.js';
 import { PagePermissionResponseDto } from './dto/out/page-permission-response.dto.js';
@@ -260,6 +262,44 @@ export class PagesController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<PageResponseDto>> {
     const { page, version } = await this.pagesService.setVisibility(
+      id,
+      dto,
+      user.id,
+    );
+    return PageMapper.toResponse(page, version);
+  }
+
+  @Patch(':id/comments-enabled')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Activer ou désactiver les commentaires d'une page",
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiBody({ type: SetCommentsEnabledDto })
+  @ApiOkResponse({ description: 'État des commentaires mis à jour.' })
+  @ApiBadRequestResponse({
+    description: 'commentsEnabled invalide.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: "Droit d'édition insuffisant sur cette page.",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async setCommentsEnabled(
+    @Param('id') id: string,
+    @Body() dto: SetCommentsEnabledDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<PageResponseDto>> {
+    const { page, version } = await this.pagesService.setCommentsEnabled(
       id,
       dto,
       user.id,
@@ -570,7 +610,7 @@ export class PagesController {
   @ApiParam({ name: 'id', description: 'Identifiant de la page' })
   @ApiOkResponse({ description: 'Commentaires de la page, triés par date.' })
   @ApiForbiddenResponse({
-    description: 'Page privée, accès non autorisé.',
+    description: 'Page privée, accès non autorisé, ou commentaires désactivés.',
     type: ErrorResponseDto,
   })
   @ApiNotFoundResponse({
@@ -581,7 +621,10 @@ export class PagesController {
     @Param('id') id: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<ResponseDto<CommentResponseDto[]>> {
-    await this.pagesService.getByIdOrFail(id, user);
+    const page = await this.pagesService.getByIdOrFail(id, user);
+    if (!page.commentsEnabled) {
+      throw new CommentsDisabledException();
+    }
     const { comments, authorNames } =
       await this.commentsService.findAllByPage(id);
     return CommentMapper.toTreeResponse(comments, authorNames);
@@ -612,6 +655,10 @@ export class PagesController {
     description: 'Authentification requise.',
     type: ErrorResponseDto,
   })
+  @ApiForbiddenResponse({
+    description: 'Commentaires désactivés sur cette page.',
+    type: ErrorResponseDto,
+  })
   @ApiNotFoundResponse({
     description: "La page ou le commentaire parent n'existe pas.",
     type: ErrorResponseDto,
@@ -621,7 +668,10 @@ export class PagesController {
     @Body() dto: CreateCommentDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<CommentResponseDto>> {
-    await this.pagesService.getByIdOrFail(id, user);
+    const page = await this.pagesService.getByIdOrFail(id, user);
+    if (!page.commentsEnabled) {
+      throw new CommentsDisabledException();
+    }
     const { comment, authorNames } = await this.commentsService.createComment(
       id,
       dto,

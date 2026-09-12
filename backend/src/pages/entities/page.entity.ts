@@ -37,6 +37,9 @@ export class Page {
   @Column({ type: 'boolean', name: 'is_published', default: false })
   isPublished: boolean;
 
+  @Column({ type: 'boolean', name: 'comments_enabled', default: true })
+  commentsEnabled: boolean;
+
   @Column({ type: 'enum', enum: PAGE_VISIBILITIES, default: 'private' })
   visibility: PageVisibility;
 

@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.10 — 2026-09-12</summary>
+
+- Activation/désactivation des commentaires par page : nouvelle option dans l'édition d'une page (\`PATCH /pages/:id/comments-enabled\`), désactivée par défaut sur les pages seedées (documentation, notes de version, FAQ). Quand c'est désactivé, la section commentaires n'est plus affichée et l'API rejette lecture/écriture de commentaires sur cette page.
+
+</details>
+
+<details>
 <summary>0.21.9 — 2026-09-12</summary>
 
 - Petite icône ajoutée sur le bouton "Répondre" du fil de commentaires, pour cohérence avec les boutons "Modifier"/"Supprimer".
@@ -1266,6 +1273,7 @@ async function seedPage(
         parentId,
         isPublished: true,
         visibility: 'public',
+        commentsEnabled: false,
         createdById: authorId,
       }),
     );
@@ -1289,6 +1297,11 @@ async function seedPage(
     const contentChanged =
       currentVersion?.content !== content || page.title !== seed.title;
     const moved = page.parentId !== parentId;
+    const commentsSettingChanged = page.commentsEnabled !== false;
+
+    if (commentsSettingChanged) {
+      page.commentsEnabled = false;
+    }
 
     if (contentChanged) {
       const version = await versionRepository.save(
@@ -1309,14 +1322,16 @@ async function seedPage(
       page.parentId = parentId;
     }
 
-    if (contentChanged || moved) {
+    if (contentChanged || moved || commentsSettingChanged) {
       page = await pageRepository.save(page);
       if (contentChanged && moved) {
         console.log(`Updated and moved page "${seed.slug}".`);
       } else if (contentChanged) {
         console.log(`Updated page "${seed.slug}".`);
-      } else {
+      } else if (moved) {
         console.log(`Moved page "${seed.slug}".`);
+      } else {
+        console.log(`Disabled comments on page "${seed.slug}".`);
       }
     } else {
       console.log(`Page "${seed.slug}" already up to date, skipping.`);

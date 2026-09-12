@@ -128,7 +128,7 @@ export function PageView() {
         <PageTagList tags={tags} />
       </div>
       <MarkdownRenderer content={page.content} />
-      <CommentThread pageId={page.id} />
+      {page.commentsEnabled && <CommentThread pageId={page.id} />}
     </article>
   )
 }

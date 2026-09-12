@@ -80,7 +80,10 @@
     "pagePublished": "Page publiée.",
     "pageSaved": "Page sauvegardée.",
     "visibilityChanged": "Visibilité mise à jour.",
-    "visibilityChangeFailed": "Échec du changement de visibilité."
+    "visibilityChangeFailed": "Échec du changement de visibilité.",
+    "commentsEnabled": "Commentaires activés.",
+    "commentsDisabled": "Commentaires désactivés.",
+    "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires."
   },
   "pageMetadataForm": {
     "titleLabel": "Titre",
@@ -97,6 +100,8 @@
     "private": "Privée",
     "public": "Publique",
     "visibilityCascadeNotice": "Cette page a des sous-pages : le changement de visibilité leur sera aussi appliqué.",
+    "commentsLabel": "Commentaires",
+    "commentsEnabled": "Autoriser les commentaires sur cette page",
     "choosePage": "Choisir la page parente",
     "searchPage": "Rechercher une page...",
     "noPageFound": "Aucune page trouvée."

@@ -23,6 +23,7 @@ import { CreatePageDto } from '../dto/in/create-page.dto.js';
 import { DeletePageQueryDto } from '../dto/in/delete-page-query.dto.js';
 import { MovePageDto } from '../dto/in/move-page.dto.js';
 import { PublishPageDto } from '../dto/in/publish-page.dto.js';
+import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { PageTreeNodeDto } from '../dto/out/page-tree-node.dto.js';
 import { PageVersion } from '../entities/page-version.entity.js';
@@ -420,6 +421,43 @@ export class PagesService {
     return { page: updated, version };
   }
 
+  async setCommentsEnabled(
+    id: string,
+    dto: SetCommentsEnabledDto,
+    userId: string,
+  ): Promise<{ page: Page; version: PageVersion }> {
+    this.validateSetCommentsEnabled(dto);
+
+    const page = await this.pagesRepository.findById(id);
+    if (!page || !page.currentVersionId) {
+      throw new PageNotFoundException();
+    }
+
+    await this.assertCanEdit(id, userId);
+
+    const version = await this.pagesRepository.findVersionById(
+      page.currentVersionId,
+    );
+    if (!version) {
+      throw new PageNotFoundException();
+    }
+
+    const updated = await this.pagesRepository.updateCommentsEnabled(
+      page,
+      dto.commentsEnabled,
+    );
+
+    void this.userActivityLogService.record({
+      userId,
+      action: 'page.comments_enabled_changed',
+      targetType: 'page',
+      targetId: id,
+      metadata: { commentsEnabled: dto.commentsEnabled },
+    });
+
+    return { page: updated, version };
+  }
+
   private async cascadeVisibility(
     id: string,
     visibility: Page['visibility'],
@@ -516,6 +554,12 @@ export class PagesService {
       throw new ValidationException(
         `visibility must be one of the following values: ${PAGE_VISIBILITIES.join(', ')}`,
       );
+    }
+  }
+
+  private validateSetCommentsEnabled(dto: SetCommentsEnabledDto): void {
+    if (typeof dto.commentsEnabled !== 'boolean') {
+      throw new ValidationException('commentsEnabled must be a boolean value');
     }
   }
 

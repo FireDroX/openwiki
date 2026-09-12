@@ -46,6 +46,7 @@ export class PagesExceptionFilter implements ExceptionFilter {
         return { statusCode: HttpStatus.CONFLICT, error: exception.message };
       case 'PageAccessForbiddenException':
       case 'InsufficientPagePermissionException':
+      case 'CommentsDisabledException':
         return { statusCode: HttpStatus.FORBIDDEN, error: exception.message };
       case 'ValidationException':
       case 'ReplyNestingException':

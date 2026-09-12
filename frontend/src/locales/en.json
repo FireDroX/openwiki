@@ -80,7 +80,10 @@
     "pagePublished": "Page published.",
     "pageSaved": "Page saved.",
     "visibilityChanged": "Visibility updated.",
-    "visibilityChangeFailed": "Failed to change visibility."
+    "visibilityChangeFailed": "Failed to change visibility.",
+    "commentsEnabled": "Comments enabled.",
+    "commentsDisabled": "Comments disabled.",
+    "commentsEnabledChangeFailed": "Failed to update comments."
   },
   "pageMetadataForm": {
     "titleLabel": "Title",
@@ -97,6 +100,8 @@
     "private": "Private",
     "public": "Public",
     "visibilityCascadeNotice": "This page has sub-pages: the visibility change will also apply to them.",
+    "commentsLabel": "Comments",
+    "commentsEnabled": "Allow comments on this page",
     "choosePage": "Choose the parent page",
     "searchPage": "Search a page...",
     "noPageFound": "No page found."

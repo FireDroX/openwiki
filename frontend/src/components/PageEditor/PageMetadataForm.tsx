@@ -3,6 +3,7 @@ import { Controller, type Control, type UseFormSetValue, type UseFormWatch } fro
 import { FolderTree, Lock, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '#components/ui/button'
+import { Checkbox } from '#components/ui/checkbox'
 import {
   Command,
   CommandDialog,
@@ -26,8 +27,10 @@ interface PageMetadataFormProps {
   setValue: UseFormSetValue<PageMetadataFormValues>
   watch: UseFormWatch<PageMetadataFormValues>
   excludePageId?: string | null
+  commentsEnabled?: boolean
   onParentChange?: (newParentId: string | null) => void
   onVisibilityChange?: (visibility: PageVisibility) => void
+  onCommentsEnabledChange?: (commentsEnabled: boolean) => void
 }
 
 export function PageMetadataForm({
@@ -36,8 +39,10 @@ export function PageMetadataForm({
   setValue,
   watch,
   excludePageId,
+  commentsEnabled,
   onParentChange,
   onVisibilityChange,
+  onCommentsEnabledChange,
 }: PageMetadataFormProps) {
   const { t } = useTranslation()
   const [slugTouched, setSlugTouched] = useState(false)
@@ -160,6 +165,18 @@ export function PageMetadataForm({
           </Field>
         )}
       />
+      {mode === 'edit' && commentsEnabled !== undefined && (
+        <Field>
+          <FieldLabel>{t('pageMetadataForm.commentsLabel')}</FieldLabel>
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={commentsEnabled}
+              onCheckedChange={(checked) => onCommentsEnabledChange?.(checked === true)}
+            />
+            <span>{t('pageMetadataForm.commentsEnabled')}</span>
+          </label>
+        </Field>
+      )}
       <CommandDialog open={parentPickerOpen} onOpenChange={setParentPickerOpen} title={t('pageMetadataForm.choosePage')}>
         <Command>
           <CommandInput placeholder={t('pageMetadataForm.searchPage')} />

@@ -7,6 +7,7 @@ export interface PageDetailResponseDto {
   content: string;
   visibility: PageVisibility;
   isPublished: boolean;
+  commentsEnabled: boolean;
   parentId: string | null;
   updatedAt: Date;
 }
