@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.2 — 2026-09-12</summary>
+
+- Nouvel endpoint \`POST /pages/:id/comments\` : créer un commentaire, ou une réponse via \`parentId\` (1 seul niveau de nesting). Ouvert à tout utilisateur authentifié ayant accès à la page, avec limitation de fréquence sur la création.
+
+</details>
+
+<details>
 <summary>0.21.1 — 2026-09-12</summary>
 
 - Nouvel endpoint \`GET /pages/:id/comments\` : liste les commentaires d'une page (arbre à un niveau, réponses incluses), en respectant la visibilité de la page.

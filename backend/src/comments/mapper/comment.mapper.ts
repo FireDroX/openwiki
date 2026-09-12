@@ -20,6 +20,13 @@ export class CommentMapper {
     };
   }
 
+  static toResponse(
+    comment: Comment,
+    authorNames: Map<string, string>,
+  ): ResponseDto<CommentResponseDto> {
+    return new ResponseDto(CommentMapper.toResponseDto(comment, authorNames));
+  }
+
   static toTree(
     comments: Comment[],
     authorNames: Map<string, string>,
