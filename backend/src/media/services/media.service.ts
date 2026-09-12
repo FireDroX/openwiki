@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { AttachmentInUseException } from '../../common/exceptions/media/attachment-in-use.exception.js';
 import { AttachmentNotFoundException } from '../../common/exceptions/media/attachment-not-found.exception.js';
@@ -119,7 +119,14 @@ export class MediaService {
   async findLibrary(
     query: ListMediaQueryDto,
     currentUser?: AuthenticatedUser,
-  ): Promise<{ items: { attachment: Attachment; url: string }[]; total: number }> {
+  ): Promise<{
+    items: { attachment: Attachment; url: string }[];
+    total: number;
+  }> {
+    if (!currentUser) {
+      throw new UnauthorizedException();
+    }
+
     const page = MediaService.parsePage(query.page);
     const limit = MediaService.parseLimit(query.limit);
     const type = MediaService.parseType(query.type);
@@ -186,7 +193,6 @@ export class MediaService {
     const referencingPages =
       await this.attachmentsRepository.findPagesReferencing(
         attachment.minioKey,
-        attachment.pageId,
       );
     if (referencingPages.length > 0) {
       throw new AttachmentInUseException(

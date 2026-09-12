@@ -138,7 +138,7 @@
     "uploadFailed": "Failed to upload the file.",
     "deleteSr": "Delete {{filename}}",
     "deleteConfirmTitle": "Delete this media?",
-    "deleteConfirmDescription": "{{filename}} will be permanently deleted if it isn't used on any other page.",
+    "deleteConfirmDescription": "{{filename}} will be permanently deleted if it isn't used on any page.",
     "deleteSuccess": "Media deleted.",
     "deleteFailed": "Failed to delete the media."
   },

@@ -111,7 +111,8 @@ export class MediaController {
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
-    summary: "Lister les médias d'une page, ou parcourir la médiathèque globale",
+    summary:
+      "Lister les médias d'une page, ou parcourir la médiathèque globale",
     description:
       'Avec pageId : médias de cette page (inchangé). Sans pageId : médiathèque globale filtrable (search/type) et paginée (page/limit), visibilité selon le rôle de l’utilisateur.',
   })
@@ -138,9 +139,15 @@ export class MediaController {
   @ApiQuery({
     name: 'limit',
     required: false,
-    description: 'Taille de page, défaut 20, max 100 (mode médiathèque uniquement)',
+    description:
+      'Taille de page, défaut 20, max 100 (mode médiathèque uniquement)',
   })
   @ApiOkResponse({ description: 'Liste des médias.' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Authentification requise pour la médiathèque globale (sans pageId).',
+    type: ErrorResponseDto,
+  })
   @ApiBadRequestResponse({
     description: 'pageId invalide.',
     type: ErrorResponseDto,
@@ -156,12 +163,11 @@ export class MediaController {
   async list(
     @Query() query: ListMediaQueryDto,
     @CurrentUser() user?: AuthenticatedUser,
-  ): Promise<ResponseDto<AttachmentResponseDto[]> | ResponseDto<MediaLibraryResponseDto>> {
+  ): Promise<
+    ResponseDto<AttachmentResponseDto[]> | ResponseDto<MediaLibraryResponseDto>
+  > {
     if (query.pageId) {
-      const results = await this.mediaService.findAllByPage(
-        query.pageId,
-        user,
-      );
+      const results = await this.mediaService.findAllByPage(query.pageId, user);
       return AttachmentMapper.toListResponse(results);
     }
 

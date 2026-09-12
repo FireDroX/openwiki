@@ -94,29 +94,26 @@ export class TypeormAttachmentsRepository implements AttachmentsRepository {
     );
 
     return {
-      items: rows.map(TypeormAttachmentsRepository.toAttachment),
+      items: rows.map((row) => TypeormAttachmentsRepository.toAttachment(row)),
       total: Number(countRows[0]?.total ?? 0),
     };
   }
 
   async findPagesReferencing(
     minioKey: string,
-    excludePageId: string | null,
   ): Promise<{ id: string; title: string }[]> {
-    const conditions = ['p.deleted_at IS NULL', 'pv.content LIKE ?'];
-    const values: unknown[] = [`%${minioKey}%`];
-
-    if (excludePageId) {
-      conditions.push('p.id != ?');
-      values.push(excludePageId);
-    }
+    const lastSegment = minioKey.split('/').pop() ?? minioKey;
+    const uuidMatch = lastSegment.match(
+      /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+    );
+    const needle = uuidMatch ? uuidMatch[1] : minioKey;
 
     return this.dataSource.query<{ id: string; title: string }[]>(
       `SELECT p.id AS id, pv.title AS title
        FROM pages p
        INNER JOIN page_versions pv ON pv.id = p.current_version_id
-       WHERE ${conditions.join(' AND ')}`,
-      values,
+       WHERE p.deleted_at IS NULL AND pv.content LIKE ?`,
+      [`%${needle}%`],
     );
   }
 

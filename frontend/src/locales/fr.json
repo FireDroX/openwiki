@@ -138,7 +138,7 @@
     "uploadFailed": "Échec de l'upload du fichier.",
     "deleteSr": "Supprimer {{filename}}",
     "deleteConfirmTitle": "Supprimer ce média ?",
-    "deleteConfirmDescription": "{{filename}} sera définitivement supprimé s'il n'est utilisé sur aucune autre page.",
+    "deleteConfirmDescription": "{{filename}} sera définitivement supprimé s'il n'est plus utilisé sur aucune page.",
     "deleteSuccess": "Média supprimé.",
     "deleteFailed": "Échec de la suppression du média."
   },

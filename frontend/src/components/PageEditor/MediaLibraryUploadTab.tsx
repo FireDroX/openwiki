@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { Button } from '#components/ui/button'
 import { uploadFile, type AttachmentDto } from '#api/media'
-import { extractErrorMessage } from '#lib/api-errors'
+import { uploadErrorMessage } from '#hooks/useFileUpload'
 
 interface MediaLibraryUploadTabProps {
   pageId?: string
@@ -26,7 +26,7 @@ export function MediaLibraryUploadTab({ pageId, onUploaded }: MediaLibraryUpload
       const attachment = await uploadFile(file, pageId)
       onUploaded(attachment)
     } catch (error) {
-      toast.error(extractErrorMessage(error, t('mediaLibrary.uploadFailed')))
+      toast.error(uploadErrorMessage(error, t))
     } finally {
       setUploading(false)
     }
