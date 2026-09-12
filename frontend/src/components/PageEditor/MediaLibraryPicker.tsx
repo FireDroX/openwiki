@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Images, Paperclip } from 'lucide-react'
+import { Images, Paperclip, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import {
@@ -9,6 +9,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '#components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '#components/ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#components/ui/tabs'
 import { Button } from '#components/ui/button'
 import { Input } from '#components/ui/input'
@@ -20,7 +31,7 @@ import {
   SelectValue,
 } from '#components/ui/select'
 import { MediaLibraryUploadTab } from '#components/PageEditor/MediaLibraryUploadTab'
-import { listMediaLibrary, type AttachmentDto } from '#api/media'
+import { deleteMedia, listMediaLibrary, type AttachmentDto } from '#api/media'
 import { useDebouncedValue } from '#hooks/useDebouncedValue'
 import { extractErrorMessage } from '#lib/api-errors'
 
@@ -86,6 +97,17 @@ export function MediaLibraryPicker({ pageId, onInsert }: MediaLibraryPickerProps
     handleInsert(item)
   }
 
+  async function handleDelete(item: AttachmentDto) {
+    try {
+      await deleteMedia(item.id)
+      setItems((prev) => prev.filter((existing) => existing.id !== item.id))
+      setTotal((prev) => prev - 1)
+      toast.success(t('mediaLibrary.deleteSuccess'))
+    } catch (error) {
+      toast.error(extractErrorMessage(error, t('mediaLibrary.deleteFailed')))
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -128,24 +150,57 @@ export function MediaLibraryPicker({ pageId, onInsert }: MediaLibraryPickerProps
             )}
             <div className="grid max-h-[50vh] grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4">
               {items.map((item) => (
-                <button
+                <div
                   key={item.id}
-                  type="button"
-                  className="group flex flex-col overflow-hidden rounded-lg border border-border text-left"
-                  onClick={() => handleInsert(item)}
-                  title={t('mediaLibrary.insert')}
+                  className="group relative flex flex-col overflow-hidden rounded-lg border border-border"
                 >
-                  <span className="flex aspect-square items-center justify-center bg-muted">
-                    {item.mimeType.startsWith('image/') ? (
-                      <img src={item.url} alt={item.filename} className="h-full w-full object-cover" />
-                    ) : (
-                      <Paperclip className="size-8 text-muted-foreground" />
-                    )}
-                  </span>
-                  <span className="truncate px-2 py-1 text-xs text-muted-foreground">
-                    {item.filename}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    className="flex flex-col text-left"
+                    onClick={() => handleInsert(item)}
+                    title={t('mediaLibrary.insert')}
+                  >
+                    <span className="flex aspect-square items-center justify-center bg-muted">
+                      {item.mimeType.startsWith('image/') ? (
+                        <img src={item.url} alt={item.filename} className="h-full w-full object-cover" />
+                      ) : (
+                        <Paperclip className="size-8 text-muted-foreground" />
+                      )}
+                    </span>
+                    <span className="truncate px-2 py-1 text-xs text-muted-foreground">
+                      {item.filename}
+                    </span>
+                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 />
+                        <span className="sr-only">
+                          {t('mediaLibrary.deleteSr', { filename: item.filename })}
+                        </span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('mediaLibrary.deleteConfirmTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('mediaLibrary.deleteConfirmDescription', { filename: item.filename })}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={() => handleDelete(item)}>
+                          {t('common.delete')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               ))}
             </div>
             {items.length < total && (

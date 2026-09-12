@@ -41,3 +41,7 @@ export async function listMediaLibrary(query: MediaLibraryQuery = {}): Promise<M
   })
   return data.data
 }
+
+export async function deleteMedia(id: string): Promise<void> {
+  await apiClient.delete(`/media/${id}`)
+}

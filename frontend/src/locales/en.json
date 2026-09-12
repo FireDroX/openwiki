@@ -135,7 +135,12 @@
     "uploadHint": "Upload a new file, it will be inserted automatically.",
     "chooseFile": "Choose a file",
     "uploading": "Uploading...",
-    "uploadFailed": "Failed to upload the file."
+    "uploadFailed": "Failed to upload the file.",
+    "deleteSr": "Delete {{filename}}",
+    "deleteConfirmTitle": "Delete this media?",
+    "deleteConfirmDescription": "{{filename}} will be permanently deleted if it isn't used on any other page.",
+    "deleteSuccess": "Media deleted.",
+    "deleteFailed": "Failed to delete the media."
   },
   "pageHistory": {
     "title": "Version history",

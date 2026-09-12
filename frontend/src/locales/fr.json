@@ -135,7 +135,12 @@
     "uploadHint": "Uploadez un nouveau fichier, il sera inséré automatiquement.",
     "chooseFile": "Choisir un fichier",
     "uploading": "Envoi en cours...",
-    "uploadFailed": "Échec de l'upload du fichier."
+    "uploadFailed": "Échec de l'upload du fichier.",
+    "deleteSr": "Supprimer {{filename}}",
+    "deleteConfirmTitle": "Supprimer ce média ?",
+    "deleteConfirmDescription": "{{filename}} sera définitivement supprimé s'il n'est utilisé sur aucune autre page.",
+    "deleteSuccess": "Média supprimé.",
+    "deleteFailed": "Échec de la suppression du média."
   },
   "pageHistory": {
     "title": "Historique des versions",
