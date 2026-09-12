@@ -6,13 +6,27 @@ import { CommentNotFoundException } from '../../common/exceptions/comments/comme
 import { ReplyNestingException } from '../../common/exceptions/comments/reply-nesting.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
-import { COMMENT_CONTENT_MAX_LENGTH } from '../../common/variables.global.js';
+import {
+  COMMENT_CONTENT_MAX_LENGTH,
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  MAX_LIMIT,
+} from '../../common/variables.global.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import { UsersService } from '../../users/services/users.service.js';
 import { CreateCommentDto } from '../dto/in/create-comment.dto.js';
+import { ListUserCommentsQueryDto } from '../dto/in/list-user-comments-query.dto.js';
+import { PurgeCommentsDto } from '../dto/in/purge-comments.dto.js';
 import { UpdateCommentDto } from '../dto/in/update-comment.dto.js';
 import { Comment } from '../entities/comment.entity.js';
 import type { CommentsRepository } from '../persistence/comment.repository.js';
+
+export interface UserCommentsPage {
+  items: Array<{ comment: Comment; pagePath: string | null }>;
+  total: number;
+  page: number;
+  limit: number;
+}
 
 @Injectable()
 export class CommentsService {
@@ -111,6 +125,99 @@ export class CommentsService {
         metadata: { count: deletedIds.length, ids: deletedIds },
       });
     }
+  }
+
+  async listByUser(
+    userId: string,
+    query: ListUserCommentsQueryDto,
+    admin: AuthenticatedUser,
+  ): Promise<UserCommentsPage> {
+    await this.usersService.findById(userId);
+
+    const page = CommentsService.parsePage(query.page);
+    const limit = CommentsService.parseLimit(query.limit);
+    const { items, total } = await this.commentsRepository.findAllByAuthorId(
+      userId,
+      page,
+      limit,
+    );
+
+    const withPagePath = await Promise.all(
+      items.map(async (comment) => ({
+        comment,
+        pagePath: await this.resolvePagePath(comment.pageId, admin),
+      })),
+    );
+
+    return { items: withPagePath, total, page, limit };
+  }
+
+  async purgeByUser(
+    userId: string,
+    dto: PurgeCommentsDto,
+    admin: AuthenticatedUser,
+  ): Promise<number> {
+    await this.usersService.findById(userId);
+
+    const topLevelIds = dto.commentIds
+      ? (
+          await this.commentsRepository.findByIdsAndAuthorId(
+            dto.commentIds,
+            userId,
+          )
+        ).map((comment) => comment.id)
+      : await this.commentsRepository.findAllIdsByAuthorId(userId);
+
+    const replyLists = await Promise.all(
+      topLevelIds.map((id) =>
+        this.commentsRepository.findRepliesByParentId(id),
+      ),
+    );
+    const allIds = [
+      ...topLevelIds,
+      ...replyLists.flat().map((reply) => reply.id),
+    ];
+    const uniqueIds = [...new Set(allIds)];
+
+    if (uniqueIds.length === 0) {
+      return 0;
+    }
+
+    await this.commentsRepository.deleteMany(uniqueIds);
+    await this.adminAuditLogService.record({
+      adminId: admin.id,
+      action: 'comment.purged_by_admin',
+      targetType: 'User',
+      targetId: userId,
+      metadata: { count: uniqueIds.length, ids: uniqueIds },
+    });
+
+    return uniqueIds.length;
+  }
+
+  private async resolvePagePath(
+    pageId: string,
+    admin: AuthenticatedUser,
+  ): Promise<string | null> {
+    try {
+      const page = await this.pagesService.getByIdOrFail(pageId, admin);
+      return await this.pagesService.getAncestorPath(page);
+    } catch {
+      return null;
+    }
+  }
+
+  private static parsePage(raw?: string): number {
+    const parsed = Number(raw);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_PAGE;
+  }
+
+  private static parseLimit(raw?: string): number {
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return DEFAULT_LIMIT;
+    }
+    return Math.min(parsed, MAX_LIMIT);
   }
 
   private async getByIdOrFail(id: string): Promise<Comment> {

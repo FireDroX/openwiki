@@ -4,6 +4,7 @@ import { AdminModule } from '../admin/admin.module.js';
 import { PagesModule } from '../pages/pages.module.js';
 import { UsersModule } from '../users/users.module.js';
 import {
+  AdminUserCommentsController,
   CommentController,
   PageCommentsController,
 } from './comments.controller.js';
@@ -18,7 +19,11 @@ import { CommentsService } from './services/comments.service.js';
     UsersModule,
     AdminModule,
   ],
-  controllers: [PageCommentsController, CommentController],
+  controllers: [
+    PageCommentsController,
+    CommentController,
+    AdminUserCommentsController,
+  ],
   providers: [
     { provide: 'CommentsRepository', useClass: TypeormCommentsRepository },
     CommentsService,

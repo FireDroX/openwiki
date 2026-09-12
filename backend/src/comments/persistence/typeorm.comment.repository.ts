@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Comment } from '../entities/comment.entity.js';
-import { CommentsRepository, CreateCommentInput } from './comment.repository.js';
+import {
+  CommentsRepository,
+  CreateCommentInput,
+} from './comment.repository.js';
 
 @Injectable()
 export class TypeormCommentsRepository implements CommentsRepository {
@@ -55,5 +58,34 @@ export class TypeormCommentsRepository implements CommentsRepository {
       return;
     }
     await this.repository.delete(ids);
+  }
+
+  async findAllByAuthorId(
+    authorId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ items: Comment[]; total: number }> {
+    const [items, total] = await this.repository.findAndCount({
+      where: { authorId },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return { items, total };
+  }
+
+  async findAllIdsByAuthorId(authorId: string): Promise<string[]> {
+    const rows = await this.repository.find({
+      where: { authorId },
+      select: { id: true },
+    });
+    return rows.map((row) => row.id);
+  }
+
+  findByIdsAndAuthorId(ids: string[], authorId: string): Promise<Comment[]> {
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.repository.findBy({ id: In(ids), authorId });
   }
 }

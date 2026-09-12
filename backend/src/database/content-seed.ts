@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.21
 
 <details>
+<summary>0.21.5 — 2026-09-12</summary>
+
+- Modération admin des commentaires : \`GET /admin/users/:id/comments\` liste tous les commentaires d'un utilisateur (paginé, avec la page d'origine), \`DELETE /admin/users/:id/comments\` purge tout ou une sélection (\`commentIds\`), cascade sur les réponses, tracé dans le journal d'audit.
+
+</details>
+
+<details>
 <summary>0.21.4 — 2026-09-12</summary>
 
 - Nouvel endpoint \`PATCH /comments/:id\` : l'auteur peut éditer son propre commentaire, ce qui pose \`editedAt\` (affiché "(modifié)" côté UI).

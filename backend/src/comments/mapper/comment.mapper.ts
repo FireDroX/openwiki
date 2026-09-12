@@ -1,5 +1,7 @@
+import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto.js';
 import { ResponseDto } from '../../common/dto/response.dto.js';
 import { CommentResponseDto } from '../dto/out/comment-response.dto.js';
+import { UserCommentResponseDto } from '../dto/out/user-comment-response.dto.js';
 import { Comment } from '../entities/comment.entity.js';
 
 export class CommentMapper {
@@ -45,5 +47,35 @@ export class CommentMapper {
     authorNames: Map<string, string>,
   ): ResponseDto<CommentResponseDto[]> {
     return new ResponseDto(CommentMapper.toTree(comments, authorNames));
+  }
+
+  static toUserCommentResponseDto(
+    comment: Comment,
+    pagePath: string | null,
+  ): UserCommentResponseDto {
+    return {
+      id: comment.id,
+      pageId: comment.pageId,
+      pagePath,
+      content: comment.content,
+      deletedAt: comment.deletedAt,
+      createdAt: comment.createdAt,
+    };
+  }
+
+  static toPaginatedUserComments(
+    items: Array<{ comment: Comment; pagePath: string | null }>,
+    total: number,
+    page: number,
+    limit: number,
+  ): ResponseDto<PaginatedResponseDto<UserCommentResponseDto>> {
+    return new ResponseDto({
+      items: items.map(({ comment, pagePath }) =>
+        CommentMapper.toUserCommentResponseDto(comment, pagePath),
+      ),
+      total,
+      page,
+      limit,
+    });
   }
 }

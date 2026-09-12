@@ -19,4 +19,11 @@ export interface CommentsRepository {
   ): Promise<Comment>;
   softDelete(comment: Comment): Promise<Comment>;
   deleteMany(ids: string[]): Promise<void>;
+  findAllByAuthorId(
+    authorId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ items: Comment[]; total: number }>;
+  findAllIdsByAuthorId(authorId: string): Promise<string[]>;
+  findByIdsAndAuthorId(ids: string[], authorId: string): Promise<Comment[]>;
 }
