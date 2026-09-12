@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query,
   UploadedFile,
   UseFilters,
   UseGuards,
@@ -19,6 +18,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNoContentResponse,
@@ -27,7 +27,6 @@ import {
   ApiOperation,
   ApiParam,
   ApiPayloadTooLargeResponse,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnsupportedMediaTypeResponse,
@@ -41,9 +40,10 @@ import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard.j
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import { MAX_ATTACHMENT_SIZE_MB } from '../common/variables.global.js';
-import { ListMediaQueryDto } from './dto/in/list-media-query.dto.js';
+import { ListMediaDto } from './dto/in/list-media.dto.js';
 import { UploadMediaDto } from './dto/in/upload-media.dto.js';
 import { AttachmentResponseDto } from './dto/out/attachment-response.dto.js';
+import { MediaLibraryResponseDto } from './dto/out/media-library-response.dto.js';
 import { PresignedUrlResponseDto } from './dto/out/presigned-url-response.dto.js';
 import { MediaExceptionFilter } from './filter/media-exception.filter.js';
 import { AttachmentMapper } from './mapper/attachment.mapper.js';
@@ -106,17 +106,24 @@ export class MediaController {
     return AttachmentMapper.toResponse(attachment, url);
   }
 
-  @Get()
+  @Post()
+  @HttpCode(HttpStatus.OK)
   @UseGuards(OptionalJwtAuthGuard)
-  @ApiOperation({ summary: "Lister les médias d'une page" })
-  @ApiQuery({
-    name: 'pageId',
-    required: true,
-    description: 'Identifiant de la page',
+  @ApiOperation({
+    summary:
+      "Lister les médias d'une page, ou parcourir la médiathèque globale",
+    description:
+      'Avec pageId : médias de cette page (inchangé). Sans pageId : médiathèque globale filtrable (search/type) et paginée (page/limit), visibilité selon le rôle de l’utilisateur.',
   })
-  @ApiOkResponse({ description: 'Liste des médias de la page.' })
+  @ApiBody({ type: ListMediaDto })
+  @ApiOkResponse({ description: 'Liste des médias.' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Authentification requise pour la médiathèque globale (sans pageId).',
+    type: ErrorResponseDto,
+  })
   @ApiBadRequestResponse({
-    description: 'pageId manquant ou invalide.',
+    description: 'pageId invalide.',
     type: ErrorResponseDto,
   })
   @ApiForbiddenResponse({
@@ -128,11 +135,18 @@ export class MediaController {
     type: ErrorResponseDto,
   })
   async list(
-    @Query() query: ListMediaQueryDto,
+    @Body() dto: ListMediaDto,
     @CurrentUser() user?: AuthenticatedUser,
-  ): Promise<ResponseDto<AttachmentResponseDto[]>> {
-    const results = await this.mediaService.findAllByPage(query.pageId, user);
-    return AttachmentMapper.toListResponse(results);
+  ): Promise<
+    ResponseDto<AttachmentResponseDto[]> | ResponseDto<MediaLibraryResponseDto>
+  > {
+    if (dto.pageId) {
+      const results = await this.mediaService.findAllByPage(dto.pageId, user);
+      return AttachmentMapper.toListResponse(results);
+    }
+
+    const { items, total } = await this.mediaService.findLibrary(dto, user);
+    return AttachmentMapper.toLibraryResponse(items, total);
   }
 
   @Get(':id/url')
@@ -184,6 +198,10 @@ export class MediaController {
   })
   @ApiNotFoundResponse({
     description: "Le média n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: "Le média est encore référencé par d'autres pages.",
     type: ErrorResponseDto,
   })
   async remove(

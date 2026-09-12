@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
+import { AttachmentInUseException } from '../../common/exceptions/media/attachment-in-use.exception.js';
 import { AttachmentNotFoundException } from '../../common/exceptions/media/attachment-not-found.exception.js';
 import { FileTooLargeException } from '../../common/exceptions/media/file-too-large.exception.js';
 import { StorageDeleteFailedException } from '../../common/exceptions/media/storage-delete-failed.exception.js';
@@ -9,12 +10,16 @@ import { ValidationException } from '../../common/exceptions/validation.exceptio
 import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
 import {
   ALLOWED_ATTACHMENT_MIME_TYPES,
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
   MAX_ATTACHMENT_SIZE_BYTES,
+  MAX_LIMIT,
   MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
   UUID_REGEX,
 } from '../../common/variables.global.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import type { StorageService } from '../../storage/services/storage.service.js';
+import { ListMediaDto } from '../dto/in/list-media.dto.js';
 import { UploadMediaDto } from '../dto/in/upload-media.dto.js';
 import { Attachment } from '../entities/attachment.entity.js';
 import type { AttachmentsRepository } from '../persistence/attachment.repository.js';
@@ -111,6 +116,44 @@ export class MediaService {
     );
   }
 
+  async findLibrary(
+    query: ListMediaDto,
+    currentUser?: AuthenticatedUser,
+  ): Promise<{
+    items: { attachment: Attachment; url: string }[];
+    total: number;
+  }> {
+    if (!currentUser) {
+      throw new UnauthorizedException();
+    }
+
+    const page = MediaService.parsePage(query.page);
+    const limit = MediaService.parseLimit(query.limit);
+    const type = MediaService.parseType(query.type);
+    const restrictToPublic = !MediaService.hasFullAccess(currentUser);
+
+    const { items, total } = await this.attachmentsRepository.findLibrary({
+      search: query.search?.trim() || undefined,
+      type,
+      page,
+      limit,
+      restrictToPublic,
+    });
+
+    const withUrls = await Promise.all(
+      items.map(async (attachment) => ({
+        attachment,
+        url: await this.storageService.getPresignedUrl(
+          this.bucket,
+          attachment.minioKey,
+          MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
+        ),
+      })),
+    );
+
+    return { items: withUrls, total };
+  }
+
   async getPresignedUrl(
     id: string,
     currentUser?: AuthenticatedUser,
@@ -147,6 +190,16 @@ export class MediaService {
       throw new AttachmentNotFoundException();
     }
 
+    const referencingPages =
+      await this.attachmentsRepository.findPagesReferencing(
+        attachment.minioKey,
+      );
+    if (referencingPages.length > 0) {
+      throw new AttachmentInUseException(
+        referencingPages.map((page) => page.title),
+      );
+    }
+
     try {
       await this.storageService.delete(this.bucket, attachment.minioKey);
     } catch {
@@ -175,5 +228,24 @@ export class MediaService {
     if (!ALLOWED_ATTACHMENT_MIME_TYPES.includes(file.mimetype)) {
       throw new UnsupportedFileTypeException();
     }
+  }
+
+  private static parsePage(raw?: number): number {
+    return Number.isInteger(raw) && raw! > 0 ? raw! : DEFAULT_PAGE;
+  }
+
+  private static parseLimit(raw?: number): number {
+    if (!Number.isInteger(raw) || raw! <= 0) {
+      return DEFAULT_LIMIT;
+    }
+    return Math.min(raw!, MAX_LIMIT);
+  }
+
+  private static parseType(raw?: string): 'image' | 'file' | undefined {
+    return raw === 'image' || raw === 'file' ? raw : undefined;
+  }
+
+  private static hasFullAccess(currentUser?: AuthenticatedUser): boolean {
+    return currentUser?.role === 'admin' || currentUser?.role === 'editor';
   }
 }

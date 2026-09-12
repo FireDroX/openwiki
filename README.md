@@ -25,7 +25,7 @@ Clone de WikiJS — NestJS / TypeORM / MySQL / React / TypeScript / Tailwind / s
 | Backend         | NestJS (Node.js, TypeScript)                                         |
 | ORM             | TypeORM                                                              |
 | Base de données | MySQL 8                                                              |
-| Stockage objets | Minio (S3-compatible)                                                |
+| Stockage objets | RustFS (S3-compatible ; remplace Minio, dont l'édition Community a été archivée en 2026) |
 | Frontend        | React + TypeScript + Vite                                            |
 | UI              | TailwindCSS + shadcn/ui                                              |
 | Auth            | JWT (access + refresh token)                                         |
@@ -262,12 +262,12 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 
 ### Médias
 
-| Méthode | Route          | Auth             | Description       |
-| ------- | -------------- | ---------------- | ----------------- |
-| POST    | /media/upload  | éditeur+         | Upload vers Minio |
-| GET     | /media?pageId= | selon visibilité | Médias d'une page |
-| GET     | /media/:id/url | selon visibilité | URL présignée     |
-| DELETE  | /media/:id     | éditeur+         | Supprimer         |
+| Méthode | Route          | Auth             | Description                                                           |
+| ------- | -------------- | ---------------- | ---------------------------------------------------------------------- |
+| POST    | /media/upload  | éditeur+         | Upload vers Minio                                                     |
+| POST    | /media         | selon visibilité | Corps `{ pageId }` : médias d'une page. Corps sans `pageId` : médiathèque globale, filtrable (search/type) et paginée (page/limit), authentifié |
+| GET     | /media/:id/url | selon visibilité | URL présignée                                                         |
+| DELETE  | /media/:id     | éditeur+         | Supprimer (409 si le média est encore référencé ailleurs)             |
 
 ### Tags
 
@@ -385,14 +385,24 @@ docker compose -f docker-compose.external.yml pull
 docker compose -f docker-compose.external.yml up -d
 ```
 
-Si Minio n'existe pas encore et que vous voulez le lancer à part (sans compose), une seule fois sur le serveur :
+Si le stockage objet (S3-compatible) n'existe pas encore et que vous voulez le lancer à part (sans compose), une seule fois sur le serveur — image RustFS, pas Minio : l'édition Community de Minio (serveur) a été archivée en 2026 et n'est plus distribuée nulle part (voir `docker-compose.yml`) :
 
 ```bash
 docker run -d --name minio --network mariadb-network --restart unless-stopped \
-  -e MINIO_ROOT_USER=<clé-accès> -e MINIO_ROOT_PASSWORD=<clé-secrète> \
+  -e RUSTFS_ACCESS_KEY=<clé-accès> -e RUSTFS_SECRET_KEY=<clé-secrète> \
+  -e RUSTFS_ADDRESS=":9000" -e RUSTFS_CONSOLE_ADDRESS=":9001" -e RUSTFS_CONSOLE_ENABLE=true \
   -p 9000:9000 -p 9001:9001 -v minio-data:/data \
-  minio/minio server /data --console-address ":9001"
+  rustfs/rustfs:latest /data
 ```
+
+**Serveur déjà en place avec l'ancien Minio** : RustFS tourne en uid 10001, pas root comme Minio — un volume `minio-data` déjà peuplé par l'ancien conteneur a ses fichiers appartenant à root, et RustFS ne les rechown pas au démarrage. Avant de relancer avec la nouvelle image, une seule fois :
+
+```bash
+docker compose stop minio
+docker run --rm -v <nom-projet>_minio-data:/data alpine chown -R 10001:10001 /data
+```
+
+(nom exact du volume via `docker volume ls`). Un volume neuf (nouveau déploiement) n'a pas ce problème.
 
 Ces trois fichiers `.env` ne sont **jamais commités** (`.gitignore`) : sur un premier `git clone` sans eux, `docker compose up` échoue (variables manquantes) — c'est attendu, pas un bug. Une fois créés à la main comme ci-dessus, tous les déploiements suivants (manuels ou automatiques via CI/CD) fonctionnent.
 

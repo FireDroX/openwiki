@@ -357,6 +357,50 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.20
+
+<details>
+<summary>0.20.5 — 2026-09-12</summary>
+
+- Remplacement de Minio par [RustFS](https://rustfs.com) pour le stockage objet (S3-compatible) : l'édition Community de Minio (serveur) a été archivée en 2026 et n'est plus distribuée nulle part (Docker Hub, binaires officiels). RustFS est un remplacement direct, activement maintenu et open-source (Apache 2.0) — aucun changement de configuration côté \`backend/.env\` (les variables \`MINIO_*\` restent inchangées). Sur un serveur déjà en place, une seule commande \`chown\` du volume existant est nécessaire avant la mise à jour (voir le README).
+
+</details>
+
+<details>
+<summary>0.20.4 — 2026-09-12</summary>
+
+- \`GET /media\` devient \`POST /media\` : les filtres (\`pageId\`, \`search\`, \`type\`, \`page\`, \`limit\`) passent désormais dans le corps de la requête plutôt qu'en query string, pour un typage plus simple côté backend et frontend.
+
+</details>
+
+<details>
+<summary>0.20.3 — 2026-09-12</summary>
+
+- Le picker de médiathèque permet désormais de supprimer un média directement (avec confirmation) ; la suppression est refusée avec un message explicite si le média est encore utilisé sur une autre page.
+
+</details>
+
+<details>
+<summary>0.20.2 — 2026-09-12</summary>
+
+- Nouveau bouton "Médiathèque" dans l'éditeur de pages : parcourir/rechercher les médias déjà uploadés (avec filtre image/fichier) et en insérer un directement, ou en uploader un nouveau depuis la même fenêtre.
+
+</details>
+
+<details>
+<summary>0.20.1 — 2026-09-12</summary>
+
+- La suppression d'un média (\`DELETE /media/:id\`) est désormais refusée (409) s'il est encore référencé dans le contenu d'une autre page.
+
+</details>
+
+<details>
+<summary>0.20.0 — 2026-09-12</summary>
+
+- Nouvel endpoint \`GET /media\` sans \`pageId\` : médiathèque globale filtrable (recherche par nom, type image/fichier) et paginée, respectant la visibilité des pages.
+
+</details>
+
 ## Version 0.19
 
 <details>

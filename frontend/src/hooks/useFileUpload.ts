@@ -8,7 +8,7 @@ import type { FileUploadVariant } from '#components/PageEditor/FileUploadButton'
 import { uploadFile } from '#api/media'
 import { extractErrorMessage } from '#lib/api-errors'
 
-function uploadErrorMessage(error: unknown, t: TFunction): string {
+export function uploadErrorMessage(error: unknown, t: TFunction): string {
   if (isAxiosError(error) && error.response?.status === 413) {
     return t('fileUpload.tooLarge')
   }

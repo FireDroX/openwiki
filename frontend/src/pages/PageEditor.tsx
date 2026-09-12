@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { EditorLayout } from '#components/PageEditor/EditorLayout'
 import { FileUploadButton } from '#components/PageEditor/FileUploadButton'
 import { MarkdownEditor, type MarkdownEditorHandle } from '#components/PageEditor/MarkdownEditor'
+import { MediaLibraryPicker } from '#components/PageEditor/MediaLibraryPicker'
 import { PageMetadataForm } from '#components/PageEditor/PageMetadataForm'
 import { PagePermissionsPanel } from '#components/page-settings/PagePermissionsPanel'
 import { PageTagsPanel } from '#components/page-settings/PageTagsPanel'
@@ -221,6 +222,10 @@ export function PageEditor() {
           <>
             <FileUploadButton variant="image" onFilesSelected={handleImageUpload} />
             <FileUploadButton variant="attachment" onFilesSelected={handleAttachmentUpload} />
+            <MediaLibraryPicker
+              pageId={page.id}
+              onInsert={(markdown) => editorRef.current?.insertAtCursor(markdown)}
+            />
           </>
         }
       />
