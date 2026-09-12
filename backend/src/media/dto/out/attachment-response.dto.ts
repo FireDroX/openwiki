@@ -4,4 +4,5 @@ export interface AttachmentResponseDto {
   filename: string;
   mimeType: string;
   size: number;
+  pageId: string | null;
 }

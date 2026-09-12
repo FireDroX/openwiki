@@ -1,17 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Attachment } from '../entities/attachment.entity.js';
 import {
   AttachmentsRepository,
   CreateAttachmentInput,
+  FindLibraryParams,
+  FindLibraryResult,
 } from './attachment.repository.js';
+
+interface AttachmentRow {
+  id: string;
+  pageId: string | null;
+  minioKey: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  uploadedById: string;
+  createdAt: Date;
+}
+
+interface CountRow {
+  total: string;
+}
 
 @Injectable()
 export class TypeormAttachmentsRepository implements AttachmentsRepository {
   constructor(
     @InjectRepository(Attachment)
     private readonly repository: Repository<Attachment>,
+    private readonly dataSource: DataSource,
   ) {}
 
   create(input: CreateAttachmentInput): Promise<Attachment> {
@@ -29,7 +47,72 @@ export class TypeormAttachmentsRepository implements AttachmentsRepository {
     return this.repository.findOne({ where: { id } });
   }
 
+  async findLibrary(params: FindLibraryParams): Promise<FindLibraryResult> {
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+
+    if (params.search) {
+      conditions.push('a.filename LIKE ?');
+      values.push(`%${params.search}%`);
+    }
+
+    if (params.type === 'image') {
+      conditions.push("a.mime_type LIKE 'image/%'");
+    } else if (params.type === 'file') {
+      conditions.push("a.mime_type NOT LIKE 'image/%'");
+    }
+
+    if (params.restrictToPublic) {
+      conditions.push(
+        "a.page_id IS NOT NULL AND p.visibility = 'public' AND p.is_published = 1",
+      );
+    }
+
+    const whereClause = conditions.length
+      ? `WHERE ${conditions.join(' AND ')}`
+      : '';
+    const offset = (params.page - 1) * params.limit;
+
+    const rows = await this.dataSource.query<AttachmentRow[]>(
+      `SELECT a.id AS id, a.page_id AS pageId, a.minio_key AS minioKey,
+              a.filename AS filename, a.mime_type AS mimeType, a.size AS size,
+              a.uploaded_by_id AS uploadedById, a.created_at AS createdAt
+       FROM attachments a
+       LEFT JOIN pages p ON p.id = a.page_id AND p.deleted_at IS NULL
+       ${whereClause}
+       ORDER BY a.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...values, params.limit, offset],
+    );
+
+    const countRows = await this.dataSource.query<CountRow[]>(
+      `SELECT COUNT(*) AS total
+       FROM attachments a
+       LEFT JOIN pages p ON p.id = a.page_id AND p.deleted_at IS NULL
+       ${whereClause}`,
+      values,
+    );
+
+    return {
+      items: rows.map(TypeormAttachmentsRepository.toAttachment),
+      total: Number(countRows[0]?.total ?? 0),
+    };
+  }
+
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
+  }
+
+  private static toAttachment(row: AttachmentRow): Attachment {
+    const attachment = new Attachment();
+    attachment.id = row.id;
+    attachment.pageId = row.pageId;
+    attachment.minioKey = row.minioKey;
+    attachment.filename = row.filename;
+    attachment.mimeType = row.mimeType;
+    attachment.size = row.size;
+    attachment.uploadedById = row.uploadedById;
+    attachment.createdAt = row.createdAt;
+    return attachment;
   }
 }

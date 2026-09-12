@@ -357,6 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.20
+
+<details>
+<summary>0.20.0 — 2026-09-12</summary>
+
+- Nouvel endpoint \`GET /media\` sans \`pageId\` : médiathèque globale filtrable (recherche par nom, type image/fichier) et paginée, respectant la visibilité des pages.
+
+</details>
+
 ## Version 0.19
 
 <details>

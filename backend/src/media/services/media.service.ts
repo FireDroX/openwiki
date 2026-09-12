@@ -9,12 +9,16 @@ import { ValidationException } from '../../common/exceptions/validation.exceptio
 import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
 import {
   ALLOWED_ATTACHMENT_MIME_TYPES,
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
   MAX_ATTACHMENT_SIZE_BYTES,
+  MAX_LIMIT,
   MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
   UUID_REGEX,
 } from '../../common/variables.global.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import type { StorageService } from '../../storage/services/storage.service.js';
+import { ListMediaQueryDto } from '../dto/in/list-media-query.dto.js';
 import { UploadMediaDto } from '../dto/in/upload-media.dto.js';
 import { Attachment } from '../entities/attachment.entity.js';
 import type { AttachmentsRepository } from '../persistence/attachment.repository.js';
@@ -111,6 +115,37 @@ export class MediaService {
     );
   }
 
+  async findLibrary(
+    query: ListMediaQueryDto,
+    currentUser?: AuthenticatedUser,
+  ): Promise<{ items: { attachment: Attachment; url: string }[]; total: number }> {
+    const page = MediaService.parsePage(query.page);
+    const limit = MediaService.parseLimit(query.limit);
+    const type = MediaService.parseType(query.type);
+    const restrictToPublic = !MediaService.hasFullAccess(currentUser);
+
+    const { items, total } = await this.attachmentsRepository.findLibrary({
+      search: query.search?.trim() || undefined,
+      type,
+      page,
+      limit,
+      restrictToPublic,
+    });
+
+    const withUrls = await Promise.all(
+      items.map(async (attachment) => ({
+        attachment,
+        url: await this.storageService.getPresignedUrl(
+          this.bucket,
+          attachment.minioKey,
+          MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
+        ),
+      })),
+    );
+
+    return { items: withUrls, total };
+  }
+
   async getPresignedUrl(
     id: string,
     currentUser?: AuthenticatedUser,
@@ -175,5 +210,26 @@ export class MediaService {
     if (!ALLOWED_ATTACHMENT_MIME_TYPES.includes(file.mimetype)) {
       throw new UnsupportedFileTypeException();
     }
+  }
+
+  private static parsePage(raw?: string): number {
+    const parsed = Number(raw);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_PAGE;
+  }
+
+  private static parseLimit(raw?: string): number {
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return DEFAULT_LIMIT;
+    }
+    return Math.min(parsed, MAX_LIMIT);
+  }
+
+  private static parseType(raw?: string): 'image' | 'file' | undefined {
+    return raw === 'image' || raw === 'file' ? raw : undefined;
+  }
+
+  private static hasFullAccess(currentUser?: AuthenticatedUser): boolean {
+    return currentUser?.role === 'admin' || currentUser?.role === 'editor';
   }
 }

@@ -44,6 +44,7 @@ import { MAX_ATTACHMENT_SIZE_MB } from '../common/variables.global.js';
 import { ListMediaQueryDto } from './dto/in/list-media-query.dto.js';
 import { UploadMediaDto } from './dto/in/upload-media.dto.js';
 import { AttachmentResponseDto } from './dto/out/attachment-response.dto.js';
+import { MediaLibraryResponseDto } from './dto/out/media-library-response.dto.js';
 import { PresignedUrlResponseDto } from './dto/out/presigned-url-response.dto.js';
 import { MediaExceptionFilter } from './filter/media-exception.filter.js';
 import { AttachmentMapper } from './mapper/attachment.mapper.js';
@@ -108,15 +109,39 @@ export class MediaController {
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  @ApiOperation({ summary: "Lister les médias d'une page" })
+  @ApiOperation({
+    summary: "Lister les médias d'une page, ou parcourir la médiathèque globale",
+    description:
+      'Avec pageId : médias de cette page (inchangé). Sans pageId : médiathèque globale filtrable (search/type) et paginée (page/limit), visibilité selon le rôle de l’utilisateur.',
+  })
   @ApiQuery({
     name: 'pageId',
-    required: true,
-    description: 'Identifiant de la page',
+    required: false,
+    description: 'Identifiant de la page (mode page unique)',
   })
-  @ApiOkResponse({ description: 'Liste des médias de la page.' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Filtre par nom de fichier (mode médiathèque uniquement)',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: '"image" ou "file" (mode médiathèque uniquement)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Numéro de page, défaut 1 (mode médiathèque uniquement)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Taille de page, défaut 20, max 100 (mode médiathèque uniquement)',
+  })
+  @ApiOkResponse({ description: 'Liste des médias.' })
   @ApiBadRequestResponse({
-    description: 'pageId manquant ou invalide.',
+    description: 'pageId invalide.',
     type: ErrorResponseDto,
   })
   @ApiForbiddenResponse({
@@ -130,9 +155,17 @@ export class MediaController {
   async list(
     @Query() query: ListMediaQueryDto,
     @CurrentUser() user?: AuthenticatedUser,
-  ): Promise<ResponseDto<AttachmentResponseDto[]>> {
-    const results = await this.mediaService.findAllByPage(query.pageId, user);
-    return AttachmentMapper.toListResponse(results);
+  ): Promise<ResponseDto<AttachmentResponseDto[]> | ResponseDto<MediaLibraryResponseDto>> {
+    if (query.pageId) {
+      const results = await this.mediaService.findAllByPage(
+        query.pageId,
+        user,
+      );
+      return AttachmentMapper.toListResponse(results);
+    }
+
+    const { items, total } = await this.mediaService.findLibrary(query, user);
+    return AttachmentMapper.toLibraryResponse(items, total);
   }
 
   @Get(':id/url')

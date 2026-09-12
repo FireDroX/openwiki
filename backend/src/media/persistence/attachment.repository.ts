@@ -9,9 +9,23 @@ export interface CreateAttachmentInput {
   uploadedById: string;
 }
 
+export interface FindLibraryParams {
+  search?: string;
+  type?: 'image' | 'file';
+  page: number;
+  limit: number;
+  restrictToPublic: boolean;
+}
+
+export interface FindLibraryResult {
+  items: Attachment[];
+  total: number;
+}
+
 export interface AttachmentsRepository {
   create(input: CreateAttachmentInput): Promise<Attachment>;
   findAllByPageId(pageId: string): Promise<Attachment[]>;
   findById(id: string): Promise<Attachment | null>;
+  findLibrary(params: FindLibraryParams): Promise<FindLibraryResult>;
   delete(id: string): Promise<void>;
 }
