@@ -2,6 +2,8 @@ import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
 import { UserNotFoundException } from '../../common/exceptions/users/user-not-found.exception.js';
+import { ValidationException } from '../../common/exceptions/validation.exception.js';
+import { UpdateProfileDto } from '../dto/in/update-profile.dto.js';
 import { User } from '../entities/user.entity.js';
 import type { UserRepository } from '../persistence/user.repository.js';
 import { UsersService } from './users.service.js';
@@ -67,6 +69,39 @@ describe('UsersService', () => {
       await expect(service.findById('missing')).rejects.toBeInstanceOf(
         UserNotFoundException,
       );
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('updates displayName and returns the updated user', async () => {
+      const user = buildUser();
+      const updated = buildUser({ displayName: 'New Name' });
+      userRepository.findById.mockResolvedValue(user);
+      userRepository.update.mockResolvedValue(updated);
+
+      const dto: UpdateProfileDto = { displayName: 'New Name' };
+      const result = await service.updateProfile('user-1', dto);
+
+      expect(userRepository.update).toHaveBeenCalledWith('user-1', dto);
+      expect(result).toEqual(updated);
+    });
+
+    it('throws ValidationException when displayName is empty', async () => {
+      userRepository.findById.mockResolvedValue(buildUser());
+
+      await expect(
+        service.updateProfile('user-1', { displayName: '' }),
+      ).rejects.toBeInstanceOf(ValidationException);
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('throws ValidationException when displayName is too long', async () => {
+      userRepository.findById.mockResolvedValue(buildUser());
+
+      await expect(
+        service.updateProfile('user-1', { displayName: 'a'.repeat(101) }),
+      ).rejects.toBeInstanceOf(ValidationException);
+      expect(userRepository.update).not.toHaveBeenCalled();
     });
   });
 });

@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.2 — 2026-09-13</summary>
+
+- Tests de non-régression pour \`PATCH /users/me\` : validation du nom d'affichage (2-100 caractères) et confirmation qu'un utilisateur ne peut pas changer son propre rôle via cet endpoint, en préparation de l'écran "Mon profil".
+
+</details>
+
+<details>
 <summary>0.22.1 — 2026-09-13</summary>
 
 - \`GET /users/me\` renvoie désormais \`commentsCount\` (nombre de commentaires écrits, hors supprimés), en préparation de l'écran "Mon profil".
