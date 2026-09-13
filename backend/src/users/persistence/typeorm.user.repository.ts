@@ -55,6 +55,11 @@ export class TypeormUserRepository implements UserRepository {
     return (await this.findById(id)) as User;
   }
 
+  async updatePassword(id: string, passwordHash: string): Promise<User> {
+    await this.repository.update(id, { passwordHash });
+    return (await this.findById(id)) as User;
+  }
+
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }

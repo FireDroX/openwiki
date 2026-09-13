@@ -25,6 +25,7 @@ import { PwnedPasswordService } from '../../security/services/pwned-password.ser
 import { TurnstileService } from '../../security/services/turnstile.service.js';
 import { User } from '../../users/entities/user.entity.js';
 import { UsersService } from '../../users/services/users.service.js';
+import { ChangePasswordDto } from '../dto/in/change-password.dto.js';
 import { LoginDto } from '../dto/in/login.dto.js';
 import { RegisterDto } from '../dto/in/register.dto.js';
 
@@ -112,6 +113,30 @@ export class AuthService {
       targetId: user.id,
     });
     return this.generateTokens(user);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.usersService.findById(userId);
+
+    if (!(await bcrypt.compare(dto.currentPassword, user.passwordHash))) {
+      throw new InvalidCredentialsException();
+    }
+
+    AuthService.validatePasswordComplexity(dto.newPassword);
+
+    if (await this.pwnedPasswordService.checkPassword(dto.newPassword)) {
+      throw new CompromisedPasswordException();
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, SALT_ROUNDS);
+    await this.usersService.updatePassword(userId, passwordHash);
+
+    void this.userActivityLogService.record({
+      userId,
+      action: 'auth.password_changed',
+      targetType: 'user',
+      targetId: userId,
+    });
   }
 
   refresh(refreshToken: string | undefined): { accessToken: string } {

@@ -3,10 +3,16 @@ import { ResponseDto } from '../../common/dto/response.dto.js';
 import { User } from '../entities/user.entity.js';
 import { UserResponseDto } from '../dto/out/user-response.dto.js';
 
+export interface UserResponseStats {
+  commentsCount?: number;
+  pagesCreatedCount?: number;
+  pageEditsCount?: number;
+}
+
 export class UserMapper {
   static toUserResponseDto(
     entity: User,
-    commentsCount?: number,
+    stats: UserResponseStats = {},
   ): UserResponseDto {
     return {
       id: entity.id,
@@ -15,15 +21,23 @@ export class UserMapper {
       role: entity.role,
       avatarUrl: entity.avatarUrl,
       createdAt: entity.createdAt,
-      ...(commentsCount !== undefined ? { commentsCount } : {}),
+      ...(stats.commentsCount !== undefined
+        ? { commentsCount: stats.commentsCount }
+        : {}),
+      ...(stats.pagesCreatedCount !== undefined
+        ? { pagesCreatedCount: stats.pagesCreatedCount }
+        : {}),
+      ...(stats.pageEditsCount !== undefined
+        ? { pageEditsCount: stats.pageEditsCount }
+        : {}),
     };
   }
 
   static toResponse(
     entity: User,
-    commentsCount?: number,
+    stats: UserResponseStats = {},
   ): ResponseDto<UserResponseDto> {
-    return new ResponseDto(UserMapper.toUserResponseDto(entity, commentsCount));
+    return new ResponseDto(UserMapper.toUserResponseDto(entity, stats));
   }
 
   static toPaginatedResponse(

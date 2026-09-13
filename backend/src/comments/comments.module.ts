@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ActivityModule } from '../activity/activity.module.js';
 import { AdminModule } from '../admin/admin.module.js';
 import { PagesModule } from '../pages/pages.module.js';
 import { UsersModule } from '../users/users.module.js';
@@ -17,6 +18,7 @@ import { CommentsService } from './services/comments.service.js';
     forwardRef(() => PagesModule),
     forwardRef(() => UsersModule),
     AdminModule,
+    ActivityModule,
   ],
   controllers: [CommentController, AdminUserCommentsController],
   providers: [

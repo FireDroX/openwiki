@@ -41,6 +41,7 @@ describe('UsersService', () => {
       update: vi.fn(),
       findAllPaginated: vi.fn(),
       updateRole: vi.fn(),
+      updatePassword: vi.fn(),
       delete: vi.fn(),
       incrementFailedLoginAttempts: vi.fn(),
       lockAccount: vi.fn(),

@@ -8,4 +8,6 @@ export interface UserResponseDto {
   avatarUrl: string | null;
   createdAt: Date;
   commentsCount?: number;
+  pagesCreatedCount?: number;
+  pageEditsCount?: number;
 }

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { CommentDeleteForbiddenException } from '../../common/exceptions/comments/comment-delete-forbidden.exception.js';
 import { CommentEditForbiddenException } from '../../common/exceptions/comments/comment-edit-forbidden.exception.js';
 import { CommentNotFoundException } from '../../common/exceptions/comments/comment-not-found.exception.js';
@@ -41,6 +42,7 @@ export class CommentsService {
     private readonly pagesService: PagesService,
     private readonly usersService: UsersService,
     private readonly adminAuditLogService: AdminAuditLogService,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   async findAllByPage(
@@ -74,6 +76,13 @@ export class CommentsService {
       authorId: currentUser.id,
       parentId,
       content: dto.content,
+    });
+    void this.userActivityLogService.record({
+      userId: currentUser.id,
+      action: 'comment.created',
+      targetType: 'comment',
+      targetId: comment.id,
+      metadata: { pageId },
     });
     const authorNames = await this.resolveAuthorNames([comment]);
     return { comment, authorNames };

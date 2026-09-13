@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.10 — 2026-09-13</summary>
+
+- La page "Mon profil" a été entièrement refaite : identité (photo, nom, e-mail, rôle, date d'inscription) et statistiques (pages créées, modifications, commentaires) en tête, onglets Profil / Activité / Sécurité. Nouveaux endpoints \`GET /users/me/activity\` (historique personnel) et \`PATCH /auth/password\` (changer son mot de passe).
+
+</details>
+
+<details>
 <summary>0.22.9 — 2026-09-13</summary>
 
 - Nouvel endpoint \`GET /users/me/comments\` : chaque utilisateur peut lister ses propres commentaires (page d'origine, date), hors commentaires supprimés.

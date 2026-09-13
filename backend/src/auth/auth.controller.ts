@@ -3,14 +3,17 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
   UseFilters,
+  UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -20,12 +23,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
+import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { ResponseDto } from '../common/dto/response.dto.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from '../common/variables.global.js';
+import { ChangePasswordDto } from './dto/in/change-password.dto.js';
 import { LoginDto } from './dto/in/login.dto.js';
 import { RegisterDto } from './dto/in/register.dto.js';
 import { UserResponseDto } from './dto/out/user-response.dto.js';
@@ -138,6 +145,29 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response): ResponseDto<null> {
     res.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
     res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
+    return new ResponseDto(null);
+  }
+
+  @Patch('password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Changer mon mot de passe' })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiOkResponse({ description: 'Mot de passe mis à jour.' })
+  @ApiBadRequestResponse({
+    description: 'Nouveau mot de passe trop faible ou compromis.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise, ou mot de passe actuel incorrect.',
+    type: ErrorResponseDto,
+  })
+  async changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<ResponseDto<null>> {
+    await this.authService.changePassword(user.id, dto);
     return new ResponseDto(null);
   }
 

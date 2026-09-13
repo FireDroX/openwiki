@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActivityModule } from '../activity/activity.module.js';
 import { AdminModule } from '../admin/admin.module.js';
 import { CommentsModule } from '../comments/comments.module.js';
+import { PagesModule } from '../pages/pages.module.js';
 import { StorageModule } from '../storage/storage.module.js';
 import { User } from './entities/user.entity.js';
 import { TypeormUserRepository } from './persistence/typeorm.user.repository.js';
@@ -17,6 +18,7 @@ import { AdminUsersController, UsersController } from './users.controller.js';
     ActivityModule,
     StorageModule,
     forwardRef(() => CommentsModule),
+    forwardRef(() => PagesModule),
   ],
   controllers: [UsersController, AdminUsersController],
   providers: [

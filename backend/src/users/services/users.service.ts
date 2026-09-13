@@ -165,6 +165,10 @@ export class UsersService {
     return this.userRepository.resetFailedLoginAttempts(id);
   }
 
+  updatePassword(id: string, passwordHash: string): Promise<User> {
+    return this.userRepository.updatePassword(id, passwordHash);
+  }
+
   private validateAvatar(file: UploadedAvatarFile): void {
     if (file.size > AVATAR_MAX_SIZE_BYTES) {
       throw new ValidationException(

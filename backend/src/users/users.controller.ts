@@ -29,6 +29,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { UserActivityLogService } from '../activity/services/user-activity-log.service.js';
+import { UserActivityLogListDto } from '../activity/dto/out/user-activity-log-response.dto.js';
+import { UserActivityLogMapper } from '../activity/mapper/user-activity-log.mapper.js';
 import { ListUserCommentsQueryDto } from '../comments/dto/in/list-user-comments-query.dto.js';
 import { UserCommentResponseDto } from '../comments/dto/out/user-comment-response.dto.js';
 import { CommentMapper } from '../comments/mapper/comment.mapper.js';
@@ -42,6 +45,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import { AVATAR_MAX_SIZE_MB } from '../common/variables.global.js';
+import { PagesService } from '../pages/services/pages.service.js';
+import { ListMyActivityQueryDto } from './dto/in/list-my-activity-query.dto.js';
 import { ListUsersQueryDto } from './dto/in/list-users-query.dto.js';
 import { UpdateProfileDto } from './dto/in/update-profile.dto.js';
 import { UpdateRoleDto } from './dto/in/update-role.dto.js';
@@ -57,6 +62,8 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly commentsService: CommentsService,
+    private readonly pagesService: PagesService,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   @Get('me')
@@ -72,8 +79,37 @@ export class UsersController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<UserResponseDto>> {
     const entity = await this.usersService.findById(user.id);
-    const commentsCount = await this.commentsService.countByAuthorId(user.id);
-    return UserMapper.toResponse(entity, commentsCount);
+    const [commentsCount, pagesCreatedCount, pageEditsCount] =
+      await Promise.all([
+        this.commentsService.countByAuthorId(user.id),
+        this.pagesService.countCreatedByUser(user.id),
+        this.pagesService.countVersionsByAuthor(user.id),
+      ]);
+    return UserMapper.toResponse(entity, {
+      commentsCount,
+      pagesCreatedCount,
+      pageEditsCount,
+    });
+  }
+
+  @Get('me/activity')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lister mon activité récente' })
+  @ApiOkResponse({ description: 'Activité paginée, plus récente en premier.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async listMyActivity(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListMyActivityQueryDto,
+  ): Promise<ResponseDto<UserActivityLogListDto>> {
+    const { items, total } = await this.userActivityLogService.list({
+      ...query,
+      userId: user.id,
+    });
+    return UserActivityLogMapper.toListResponse(items, total);
   }
 
   @Get('me/comments')
