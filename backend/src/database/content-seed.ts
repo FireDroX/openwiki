@@ -357,6 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.22
+
+<details>
+<summary>0.22.1 — 2026-09-13</summary>
+
+- \`GET /users/me\` renvoie désormais \`commentsCount\` (nombre de commentaires écrits, hors supprimés), en préparation de l'écran "Mon profil".
+
+</details>
+
 ## Version 0.21
 
 <details>

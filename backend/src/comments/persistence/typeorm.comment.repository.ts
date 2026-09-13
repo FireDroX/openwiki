@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { Comment } from '../entities/comment.entity.js';
 import {
   CommentsRepository,
@@ -87,5 +87,11 @@ export class TypeormCommentsRepository implements CommentsRepository {
       return Promise.resolve([]);
     }
     return this.repository.findBy({ id: In(ids), authorId });
+  }
+
+  countByAuthorId(authorId: string): Promise<number> {
+    return this.repository.count({
+      where: { authorId, deletedAt: IsNull() },
+    });
   }
 }

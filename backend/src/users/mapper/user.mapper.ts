@@ -4,7 +4,10 @@ import { User } from '../entities/user.entity.js';
 import { UserResponseDto } from '../dto/out/user-response.dto.js';
 
 export class UserMapper {
-  static toUserResponseDto(entity: User): UserResponseDto {
+  static toUserResponseDto(
+    entity: User,
+    commentsCount?: number,
+  ): UserResponseDto {
     return {
       id: entity.id,
       email: entity.email,
@@ -12,11 +15,15 @@ export class UserMapper {
       role: entity.role,
       avatarUrl: entity.avatarUrl,
       createdAt: entity.createdAt,
+      ...(commentsCount !== undefined ? { commentsCount } : {}),
     };
   }
 
-  static toResponse(entity: User): ResponseDto<UserResponseDto> {
-    return new ResponseDto(UserMapper.toUserResponseDto(entity));
+  static toResponse(
+    entity: User,
+    commentsCount?: number,
+  ): ResponseDto<UserResponseDto> {
+    return new ResponseDto(UserMapper.toUserResponseDto(entity, commentsCount));
   }
 
   static toPaginatedResponse(

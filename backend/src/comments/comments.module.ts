@@ -15,7 +15,7 @@ import { CommentsService } from './services/comments.service.js';
   imports: [
     TypeOrmModule.forFeature([Comment]),
     forwardRef(() => PagesModule),
-    UsersModule,
+    forwardRef(() => UsersModule),
     AdminModule,
   ],
   controllers: [CommentController, AdminUserCommentsController],

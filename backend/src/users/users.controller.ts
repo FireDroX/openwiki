@@ -24,6 +24,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { CommentsService } from '../comments/services/comments.service.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
@@ -44,7 +45,10 @@ import { UsersService } from './services/users.service.js';
 @Controller('users')
 @UseFilters(UsersExceptionFilter)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly commentsService: CommentsService,
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -59,7 +63,8 @@ export class UsersController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<UserResponseDto>> {
     const entity = await this.usersService.findById(user.id);
-    return UserMapper.toResponse(entity);
+    const commentsCount = await this.commentsService.countByAuthorId(user.id);
+    return UserMapper.toResponse(entity, commentsCount);
   }
 
   @Patch('me')
