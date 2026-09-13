@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.13 — 2026-09-13</summary>
+
+- La liste des utilisateurs (Administration > Utilisateurs) affiche désormais la vraie photo de profil de chacun, avec repli sur les initiales si elle n'en a pas.
+
+</details>
+
+<details>
 <summary>0.22.12 — 2026-09-13</summary>
 
 - Le journal d'activité admin (Administration > Activité) traduit maintenant toutes les actions (mot de passe modifié, version restaurée, visibilité modifiée, commentaires activés/désactivés, commentaire ajouté, photo de profil changée/retirée) au lieu d'afficher le code brut de l'action pour celles manquantes.

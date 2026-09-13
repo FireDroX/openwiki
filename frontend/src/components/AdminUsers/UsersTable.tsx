@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Avatar, AvatarFallback } from '#components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '#components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#components/ui/table'
 import { DeleteUserDialog } from '#components/AdminUsers/DeleteUserDialog'
@@ -48,6 +48,7 @@ export function UsersTable({ users, currentUserId, pendingUserId, onRoleChange, 
               <TableCell>
                 <div className="flex items-center gap-2.5">
                   <Avatar>
+                    <AvatarImage src={user.avatarUrl ?? undefined} alt={user.displayName} />
                     <AvatarFallback>{toInitials(user.displayName)}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
