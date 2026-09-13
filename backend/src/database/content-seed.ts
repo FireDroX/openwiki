@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.6 — 2026-09-13</summary>
+
+- Les commentaires affichent désormais la vraie photo de profil de leur auteur (au lieu des seules initiales) quand il en a une.
+
+</details>
+
+<details>
 <summary>0.22.5 — 2026-09-13</summary>
 
 - La page "Mon profil" permet désormais de changer ou retirer sa photo de profil (aperçu avant envoi, confirmation pour le retrait).

@@ -21,6 +21,11 @@ import { UpdateCommentDto } from '../dto/in/update-comment.dto.js';
 import { Comment } from '../entities/comment.entity.js';
 import type { CommentsRepository } from '../persistence/comment.repository.js';
 
+export interface AuthorInfo {
+  displayName: string;
+  avatarUrl: string | null;
+}
+
 export interface UserCommentsPage {
   items: Array<{ comment: Comment; pagePath: string | null }>;
   total: number;
@@ -40,7 +45,7 @@ export class CommentsService {
 
   async findAllByPage(
     pageId: string,
-  ): Promise<{ comments: Comment[]; authorNames: Map<string, string> }> {
+  ): Promise<{ comments: Comment[]; authorNames: Map<string, AuthorInfo> }> {
     const comments = await this.commentsRepository.findAllByPageId(pageId);
     const authorNames = await this.resolveAuthorNames(comments);
     return { comments, authorNames };
@@ -50,7 +55,7 @@ export class CommentsService {
     pageId: string,
     dto: CreateCommentDto,
     currentUser: AuthenticatedUser,
-  ): Promise<{ comment: Comment; authorNames: Map<string, string> }> {
+  ): Promise<{ comment: Comment; authorNames: Map<string, AuthorInfo> }> {
     this.validateContent(dto.content);
 
     const parentId = dto.parentId ?? null;
@@ -78,7 +83,7 @@ export class CommentsService {
     id: string,
     dto: UpdateCommentDto,
     currentUser: AuthenticatedUser,
-  ): Promise<{ comment: Comment; authorNames: Map<string, string> }> {
+  ): Promise<{ comment: Comment; authorNames: Map<string, AuthorInfo> }> {
     const comment = await this.getByIdOrFail(id);
     if (comment.authorId !== currentUser.id) {
       throw new CommentEditForbiddenException();
@@ -249,20 +254,23 @@ export class CommentsService {
 
   private async resolveAuthorNames(
     comments: Comment[],
-  ): Promise<Map<string, string>> {
+  ): Promise<Map<string, AuthorInfo>> {
     const uniqueAuthorIds = [...new Set(comments.map((c) => c.authorId))];
     const entries = await Promise.all(
       uniqueAuthorIds.map(async (authorId) => {
         try {
           const author = await this.usersService.findById(authorId);
-          return [authorId, author.displayName] as const;
+          return [
+            authorId,
+            { displayName: author.displayName, avatarUrl: author.avatarUrl },
+          ] as const;
         } catch {
           return null;
         }
       }),
     );
     return new Map(
-      entries.filter((entry): entry is [string, string] => entry !== null),
+      entries.filter((entry): entry is [string, AuthorInfo] => entry !== null),
     );
   }
 }

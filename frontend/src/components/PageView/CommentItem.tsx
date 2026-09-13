@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '#components/ui/alert-dialog'
-import { Avatar, AvatarFallback } from '#components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '#components/ui/avatar'
 import { Button } from '#components/ui/button'
 import { MarkdownRenderer } from '#components/MarkdownRenderer'
 import { CommentForm } from '#components/PageView/CommentForm'
@@ -74,6 +74,7 @@ export function CommentItem({ comment, replyCount = 0, onReply, onEdit, onDelete
   return (
     <div className="flex gap-3 py-3">
       <Avatar className="size-8 shrink-0">
+        <AvatarImage src={comment.authorAvatarUrl ?? undefined} alt={comment.authorDisplayName ?? ''} />
         <AvatarFallback>{toInitials(comment.authorDisplayName ?? '?')}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1 space-y-1">
