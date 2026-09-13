@@ -28,6 +28,7 @@ export interface AuthUser {
   displayName: string
   role: UserRole
   avatarUrl: string | null
+  createdAt: string
   commentsCount?: number
 }
 

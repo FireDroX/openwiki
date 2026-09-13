@@ -36,3 +36,7 @@ export function formatDateTime(isoDate: string): string {
     timeStyle: 'short',
   })
 }
+
+export function formatDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString(intlLocale(), { dateStyle: 'long' })
+}

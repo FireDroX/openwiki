@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AvatarUploader } from '#components/Profile/AvatarUploader'
+import { CommentsPreview } from '#components/Profile/CommentsPreview'
 import { ProfileForm } from '#components/Profile/ProfileForm'
 import { ProfileSummary } from '#components/Profile/ProfileSummary'
 import { getMe } from '#api/users'
@@ -47,16 +48,17 @@ export function Profile() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
-      <h1 className="font-heading text-2xl font-semibold">{t('profile.title')}</h1>
-
-      <div className="flex items-center gap-5 rounded-lg border border-border bg-card p-6">
-        <AvatarUploader user={profile} onUpdate={handleUpdate} />
-        <ProfileSummary user={profile} />
+    <div className="mx-auto flex max-w-6xl flex-col gap-10 p-8 md:flex-row">
+      <div className="flex flex-col gap-8 md:w-72 md:shrink-0 md:border-r md:border-border md:pr-10">
+        <div className="flex flex-col gap-4">
+          <AvatarUploader user={profile} onUpdate={handleUpdate} />
+          <ProfileSummary user={profile} />
+        </div>
+        <ProfileForm user={profile} onUpdate={handleUpdate} />
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6">
-        <ProfileForm user={profile} onUpdate={handleUpdate} />
+      <div className="max-w-xl">
+        <CommentsPreview />
       </div>
     </div>
   )

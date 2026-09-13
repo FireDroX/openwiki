@@ -97,7 +97,7 @@ export function AvatarUploader({ user, onUpdate }: AvatarUploaderProps) {
   const displayedAvatarUrl = previewUrl ?? user.avatarUrl ?? undefined
 
   return (
-    <div className="flex shrink-0 flex-col items-center gap-2">
+    <div className="flex shrink-0 flex-col items-start gap-2">
       <div className="relative">
         <Avatar size="lg" className="size-20">
           <AvatarImage src={displayedAvatarUrl} alt={user.displayName} />
@@ -109,9 +109,9 @@ export function AvatarUploader({ user, onUpdate }: AvatarUploaderProps) {
             disabled={pending}
             onClick={() => inputRef.current?.click()}
             aria-label={t('profile.changePhoto')}
-            className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className="absolute right-0 bottom-0 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            <Camera className="size-3.5" />
+            <Camera className="size-2.5" />
           </button>
         )}
       </div>

@@ -398,9 +398,8 @@
   },
   "profile": {
     "title": "Mon profil",
-    "commentsCount_one": "{{count}} commentaire écrit",
-    "commentsCount_other": "{{count}} commentaires écrits",
     "displayNameLabel": "Nom d'affichage",
+    "memberSince": "Membre depuis {{date}}",
     "save": "Enregistrer",
     "updateSuccess": "Profil mis à jour.",
     "updateFailed": "Impossible de mettre à jour le profil.",
@@ -415,7 +414,12 @@
     "removePhotoConfirmTitle": "Retirer la photo de profil ?",
     "removePhotoConfirmDescription": "Votre avatar reviendra à vos initiales.",
     "cancelPreview": "Annuler",
-    "confirmUpload": "Enregistrer la photo"
+    "confirmUpload": "Enregistrer la photo",
+    "commentsTitle_one": "{{count}} commentaire écrit",
+    "commentsTitle_other": "{{count}} commentaires écrits",
+    "commentsOn": "Sur",
+    "commentsEmpty": "Vous n'avez pas encore écrit de commentaire.",
+    "commentsLoadError": "Impossible de charger vos commentaires."
   },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."

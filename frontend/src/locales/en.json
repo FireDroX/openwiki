@@ -398,9 +398,8 @@
   },
   "profile": {
     "title": "My profile",
-    "commentsCount_one": "{{count}} comment written",
-    "commentsCount_other": "{{count}} comments written",
     "displayNameLabel": "Display name",
+    "memberSince": "Member since {{date}}",
     "save": "Save",
     "updateSuccess": "Profile updated.",
     "updateFailed": "Could not update the profile.",
@@ -415,7 +414,12 @@
     "removePhotoConfirmTitle": "Remove profile picture?",
     "removePhotoConfirmDescription": "Your avatar will fall back to your initials.",
     "cancelPreview": "Cancel",
-    "confirmUpload": "Save photo"
+    "confirmUpload": "Save photo",
+    "commentsTitle_one": "{{count}} comment written",
+    "commentsTitle_other": "{{count}} comments written",
+    "commentsOn": "On",
+    "commentsEmpty": "You haven't written any comments yet.",
+    "commentsLoadError": "Could not load your comments."
   },
   "errors": {
     "generic": "An error occurred, please try again."

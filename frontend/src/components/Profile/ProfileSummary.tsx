@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Badge } from '#components/ui/badge'
 import { UserRole, type AuthUser } from '#api/auth'
+import { formatDate } from '#utils/relative-time'
 
 interface ProfileSummaryProps {
   user: AuthUser
@@ -18,10 +19,11 @@ export function ProfileSummary({ user }: ProfileSummaryProps) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <h2 className="truncate font-heading text-xl font-semibold">{user.displayName}</h2>
-      <div className="flex flex-wrap items-center gap-2">
+      <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+      <div className="flex flex-wrap items-center gap-2 pt-1">
         <Badge variant="secondary">{roleLabels[user.role]}</Badge>
-        <span className="text-sm text-muted-foreground">
-          {t('profile.commentsCount', { count: user.commentsCount ?? 0 })}
+        <span className="text-xs text-muted-foreground">
+          {t('profile.memberSince', { date: formatDate(user.createdAt) })}
         </span>
       </div>
     </div>
