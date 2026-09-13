@@ -16,11 +16,14 @@ export function ProfileSummary({ user }: ProfileSummaryProps) {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <Badge variant="secondary">{roleLabels[user.role]}</Badge>
-      <span className="text-sm text-muted-foreground">
-        {t('profile.commentsCount', { count: user.commentsCount ?? 0 })}
-      </span>
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <h2 className="truncate font-heading text-xl font-semibold">{user.displayName}</h2>
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="secondary">{roleLabels[user.role]}</Badge>
+        <span className="text-sm text-muted-foreground">
+          {t('profile.commentsCount', { count: user.commentsCount ?? 0 })}
+        </span>
+      </div>
     </div>
   )
 }

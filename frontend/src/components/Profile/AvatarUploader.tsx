@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Camera } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { Avatar, AvatarFallback, AvatarImage } from '#components/ui/avatar'
@@ -96,11 +97,32 @@ export function AvatarUploader({ user, onUpdate }: AvatarUploaderProps) {
   const displayedAvatarUrl = previewUrl ?? user.avatarUrl ?? undefined
 
   return (
-    <div className="flex items-center gap-4">
-      <Avatar size="lg">
-        <AvatarImage src={displayedAvatarUrl} alt={user.displayName} />
-        <AvatarFallback>{toInitials(user.displayName)}</AvatarFallback>
-      </Avatar>
+    <div className="flex shrink-0 flex-col items-center gap-2">
+      <div className="relative">
+        <Avatar size="lg" className="size-20">
+          <AvatarImage src={displayedAvatarUrl} alt={user.displayName} />
+          <AvatarFallback className="text-lg">{toInitials(user.displayName)}</AvatarFallback>
+        </Avatar>
+        {!pendingFile && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => inputRef.current?.click()}
+            aria-label={t('profile.changePhoto')}
+            className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background transition-colors hover:bg-primary/90 disabled:opacity-50"
+          >
+            <Camera className="size-3.5" />
+          </button>
+        )}
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ALLOWED_AVATAR_TYPES.join(',')}
+        className="hidden"
+        onChange={handleFileSelected}
+      />
 
       {pendingFile ? (
         <div className="flex gap-2">
@@ -112,47 +134,35 @@ export function AvatarUploader({ user, onUpdate }: AvatarUploaderProps) {
           </Button>
         </div>
       ) : (
-        <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="file"
-            accept={ALLOWED_AVATAR_TYPES.join(',')}
-            className="hidden"
-            onChange={handleFileSelected}
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={pending}
-            onClick={() => inputRef.current?.click()}
-          >
-            {t('profile.changePhoto')}
-          </Button>
-          {user.avatarUrl && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button type="button" size="sm" variant="ghost" disabled={pending}>
+        user.avatarUrl && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant="link"
+                className="h-auto p-0 text-xs text-muted-foreground"
+                disabled={pending}
+              >
+                {t('profile.removePhoto')}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('profile.removePhotoConfirmTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('profile.removePhotoConfirmDescription')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={handleRemove}>
                   {t('profile.removePhoto')}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t('profile.removePhotoConfirmTitle')}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('profile.removePhotoConfirmDescription')}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                  <AlertDialogAction variant="destructive" onClick={handleRemove}>
-                    {t('profile.removePhoto')}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )
       )}
     </div>
   )

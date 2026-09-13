@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.8 — 2026-09-13</summary>
+
+- Refonte visuelle de la page "Mon profil" : identité (photo, nom, rôle, commentaires) et édition du nom d'affichage séparées en deux blocs, changement de photo via une icône appareil photo sur l'avatar plutôt qu'un bouton séparé.
+
+</details>
+
+<details>
 <summary>0.22.7 — 2026-09-13</summary>
 
 - La photo de profil s'affiche désormais dans le menu utilisateur de la barre de navigation (au lieu des seules initiales).
