@@ -316,13 +316,19 @@
       "searchPlaceholder": "Search...",
       "actions": {
         "auth.login": "Login",
+        "auth.password_changed": "Password changed",
         "page.created": "Page created",
         "page.updated": "Page updated",
         "page.moved": "Page moved",
         "page.deleted": "Page deleted",
-        "page.restored": "Page restored",
+        "page.restored": "Version restored",
+        "page.visibility_changed": "Visibility changed",
+        "page.comments_enabled_changed": "Comments enabled/disabled",
+        "comment.created": "Comment added",
         "media.uploaded": "Media uploaded",
-        "media.deleted": "Media deleted"
+        "media.deleted": "Media deleted",
+        "user.avatar_uploaded": "Profile picture changed",
+        "user.avatar_removed": "Profile picture removed"
       }
     }
   },

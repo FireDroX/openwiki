@@ -360,6 +360,27 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.13 — 2026-09-13</summary>
+
+- La liste des utilisateurs (Administration > Utilisateurs) affiche désormais la vraie photo de profil de chacun, avec repli sur les initiales si elle n'en a pas.
+
+</details>
+
+<details>
+<summary>0.22.12 — 2026-09-13</summary>
+
+- Le journal d'activité admin (Administration > Activité) traduit maintenant toutes les actions (mot de passe modifié, version restaurée, visibilité modifiée, commentaires activés/désactivés, commentaire ajouté, photo de profil changée/retirée) au lieu d'afficher le code brut de l'action pour celles manquantes.
+
+</details>
+
+<details>
+<summary>0.22.11 — 2026-09-13</summary>
+
+- Correction d'un décalage de 2h sur les dates de la journalisation d'activité (\`created_at\`) en production : la valeur est désormais posée par l'application (toujours en UTC) plutôt que par le \`CURRENT_TIMESTAMP\` du serveur MySQL/MariaDB, dont le fuseau horaire de session n'est pas garanti sur un serveur externe non géré par ce dépôt.
+
+</details>
+
+<details>
 <summary>0.22.10 — 2026-09-13</summary>
 
 - La page "Mon profil" a été entièrement refaite : identité (photo, nom, e-mail, rôle, date d'inscription) et statistiques (pages créées, modifications, commentaires) en tête, onglets Profil / Activité / Sécurité. Nouveaux endpoints \`GET /users/me/activity\` (historique personnel) et \`PATCH /auth/password\` (changer son mot de passe).

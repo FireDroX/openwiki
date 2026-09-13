@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { TimestampSubscriber } from '../common/subscribers/timestamp.subscriber.js';
 
 /**
  * `import.meta.glob` is a Vite build-time feature: statically replaced
@@ -70,6 +71,7 @@ export function typeOrmConfig(config: ConfigService): TypeOrmModuleOptions {
     database: config.get<string>('DB_DATABASE'),
     timezone: 'Z',
     synchronize: false,
+    subscribers: [TimestampSubscriber],
   };
 
   if (process.env.VITEST) {
