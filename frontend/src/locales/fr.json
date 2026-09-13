@@ -443,14 +443,30 @@
       "user.avatar_removed": "Photo de profil retirée"
     },
     "activityCategories": {
-      "creation": "Création",
-      "edition": "Édition",
-      "suppression": "Suppression",
-      "commentaire": "Commentaire",
+      "create": "Création",
+      "edit": "Édition",
+      "delete": "Suppression",
+      "comment": "Commentaire",
       "media": "Média",
-      "profil": "Profil",
-      "connexion": "Connexion",
-      "securite": "Sécurité"
+      "profile": "Profil",
+      "login": "Connexion",
+      "security": "Sécurité"
+    },
+    "activityActionCategories": {
+      "auth.login": "login",
+      "auth.password_changed": "security",
+      "page.created": "create",
+      "page.updated": "edit",
+      "page.restored": "edit",
+      "page.moved": "edit",
+      "page.visibility_changed": "edit",
+      "page.comments_enabled_changed": "edit",
+      "page.deleted": "delete",
+      "comment.created": "comment",
+      "media.uploaded": "media",
+      "media.deleted": "delete",
+      "user.avatar_uploaded": "profile",
+      "user.avatar_removed": "profile"
     },
     "security": {
       "passwordTitle": "Mot de passe",

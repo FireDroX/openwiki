@@ -443,14 +443,30 @@
       "user.avatar_removed": "Profile picture removed"
     },
     "activityCategories": {
-      "creation": "Created",
-      "edition": "Edited",
-      "suppression": "Deleted",
-      "commentaire": "Comment",
+      "create": "Created",
+      "edit": "Edited",
+      "delete": "Deleted",
+      "comment": "Comment",
       "media": "Media",
-      "profil": "Profile",
-      "connexion": "Login",
-      "securite": "Security"
+      "profile": "Profile",
+      "login": "Login",
+      "security": "Security"
+    },
+    "activityActionCategories": {
+      "auth.login": "login",
+      "auth.password_changed": "security",
+      "page.created": "create",
+      "page.updated": "edit",
+      "page.restored": "edit",
+      "page.moved": "edit",
+      "page.visibility_changed": "edit",
+      "page.comments_enabled_changed": "edit",
+      "page.deleted": "delete",
+      "comment.created": "comment",
+      "media.uploaded": "media",
+      "media.deleted": "delete",
+      "user.avatar_uploaded": "profile",
+      "user.avatar_removed": "profile"
     },
     "security": {
       "passwordTitle": "Password",

@@ -4,23 +4,6 @@ import type { UserActivityLogItem } from '#api/user-activity-log'
 import { useMyActivity } from '#hooks/useMyActivity'
 import { formatRelativeTime } from '#utils/relative-time'
 
-const ACTION_CATEGORIES: Record<string, string> = {
-  'page.created': 'creation',
-  'page.updated': 'edition',
-  'page.restored': 'edition',
-  'page.moved': 'edition',
-  'page.visibility_changed': 'edition',
-  'page.comments_enabled_changed': 'edition',
-  'page.deleted': 'suppression',
-  'comment.created': 'commentaire',
-  'media.uploaded': 'media',
-  'media.deleted': 'suppression',
-  'user.avatar_uploaded': 'profil',
-  'user.avatar_removed': 'profil',
-  'auth.login': 'connexion',
-  'auth.password_changed': 'securite',
-}
-
 function metadataTitle(metadata: unknown): string | null {
   if (metadata && typeof metadata === 'object' && 'title' in metadata) {
     const { title } = metadata as { title: unknown }
@@ -32,11 +15,12 @@ function metadataTitle(metadata: unknown): string | null {
 interface ActivityItemProps {
   item: UserActivityLogItem
   actionLabels: Record<string, string>
+  actionCategories: Record<string, string>
   categoryLabels: Record<string, string>
 }
 
-function ActivityItem({ item, actionLabels, categoryLabels }: ActivityItemProps) {
-  const category = ACTION_CATEGORIES[item.action] ?? 'edition'
+function ActivityItem({ item, actionLabels, actionCategories, categoryLabels }: ActivityItemProps) {
+  const category = actionCategories[item.action] ?? 'edit'
   const categoryLabel = categoryLabels[category] ?? category
   const content = metadataTitle(item.metadata) ?? actionLabels[item.action] ?? item.action
 
@@ -56,6 +40,10 @@ export function ActivityFeed() {
   const { items, total, page, limit, status, goToPage } = useMyActivity()
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const actionLabels = t('profile.activityActions', { returnObjects: true }) as Record<string, string>
+  const actionCategories = t('profile.activityActionCategories', { returnObjects: true }) as Record<
+    string,
+    string
+  >
   const categoryLabels = t('profile.activityCategories', { returnObjects: true }) as Record<string, string>
 
   return (
@@ -71,7 +59,13 @@ export function ActivityFeed() {
       {status === 'ready' && items.length > 0 && (
         <ul className="divide-y divide-border">
           {items.map((item) => (
-            <ActivityItem key={item.id} item={item} actionLabels={actionLabels} categoryLabels={categoryLabels} />
+            <ActivityItem
+              key={item.id}
+              item={item}
+              actionLabels={actionLabels}
+              actionCategories={actionCategories}
+              categoryLabels={categoryLabels}
+            />
           ))}
         </ul>
       )}
