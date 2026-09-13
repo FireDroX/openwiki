@@ -71,13 +71,6 @@ export async function listUserComments(
   return data.data
 }
 
-export async function listMyComments(page = 1, limit = 20): Promise<PaginatedUserComments> {
-  const { data } = await apiClient.get<ResponseDto<PaginatedUserComments>>('/users/me/comments', {
-    params: { page, limit },
-  })
-  return data.data
-}
-
 export async function purgeUserComments(userId: string, commentIds?: string[]): Promise<number> {
   const { data } = await apiClient.delete<ResponseDto<{ purgedCount: number }>>(
     `/admin/users/${userId}/comments`,

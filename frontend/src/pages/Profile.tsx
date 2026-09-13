@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ActivityFeed } from '#components/Profile/ActivityFeed'
 import { AvatarUploader } from '#components/Profile/AvatarUploader'
-import { CommentsPreview } from '#components/Profile/CommentsPreview'
+import { ChangePasswordForm } from '#components/Profile/ChangePasswordForm'
 import { ProfileForm } from '#components/Profile/ProfileForm'
+import { ProfileStats } from '#components/Profile/ProfileStats'
 import { ProfileSummary } from '#components/Profile/ProfileSummary'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#components/ui/tabs'
 import { getMe } from '#api/users'
 import type { AuthUser } from '#api/auth'
 import { useAuth } from '#hooks/useAuth'
@@ -48,18 +51,35 @@ export function Profile() {
   }
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-10 p-8 md:flex-row">
-      <div className="flex flex-col gap-8 md:w-72 md:shrink-0 md:border-r md:border-border md:pr-10">
-        <div className="flex flex-col gap-4">
-          <AvatarUploader user={profile} onUpdate={handleUpdate} />
-          <ProfileSummary user={profile} />
-        </div>
-        <ProfileForm user={profile} onUpdate={handleUpdate} />
-      </div>
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-8">
+      <Tabs defaultValue="profile" className="gap-6">
+        <TabsList variant="line">
+          <TabsTrigger value="profile">{t('profile.tabProfile')}</TabsTrigger>
+          <TabsTrigger value="activity">{t('profile.tabActivity')}</TabsTrigger>
+          <TabsTrigger value="security">{t('profile.tabSecurity')}</TabsTrigger>
+        </TabsList>
 
-      <div className="max-w-xl">
-        <CommentsPreview />
-      </div>
+        <TabsContent value="profile" className="flex flex-col gap-6">
+          <div className="flex items-center gap-8 rounded-lg border border-border bg-card p-6">
+            <AvatarUploader user={profile} onUpdate={handleUpdate} />
+            <ProfileSummary user={profile} />
+          </div>
+
+          <ProfileStats user={profile} />
+
+          <div className="rounded-lg border border-border bg-card p-6">
+            <ProfileForm user={profile} onUpdate={handleUpdate} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="activity">
+          <ActivityFeed />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <ChangePasswordForm />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

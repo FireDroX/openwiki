@@ -415,11 +415,52 @@
     "removePhotoConfirmDescription": "Votre avatar reviendra à vos initiales.",
     "cancelPreview": "Annuler",
     "confirmUpload": "Enregistrer la photo",
-    "commentsTitle_one": "{{count}} commentaire écrit",
-    "commentsTitle_other": "{{count}} commentaires écrits",
-    "commentsOn": "Sur",
-    "commentsEmpty": "Vous n'avez pas encore écrit de commentaire.",
-    "commentsLoadError": "Impossible de charger vos commentaires."
+    "tabProfile": "Profil",
+    "tabActivity": "Activité",
+    "tabSecurity": "Sécurité",
+    "editProfile": "Modifier le profil",
+    "stats": {
+      "pagesCreated": "Pages créées",
+      "modifications": "Modifications",
+      "comments": "Commentaires"
+    },
+    "activityEmpty": "Aucune activité pour le moment.",
+    "activityLoadError": "Impossible de charger votre activité.",
+    "activityActions": {
+      "auth.login": "Connexion",
+      "auth.password_changed": "Mot de passe modifié",
+      "page.created": "Page créée",
+      "page.updated": "Page modifiée",
+      "page.moved": "Page déplacée",
+      "page.deleted": "Page supprimée",
+      "page.restored": "Version restaurée",
+      "page.visibility_changed": "Visibilité modifiée",
+      "page.comments_enabled_changed": "Commentaires activés/désactivés",
+      "comment.created": "Commentaire ajouté",
+      "media.uploaded": "Média envoyé",
+      "media.deleted": "Média supprimé",
+      "user.avatar_uploaded": "Photo de profil changée",
+      "user.avatar_removed": "Photo de profil retirée"
+    },
+    "activityCategories": {
+      "creation": "Création",
+      "edition": "Édition",
+      "suppression": "Suppression",
+      "commentaire": "Commentaire",
+      "media": "Média",
+      "profil": "Profil",
+      "connexion": "Connexion",
+      "securite": "Sécurité"
+    },
+    "security": {
+      "passwordTitle": "Mot de passe",
+      "currentPasswordLabel": "Mot de passe actuel",
+      "newPasswordLabel": "Nouveau mot de passe",
+      "submit": "Mettre à jour",
+      "updateSuccess": "Mot de passe mis à jour.",
+      "updateFailed": "Impossible de mettre à jour le mot de passe.",
+      "incorrectCurrentPassword": "Mot de passe actuel incorrect."
+    }
   },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."

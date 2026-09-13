@@ -17,6 +17,13 @@ export interface UserActivityLogPage {
   total: number
 }
 
+export async function listMyActivity(page = 1, limit = 20): Promise<UserActivityLogPage> {
+  const { data } = await apiClient.get<ResponseDto<UserActivityLogPage>>('/users/me/activity', {
+    params: { page, limit },
+  })
+  return data.data
+}
+
 export async function listActivityLog(params: {
   userId?: string
   action?: string

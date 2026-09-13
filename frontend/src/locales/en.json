@@ -415,11 +415,52 @@
     "removePhotoConfirmDescription": "Your avatar will fall back to your initials.",
     "cancelPreview": "Cancel",
     "confirmUpload": "Save photo",
-    "commentsTitle_one": "{{count}} comment written",
-    "commentsTitle_other": "{{count}} comments written",
-    "commentsOn": "On",
-    "commentsEmpty": "You haven't written any comments yet.",
-    "commentsLoadError": "Could not load your comments."
+    "tabProfile": "Profile",
+    "tabActivity": "Activity",
+    "tabSecurity": "Security",
+    "editProfile": "Edit profile",
+    "stats": {
+      "pagesCreated": "Pages created",
+      "modifications": "Edits",
+      "comments": "Comments"
+    },
+    "activityEmpty": "No activity yet.",
+    "activityLoadError": "Could not load your activity.",
+    "activityActions": {
+      "auth.login": "Logged in",
+      "auth.password_changed": "Password changed",
+      "page.created": "Page created",
+      "page.updated": "Page updated",
+      "page.moved": "Page moved",
+      "page.deleted": "Page deleted",
+      "page.restored": "Version restored",
+      "page.visibility_changed": "Visibility changed",
+      "page.comments_enabled_changed": "Comments toggled",
+      "comment.created": "Comment added",
+      "media.uploaded": "Media uploaded",
+      "media.deleted": "Media deleted",
+      "user.avatar_uploaded": "Profile picture changed",
+      "user.avatar_removed": "Profile picture removed"
+    },
+    "activityCategories": {
+      "creation": "Created",
+      "edition": "Edited",
+      "suppression": "Deleted",
+      "commentaire": "Comment",
+      "media": "Media",
+      "profil": "Profile",
+      "connexion": "Login",
+      "securite": "Security"
+    },
+    "security": {
+      "passwordTitle": "Password",
+      "currentPasswordLabel": "Current password",
+      "newPasswordLabel": "New password",
+      "submit": "Update",
+      "updateSuccess": "Password updated.",
+      "updateFailed": "Could not update the password.",
+      "incorrectCurrentPassword": "Current password is incorrect."
+    }
   },
   "errors": {
     "generic": "An error occurred, please try again."
