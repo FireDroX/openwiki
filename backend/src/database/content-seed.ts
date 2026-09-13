@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.3 — 2026-09-13</summary>
+
+- Nouveaux endpoints \`POST /users/me/avatar\` et \`DELETE /users/me/avatar\` : upload (jpg/png/webp, 2 Mo max) et suppression de sa propre photo de profil, stockée sur Minio comme les autres médias.
+
+</details>
+
+<details>
 <summary>0.22.2 — 2026-09-13</summary>
 
 - Tests de non-régression pour \`PATCH /users/me\` : validation du nom d'affichage (2-100 caractères) et confirmation qu'un utilisateur ne peut pas changer son propre rôle via cet endpoint, en préparation de l'écran "Mon profil".

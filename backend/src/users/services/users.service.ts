@@ -1,15 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto.js';
 import { UserNotFoundException } from '../../common/exceptions/users/user-not-found.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import {
+  AVATAR_MAX_SIZE_BYTES,
+  AVATAR_MAX_SIZE_MB,
+  AVATAR_MIME_TO_EXTENSION,
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
   DISPLAY_NAME_MAX_LENGTH,
   DISPLAY_NAME_MIN_LENGTH,
   MAX_LIMIT,
+  MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
 } from '../../common/variables.global.js';
+import type { StorageService } from '../../storage/services/storage.service.js';
 import { CreateUserDto } from '../dto/in/create-user.dto.js';
 import { ListUsersQueryDto } from '../dto/in/list-users-query.dto.js';
 import { UpdateProfileDto } from '../dto/in/update-profile.dto.js';
@@ -17,11 +23,20 @@ import { UpdateRoleDto } from '../dto/in/update-role.dto.js';
 import { User, USER_ROLES } from '../entities/user.entity.js';
 import type { UserRepository } from '../persistence/user.repository.js';
 
+export interface UploadedAvatarFile {
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
     @Inject('UsersRepository') private readonly userRepository: UserRepository,
     private readonly adminAuditLogService: AdminAuditLogService,
+    @Inject('StorageService') private readonly storageService: StorageService,
+    @Inject('AvatarBucket') private readonly avatarBucket: string,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   async findById(id: string): Promise<User> {
@@ -44,6 +59,56 @@ export class UsersService {
     this.validateUpdateProfile(dto);
     await this.findById(id);
     return this.userRepository.update(id, dto);
+  }
+
+  async uploadAvatar(
+    id: string,
+    file: UploadedAvatarFile | undefined,
+  ): Promise<User> {
+    if (!file) {
+      throw new ValidationException('No file provided');
+    }
+    this.validateAvatar(file);
+
+    await this.findById(id);
+    await this.deleteExistingAvatarFiles(id);
+
+    const extension = AVATAR_MIME_TO_EXTENSION[file.mimetype];
+    const key = UsersService.avatarKey(id, extension);
+    await this.storageService.upload(
+      this.avatarBucket,
+      key,
+      file.buffer,
+      file.mimetype,
+    );
+    const avatarUrl = await this.storageService.getPresignedUrl(
+      this.avatarBucket,
+      key,
+      MEDIA_PRESIGNED_URL_EXPIRY_SECONDS,
+    );
+
+    const updated = await this.userRepository.update(id, { avatarUrl });
+    void this.userActivityLogService.record({
+      userId: id,
+      action: 'user.avatar_uploaded',
+      targetType: 'User',
+      targetId: id,
+    });
+    return updated;
+  }
+
+  async removeAvatar(id: string): Promise<User> {
+    await this.findById(id);
+    await this.deleteExistingAvatarFiles(id);
+
+    const updated = await this.userRepository.update(id, { avatarUrl: null });
+    void this.userActivityLogService.record({
+      userId: id,
+      action: 'user.avatar_removed',
+      targetType: 'User',
+      targetId: id,
+    });
+    return updated;
   }
 
   async findAllPaginated(
@@ -98,6 +163,36 @@ export class UsersService {
 
   resetFailedLoginAttempts(id: string): Promise<User> {
     return this.userRepository.resetFailedLoginAttempts(id);
+  }
+
+  private validateAvatar(file: UploadedAvatarFile): void {
+    if (file.size > AVATAR_MAX_SIZE_BYTES) {
+      throw new ValidationException(
+        `Avatar exceeds maximum size of ${AVATAR_MAX_SIZE_MB}MB`,
+      );
+    }
+    if (!AVATAR_MIME_TO_EXTENSION[file.mimetype]) {
+      throw new ValidationException('Unsupported avatar file type');
+    }
+  }
+
+  private async deleteExistingAvatarFiles(id: string): Promise<void> {
+    await Promise.all(
+      Object.values(AVATAR_MIME_TO_EXTENSION).map(async (extension) => {
+        try {
+          await this.storageService.delete(
+            this.avatarBucket,
+            UsersService.avatarKey(id, extension),
+          );
+        } catch {
+          // Nothing to delete for this extension — not an error.
+        }
+      }),
+    );
+  }
+
+  private static avatarKey(id: string, extension: string): string {
+    return `avatars/${id}/avatar.${extension}`;
   }
 
   private validateRole(role: User['role']): void {

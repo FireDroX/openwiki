@@ -7,14 +7,19 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
+  UploadedFile,
   UseFilters,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -33,13 +38,14 @@ import { ResponseDto } from '../common/dto/response.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
+import { AVATAR_MAX_SIZE_MB } from '../common/variables.global.js';
 import { ListUsersQueryDto } from './dto/in/list-users-query.dto.js';
 import { UpdateProfileDto } from './dto/in/update-profile.dto.js';
 import { UpdateRoleDto } from './dto/in/update-role.dto.js';
 import { UserResponseDto } from './dto/out/user-response.dto.js';
 import { UsersExceptionFilter } from './filter/users-exception.filter.js';
 import { UserMapper } from './mapper/user.mapper.js';
-import { UsersService } from './services/users.service.js';
+import { UploadedAvatarFile, UsersService } from './services/users.service.js';
 
 @ApiTags('Users')
 @Controller('users')
@@ -86,6 +92,52 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ): Promise<ResponseDto<UserResponseDto>> {
     const entity = await this.usersService.updateProfile(user.id, dto);
+    return UserMapper.toResponse(entity);
+  }
+
+  @Post('me/avatar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Uploader ma photo de profil' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  @ApiOkResponse({ description: 'Avatar mis à jour.' })
+  @ApiBadRequestResponse({
+    description: `Aucun fichier fourni, type non supporté, ou fichier de plus de ${AVATAR_MAX_SIZE_MB}Mo.`,
+    type: ErrorResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async uploadAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file: UploadedAvatarFile | undefined,
+  ): Promise<ResponseDto<UserResponseDto>> {
+    const entity = await this.usersService.uploadAvatar(user.id, file);
+    return UserMapper.toResponse(entity);
+  }
+
+  @Delete('me/avatar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Retirer ma photo de profil' })
+  @ApiOkResponse({ description: 'Avatar retiré.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async removeAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<UserResponseDto>> {
+    const entity = await this.usersService.removeAvatar(user.id);
     return UserMapper.toResponse(entity);
   }
 }
