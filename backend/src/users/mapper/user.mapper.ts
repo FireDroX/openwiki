@@ -21,15 +21,7 @@ export class UserMapper {
       role: entity.role,
       avatarUrl: entity.avatarUrl,
       createdAt: entity.createdAt,
-      ...(stats.commentsCount !== undefined
-        ? { commentsCount: stats.commentsCount }
-        : {}),
-      ...(stats.pagesCreatedCount !== undefined
-        ? { pagesCreatedCount: stats.pagesCreatedCount }
-        : {}),
-      ...(stats.pageEditsCount !== undefined
-        ? { pageEditsCount: stats.pageEditsCount }
-        : {}),
+      ...stats,
     };
   }
 
