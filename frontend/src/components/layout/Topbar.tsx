@@ -2,7 +2,7 @@ import { LogOut, Menu, Moon, Search, Shield, Sun, User } from 'lucide-react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
-import { Avatar, AvatarFallback } from '#components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '#components/ui/avatar'
 import { Button } from '#components/ui/button'
 import {
   DropdownMenu,
@@ -65,6 +65,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
         <DropdownMenu>
           <DropdownMenuTrigger className="ml-auto rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
             <Avatar>
+              <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.displayName} />
               <AvatarFallback>{user?.initials}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>

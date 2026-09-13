@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.7 — 2026-09-13</summary>
+
+- La photo de profil s'affiche désormais dans le menu utilisateur de la barre de navigation (au lieu des seules initiales).
+
+</details>
+
+<details>
 <summary>0.22.6 — 2026-09-13</summary>
 
 - Les commentaires affichent désormais la vraie photo de profil de leur auteur (au lieu des seules initiales) quand il en a une.

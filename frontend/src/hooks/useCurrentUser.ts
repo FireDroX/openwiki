@@ -6,6 +6,7 @@ export interface CurrentUser {
   displayName: string
   initials: string
   role: UserRole
+  avatarUrl: string | null
 }
 
 export function useCurrentUser(): CurrentUser | null {
@@ -17,5 +18,6 @@ export function useCurrentUser(): CurrentUser | null {
     displayName: user.displayName,
     initials: toInitials(user.displayName),
     role: user.role,
+    avatarUrl: user.avatarUrl,
   }
 }
