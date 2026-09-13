@@ -360,6 +360,14 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.9 — 2026-09-13</summary>
+
+- Nouvel endpoint \`GET /users/me/comments\` : chaque utilisateur peut lister ses propres commentaires (page d'origine, date), hors commentaires supprimés.
+- Refonte de la page "Mon profil" en layout pleine page à deux colonnes : identité (photo, nom, e-mail, rôle, date d'inscription, nom d'affichage) à gauche, aperçu de tous les commentaires écrits à droite.
+
+</details>
+
+<details>
 <summary>0.22.8 — 2026-09-13</summary>
 
 - Refonte visuelle de la page "Mon profil" : identité (photo, nom, rôle, commentaires) et édition du nom d'affichage séparées en deux blocs, changement de photo via une icône appareil photo sur l'avatar plutôt qu'un bouton séparé.

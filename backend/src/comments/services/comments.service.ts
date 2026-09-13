@@ -133,6 +133,7 @@ export class CommentsService {
     userId: string,
     query: ListUserCommentsQueryDto,
     admin: AuthenticatedUser,
+    excludeDeleted = false,
   ): Promise<UserCommentsPage> {
     await this.usersService.findById(userId);
 
@@ -142,6 +143,7 @@ export class CommentsService {
       userId,
       page,
       limit,
+      excludeDeleted,
     );
 
     const withPagePath = await Promise.all(

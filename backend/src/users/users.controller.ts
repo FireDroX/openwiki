@@ -29,6 +29,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ListUserCommentsQueryDto } from '../comments/dto/in/list-user-comments-query.dto.js';
+import { UserCommentResponseDto } from '../comments/dto/out/user-comment-response.dto.js';
+import { CommentMapper } from '../comments/mapper/comment.mapper.js';
 import { CommentsService } from '../comments/services/comments.service.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -71,6 +74,30 @@ export class UsersController {
     const entity = await this.usersService.findById(user.id);
     const commentsCount = await this.commentsService.countByAuthorId(user.id);
     return UserMapper.toResponse(entity, commentsCount);
+  }
+
+  @Get('me/comments')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Lister les commentaires que j'ai écrits" })
+  @ApiOkResponse({
+    description: 'Commentaires paginés, plus récents en premier.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async listMyComments(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListUserCommentsQueryDto,
+  ): Promise<ResponseDto<PaginatedResponseDto<UserCommentResponseDto>>> {
+    const { items, total, page, limit } = await this.commentsService.listByUser(
+      user.id,
+      query,
+      user,
+      true,
+    );
+    return CommentMapper.toPaginatedUserComments(items, total, page, limit);
   }
 
   @Patch('me')

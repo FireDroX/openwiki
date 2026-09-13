@@ -64,9 +64,10 @@ export class TypeormCommentsRepository implements CommentsRepository {
     authorId: string,
     page: number,
     limit: number,
+    excludeDeleted = false,
   ): Promise<{ items: Comment[]; total: number }> {
     const [items, total] = await this.repository.findAndCount({
-      where: { authorId },
+      where: excludeDeleted ? { authorId, deletedAt: IsNull() } : { authorId },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
