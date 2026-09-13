@@ -12,6 +12,7 @@ export interface UserRepository {
     limit: number,
   ): Promise<{ items: User[]; total: number }>;
   updateRole(id: string, role: UserRole): Promise<User>;
+  updatePassword(id: string, passwordHash: string): Promise<User>;
   delete(id: string): Promise<void>;
   incrementFailedLoginAttempts(id: string): Promise<User>;
   lockAccount(id: string, lockedUntil: Date): Promise<User>;

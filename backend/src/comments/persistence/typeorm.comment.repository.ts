@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { Comment } from '../entities/comment.entity.js';
 import {
   CommentsRepository,
@@ -64,9 +64,10 @@ export class TypeormCommentsRepository implements CommentsRepository {
     authorId: string,
     page: number,
     limit: number,
+    excludeDeleted = false,
   ): Promise<{ items: Comment[]; total: number }> {
     const [items, total] = await this.repository.findAndCount({
-      where: { authorId },
+      where: excludeDeleted ? { authorId, deletedAt: IsNull() } : { authorId },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -87,5 +88,11 @@ export class TypeormCommentsRepository implements CommentsRepository {
       return Promise.resolve([]);
     }
     return this.repository.findBy({ id: In(ids), authorId });
+  }
+
+  countByAuthorId(authorId: string): Promise<number> {
+    return this.repository.count({
+      where: { authorId, deletedAt: IsNull() },
+    });
   }
 }

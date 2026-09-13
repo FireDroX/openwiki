@@ -7,4 +7,7 @@ export interface UserResponseDto {
   role: UserRole;
   avatarUrl: string | null;
   createdAt: Date;
+  commentsCount?: number;
+  pagesCreatedCount?: number;
+  pageEditsCount?: number;
 }

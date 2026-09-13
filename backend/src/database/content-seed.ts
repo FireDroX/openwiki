@@ -357,6 +357,79 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.22
+
+<details>
+<summary>0.22.10 — 2026-09-13</summary>
+
+- La page "Mon profil" a été entièrement refaite : identité (photo, nom, e-mail, rôle, date d'inscription) et statistiques (pages créées, modifications, commentaires) en tête, onglets Profil / Activité / Sécurité. Nouveaux endpoints \`GET /users/me/activity\` (historique personnel) et \`PATCH /auth/password\` (changer son mot de passe).
+
+</details>
+
+<details>
+<summary>0.22.9 — 2026-09-13</summary>
+
+- Nouvel endpoint \`GET /users/me/comments\` : chaque utilisateur peut lister ses propres commentaires (page d'origine, date), hors commentaires supprimés.
+- Refonte de la page "Mon profil" en layout pleine page à deux colonnes : identité (photo, nom, e-mail, rôle, date d'inscription, nom d'affichage) à gauche, aperçu de tous les commentaires écrits à droite.
+
+</details>
+
+<details>
+<summary>0.22.8 — 2026-09-13</summary>
+
+- Refonte visuelle de la page "Mon profil" : identité (photo, nom, rôle, commentaires) et édition du nom d'affichage séparées en deux blocs, changement de photo via une icône appareil photo sur l'avatar plutôt qu'un bouton séparé.
+
+</details>
+
+<details>
+<summary>0.22.7 — 2026-09-13</summary>
+
+- La photo de profil s'affiche désormais dans le menu utilisateur de la barre de navigation (au lieu des seules initiales).
+
+</details>
+
+<details>
+<summary>0.22.6 — 2026-09-13</summary>
+
+- Les commentaires affichent désormais la vraie photo de profil de leur auteur (au lieu des seules initiales) quand il en a une.
+
+</details>
+
+<details>
+<summary>0.22.5 — 2026-09-13</summary>
+
+- La page "Mon profil" permet désormais de changer ou retirer sa photo de profil (aperçu avant envoi, confirmation pour le retrait).
+
+</details>
+
+<details>
+<summary>0.22.4 — 2026-09-13</summary>
+
+- Nouvel écran "Mon profil" (\`/profile\`, lien depuis le menu utilisateur) : rôle et nombre de commentaires écrits, édition du nom d'affichage.
+
+</details>
+
+<details>
+<summary>0.22.3 — 2026-09-13</summary>
+
+- Nouveaux endpoints \`POST /users/me/avatar\` et \`DELETE /users/me/avatar\` : upload (jpg/png/webp, 2 Mo max) et suppression de sa propre photo de profil, stockée sur Minio comme les autres médias.
+
+</details>
+
+<details>
+<summary>0.22.2 — 2026-09-13</summary>
+
+- Tests de non-régression pour \`PATCH /users/me\` : validation du nom d'affichage (2-100 caractères) et confirmation qu'un utilisateur ne peut pas changer son propre rôle via cet endpoint, en préparation de l'écran "Mon profil".
+
+</details>
+
+<details>
+<summary>0.22.1 — 2026-09-13</summary>
+
+- \`GET /users/me\` renvoie désormais \`commentsCount\` (nombre de commentaires écrits, hors supprimés), en préparation de l'écran "Mon profil".
+
+</details>
+
 ## Version 0.21
 
 <details>

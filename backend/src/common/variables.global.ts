@@ -44,6 +44,13 @@ export const DEFAULT_TAG_COLOR = '#6b7280';
 export const MCP_AUDIT_LOG_DEFAULT_LIMIT = 50;
 export const MCP_AUDIT_LOG_MAX_LIMIT = 200;
 export const MCP_AUDIT_LOG_STRING_MAX_LENGTH = 500;
+export const AVATAR_MAX_SIZE_MB = 2;
+export const AVATAR_MAX_SIZE_BYTES = AVATAR_MAX_SIZE_MB * 1024 * 1024;
+export const AVATAR_MIME_TO_EXTENSION: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
 export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 export const ACCOUNT_LOCKOUT_DURATION_MINUTES = 15;
 export const COMMENT_CONTENT_MAX_LENGTH = 2000;

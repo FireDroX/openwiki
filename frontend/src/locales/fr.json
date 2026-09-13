@@ -396,6 +396,88 @@
     "deleteConfirmModeratorWithRepliesDescription_other": "Le commentaire et ses {{count}} réponses seront définitivement supprimés. Cette action est irréversible.",
     "loginToComment": "Connectez-vous pour laisser un commentaire."
   },
+  "profile": {
+    "title": "Mon profil",
+    "displayNameLabel": "Nom d'affichage",
+    "memberSince": "Membre depuis {{date}}",
+    "save": "Enregistrer",
+    "updateSuccess": "Profil mis à jour.",
+    "updateFailed": "Impossible de mettre à jour le profil.",
+    "avatarUploadSuccess": "Photo de profil mise à jour.",
+    "avatarUploadFailed": "Impossible d'envoyer la photo de profil.",
+    "avatarRemoveSuccess": "Photo de profil retirée.",
+    "avatarRemoveFailed": "Impossible de retirer la photo de profil.",
+    "avatarInvalidType": "Formats acceptés : JPG, PNG, WEBP.",
+    "avatarTooLarge": "L'image dépasse la taille maximale de 2 Mo.",
+    "changePhoto": "Changer la photo",
+    "removePhoto": "Retirer la photo",
+    "removePhotoConfirmTitle": "Retirer la photo de profil ?",
+    "removePhotoConfirmDescription": "Votre avatar reviendra à vos initiales.",
+    "cancelPreview": "Annuler",
+    "confirmUpload": "Enregistrer la photo",
+    "tabProfile": "Profil",
+    "tabActivity": "Activité",
+    "tabSecurity": "Sécurité",
+    "editProfile": "Modifier le profil",
+    "stats": {
+      "pagesCreated": "Pages créées",
+      "modifications": "Modifications",
+      "comments": "Commentaires"
+    },
+    "activityEmpty": "Aucune activité pour le moment.",
+    "activityLoadError": "Impossible de charger votre activité.",
+    "activityActions": {
+      "auth.login": "Connexion",
+      "auth.password_changed": "Mot de passe modifié",
+      "page.created": "Page créée",
+      "page.updated": "Page modifiée",
+      "page.moved": "Page déplacée",
+      "page.deleted": "Page supprimée",
+      "page.restored": "Version restaurée",
+      "page.visibility_changed": "Visibilité modifiée",
+      "page.comments_enabled_changed": "Commentaires activés/désactivés",
+      "comment.created": "Commentaire ajouté",
+      "media.uploaded": "Média envoyé",
+      "media.deleted": "Média supprimé",
+      "user.avatar_uploaded": "Photo de profil changée",
+      "user.avatar_removed": "Photo de profil retirée"
+    },
+    "activityCategories": {
+      "create": "Création",
+      "edit": "Édition",
+      "delete": "Suppression",
+      "comment": "Commentaire",
+      "media": "Média",
+      "profile": "Profil",
+      "login": "Connexion",
+      "security": "Sécurité"
+    },
+    "activityActionCategories": {
+      "auth.login": "login",
+      "auth.password_changed": "security",
+      "page.created": "create",
+      "page.updated": "edit",
+      "page.restored": "edit",
+      "page.moved": "edit",
+      "page.visibility_changed": "edit",
+      "page.comments_enabled_changed": "edit",
+      "page.deleted": "delete",
+      "comment.created": "comment",
+      "media.uploaded": "media",
+      "media.deleted": "delete",
+      "user.avatar_uploaded": "profile",
+      "user.avatar_removed": "profile"
+    },
+    "security": {
+      "passwordTitle": "Mot de passe",
+      "currentPasswordLabel": "Mot de passe actuel",
+      "newPasswordLabel": "Nouveau mot de passe",
+      "submit": "Mettre à jour",
+      "updateSuccess": "Mot de passe mis à jour.",
+      "updateFailed": "Impossible de mettre à jour le mot de passe.",
+      "incorrectCurrentPassword": "Mot de passe actuel incorrect."
+    }
+  },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."
   }

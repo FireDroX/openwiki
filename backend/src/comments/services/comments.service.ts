@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
+import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { CommentDeleteForbiddenException } from '../../common/exceptions/comments/comment-delete-forbidden.exception.js';
 import { CommentEditForbiddenException } from '../../common/exceptions/comments/comment-edit-forbidden.exception.js';
 import { CommentNotFoundException } from '../../common/exceptions/comments/comment-not-found.exception.js';
@@ -21,6 +22,11 @@ import { UpdateCommentDto } from '../dto/in/update-comment.dto.js';
 import { Comment } from '../entities/comment.entity.js';
 import type { CommentsRepository } from '../persistence/comment.repository.js';
 
+export interface AuthorInfo {
+  displayName: string;
+  avatarUrl: string | null;
+}
+
 export interface UserCommentsPage {
   items: Array<{ comment: Comment; pagePath: string | null }>;
   total: number;
@@ -36,11 +42,12 @@ export class CommentsService {
     private readonly pagesService: PagesService,
     private readonly usersService: UsersService,
     private readonly adminAuditLogService: AdminAuditLogService,
+    private readonly userActivityLogService: UserActivityLogService,
   ) {}
 
   async findAllByPage(
     pageId: string,
-  ): Promise<{ comments: Comment[]; authorNames: Map<string, string> }> {
+  ): Promise<{ comments: Comment[]; authorNames: Map<string, AuthorInfo> }> {
     const comments = await this.commentsRepository.findAllByPageId(pageId);
     const authorNames = await this.resolveAuthorNames(comments);
     return { comments, authorNames };
@@ -50,7 +57,7 @@ export class CommentsService {
     pageId: string,
     dto: CreateCommentDto,
     currentUser: AuthenticatedUser,
-  ): Promise<{ comment: Comment; authorNames: Map<string, string> }> {
+  ): Promise<{ comment: Comment; authorNames: Map<string, AuthorInfo> }> {
     this.validateContent(dto.content);
 
     const parentId = dto.parentId ?? null;
@@ -70,6 +77,13 @@ export class CommentsService {
       parentId,
       content: dto.content,
     });
+    void this.userActivityLogService.record({
+      userId: currentUser.id,
+      action: 'comment.created',
+      targetType: 'comment',
+      targetId: comment.id,
+      metadata: { pageId },
+    });
     const authorNames = await this.resolveAuthorNames([comment]);
     return { comment, authorNames };
   }
@@ -78,7 +92,7 @@ export class CommentsService {
     id: string,
     dto: UpdateCommentDto,
     currentUser: AuthenticatedUser,
-  ): Promise<{ comment: Comment; authorNames: Map<string, string> }> {
+  ): Promise<{ comment: Comment; authorNames: Map<string, AuthorInfo> }> {
     const comment = await this.getByIdOrFail(id);
     if (comment.authorId !== currentUser.id) {
       throw new CommentEditForbiddenException();
@@ -128,6 +142,7 @@ export class CommentsService {
     userId: string,
     query: ListUserCommentsQueryDto,
     admin: AuthenticatedUser,
+    excludeDeleted = false,
   ): Promise<UserCommentsPage> {
     await this.usersService.findById(userId);
 
@@ -137,6 +152,7 @@ export class CommentsService {
       userId,
       page,
       limit,
+      excludeDeleted,
     );
 
     const withPagePath = await Promise.all(
@@ -147,6 +163,10 @@ export class CommentsService {
     );
 
     return { items: withPagePath, total, page, limit };
+  }
+
+  countByAuthorId(authorId: string): Promise<number> {
+    return this.commentsRepository.countByAuthorId(authorId);
   }
 
   async purgeByUser(
@@ -245,20 +265,23 @@ export class CommentsService {
 
   private async resolveAuthorNames(
     comments: Comment[],
-  ): Promise<Map<string, string>> {
+  ): Promise<Map<string, AuthorInfo>> {
     const uniqueAuthorIds = [...new Set(comments.map((c) => c.authorId))];
     const entries = await Promise.all(
       uniqueAuthorIds.map(async (authorId) => {
         try {
           const author = await this.usersService.findById(authorId);
-          return [authorId, author.displayName] as const;
+          return [
+            authorId,
+            { displayName: author.displayName, avatarUrl: author.avatarUrl },
+          ] as const;
         } catch {
           return null;
         }
       }),
     );
     return new Map(
-      entries.filter((entry): entry is [string, string] => entry !== null),
+      entries.filter((entry): entry is [string, AuthorInfo] => entry !== null),
     );
   }
 }

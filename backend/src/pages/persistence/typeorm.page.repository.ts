@@ -128,4 +128,12 @@ export class TypeormPagesRepository implements PagesRepository {
     const updated = this.repository.merge(page, { commentsEnabled });
     return this.repository.save(updated);
   }
+
+  countCreatedByUser(userId: string): Promise<number> {
+    return this.repository.count({ where: { createdById: userId } });
+  }
+
+  countVersionsByAuthor(userId: string): Promise<number> {
+    return this.versionRepository.count({ where: { authorId: userId } });
+  }
 }

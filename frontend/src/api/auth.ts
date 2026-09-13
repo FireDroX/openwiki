@@ -27,6 +27,11 @@ export interface AuthUser {
   email: string
   displayName: string
   role: UserRole
+  avatarUrl: string | null
+  createdAt: string
+  commentsCount?: number
+  pagesCreatedCount?: number
+  pageEditsCount?: number
 }
 
 export async function login(payload: LoginPayload): Promise<void> {
@@ -40,4 +45,8 @@ export async function register(payload: RegisterPayload): Promise<AuthUser> {
 
 export async function logout(): Promise<void> {
   await apiClient.post<ResponseDto<null>>('/auth/logout')
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.patch<ResponseDto<null>>('/auth/password', { currentPassword, newPassword })
 }

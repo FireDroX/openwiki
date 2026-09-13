@@ -396,6 +396,88 @@
     "deleteConfirmModeratorWithRepliesDescription_other": "This will permanently delete the comment and its {{count}} replies. This cannot be undone.",
     "loginToComment": "Log in to leave a comment."
   },
+  "profile": {
+    "title": "My profile",
+    "displayNameLabel": "Display name",
+    "memberSince": "Member since {{date}}",
+    "save": "Save",
+    "updateSuccess": "Profile updated.",
+    "updateFailed": "Could not update the profile.",
+    "avatarUploadSuccess": "Profile picture updated.",
+    "avatarUploadFailed": "Could not upload the profile picture.",
+    "avatarRemoveSuccess": "Profile picture removed.",
+    "avatarRemoveFailed": "Could not remove the profile picture.",
+    "avatarInvalidType": "Accepted formats: JPG, PNG, WEBP.",
+    "avatarTooLarge": "The image exceeds the 2MB size limit.",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "removePhotoConfirmTitle": "Remove profile picture?",
+    "removePhotoConfirmDescription": "Your avatar will fall back to your initials.",
+    "cancelPreview": "Cancel",
+    "confirmUpload": "Save photo",
+    "tabProfile": "Profile",
+    "tabActivity": "Activity",
+    "tabSecurity": "Security",
+    "editProfile": "Edit profile",
+    "stats": {
+      "pagesCreated": "Pages created",
+      "modifications": "Edits",
+      "comments": "Comments"
+    },
+    "activityEmpty": "No activity yet.",
+    "activityLoadError": "Could not load your activity.",
+    "activityActions": {
+      "auth.login": "Logged in",
+      "auth.password_changed": "Password changed",
+      "page.created": "Page created",
+      "page.updated": "Page updated",
+      "page.moved": "Page moved",
+      "page.deleted": "Page deleted",
+      "page.restored": "Version restored",
+      "page.visibility_changed": "Visibility changed",
+      "page.comments_enabled_changed": "Comments toggled",
+      "comment.created": "Comment added",
+      "media.uploaded": "Media uploaded",
+      "media.deleted": "Media deleted",
+      "user.avatar_uploaded": "Profile picture changed",
+      "user.avatar_removed": "Profile picture removed"
+    },
+    "activityCategories": {
+      "create": "Created",
+      "edit": "Edited",
+      "delete": "Deleted",
+      "comment": "Comment",
+      "media": "Media",
+      "profile": "Profile",
+      "login": "Login",
+      "security": "Security"
+    },
+    "activityActionCategories": {
+      "auth.login": "login",
+      "auth.password_changed": "security",
+      "page.created": "create",
+      "page.updated": "edit",
+      "page.restored": "edit",
+      "page.moved": "edit",
+      "page.visibility_changed": "edit",
+      "page.comments_enabled_changed": "edit",
+      "page.deleted": "delete",
+      "comment.created": "comment",
+      "media.uploaded": "media",
+      "media.deleted": "delete",
+      "user.avatar_uploaded": "profile",
+      "user.avatar_removed": "profile"
+    },
+    "security": {
+      "passwordTitle": "Password",
+      "currentPasswordLabel": "Current password",
+      "newPasswordLabel": "New password",
+      "submit": "Update",
+      "updateSuccess": "Password updated.",
+      "updateFailed": "Could not update the password.",
+      "incorrectCurrentPassword": "Current password is incorrect."
+    }
+  },
   "errors": {
     "generic": "An error occurred, please try again."
   }

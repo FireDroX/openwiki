@@ -7,6 +7,25 @@ export async function getMe(): Promise<AuthUser> {
   return data.data
 }
 
+export async function updateMe(payload: { displayName: string }): Promise<AuthUser> {
+  const { data } = await apiClient.patch<ResponseDto<AuthUser>>('/users/me', payload)
+  return data.data
+}
+
+export async function uploadAvatar(file: File): Promise<AuthUser> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await apiClient.post<ResponseDto<AuthUser>>('/users/me/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.data
+}
+
+export async function removeAvatar(): Promise<AuthUser> {
+  const { data } = await apiClient.delete<ResponseDto<AuthUser>>('/users/me/avatar')
+  return data.data
+}
+
 export interface AdminUser {
   id: string
   email: string

@@ -23,7 +23,9 @@ export interface CommentsRepository {
     authorId: string,
     page: number,
     limit: number,
+    excludeDeleted?: boolean,
   ): Promise<{ items: Comment[]; total: number }>;
   findAllIdsByAuthorId(authorId: string): Promise<string[]>;
   findByIdsAndAuthorId(ids: string[], authorId: string): Promise<Comment[]>;
+  countByAuthorId(authorId: string): Promise<number>;
 }

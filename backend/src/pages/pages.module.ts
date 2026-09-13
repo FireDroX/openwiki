@@ -17,7 +17,7 @@ import { PagesService } from './services/pages.service.js';
   imports: [
     TypeOrmModule.forFeature([Page, PageVersion, PagePermission]),
     VersionsModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     ActivityModule,
     forwardRef(() => CommentsModule),
   ],

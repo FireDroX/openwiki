@@ -22,6 +22,7 @@ function renderLogin(overrides: Partial<AuthContextValue> = {}) {
     login: vi.fn().mockResolvedValue(undefined),
     register: vi.fn().mockResolvedValue(undefined),
     logout: vi.fn().mockResolvedValue(undefined),
+    refreshUser: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   }
 

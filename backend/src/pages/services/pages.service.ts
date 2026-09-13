@@ -458,6 +458,14 @@ export class PagesService {
     return { page: updated, version };
   }
 
+  countCreatedByUser(userId: string): Promise<number> {
+    return this.pagesRepository.countCreatedByUser(userId);
+  }
+
+  countVersionsByAuthor(userId: string): Promise<number> {
+    return this.pagesRepository.countVersionsByAuthor(userId);
+  }
+
   private async cascadeVisibility(
     id: string,
     visibility: Page['visibility'],

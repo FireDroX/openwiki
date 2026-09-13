@@ -88,6 +88,8 @@ describe('PagesService', () => {
       updatePublishStatus: vi.fn(),
       updateVisibility: vi.fn(),
       updateCommentsEnabled: vi.fn(),
+      countCreatedByUser: vi.fn(),
+      countVersionsByAuthor: vi.fn(),
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };
@@ -454,11 +456,7 @@ describe('PagesService', () => {
         commentsEnabled: false,
       });
 
-      const result = await service.setCommentsEnabled(
-        'page-1',
-        dto,
-        'user-1',
-      );
+      const result = await service.setCommentsEnabled('page-1', dto, 'user-1');
 
       expect(pagesRepository.updateCommentsEnabled).toHaveBeenCalledWith(
         page,
