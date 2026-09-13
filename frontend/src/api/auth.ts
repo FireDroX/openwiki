@@ -27,6 +27,8 @@ export interface AuthUser {
   email: string
   displayName: string
   role: UserRole
+  avatarUrl: string | null
+  commentsCount?: number
 }
 
 export async function login(payload: LoginPayload): Promise<void> {

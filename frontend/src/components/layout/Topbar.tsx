@@ -69,9 +69,11 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <User />
-              {t('topbar.profile')}
+            <DropdownMenuItem asChild>
+              <Link to="/profile">
+                <User />
+                {t('topbar.profile')}
+              </Link>
             </DropdownMenuItem>
             {user?.role === UserRole.Admin && (
               <DropdownMenuItem asChild>

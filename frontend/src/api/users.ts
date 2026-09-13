@@ -7,6 +7,11 @@ export async function getMe(): Promise<AuthUser> {
   return data.data
 }
 
+export async function updateMe(payload: { displayName: string }): Promise<AuthUser> {
+  const { data } = await apiClient.patch<ResponseDto<AuthUser>>('/users/me', payload)
+  return data.data
+}
+
 export interface AdminUser {
   id: string
   email: string

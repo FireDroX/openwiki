@@ -396,6 +396,15 @@
     "deleteConfirmModeratorWithRepliesDescription_other": "Le commentaire et ses {{count}} réponses seront définitivement supprimés. Cette action est irréversible.",
     "loginToComment": "Connectez-vous pour laisser un commentaire."
   },
+  "profile": {
+    "title": "Mon profil",
+    "commentsCount_one": "{{count}} commentaire écrit",
+    "commentsCount_other": "{{count}} commentaires écrits",
+    "displayNameLabel": "Nom d'affichage",
+    "save": "Enregistrer",
+    "updateSuccess": "Profil mis à jour.",
+    "updateFailed": "Impossible de mettre à jour le profil."
+  },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."
   }

@@ -17,6 +17,7 @@ import { PageCreate } from '#pages/PageCreate'
 import { PageEditor } from '#pages/PageEditor'
 import { PageHistory } from '#pages/PageHistory'
 import { PageView } from '#pages/PageView'
+import { Profile } from '#pages/Profile'
 import { SearchResults } from '#pages/SearchResults'
 
 const EDITOR_ROLES = [UserRole.Editor, UserRole.Admin]
@@ -41,6 +42,9 @@ export function App() {
           <Route path="/pages/*" element={<PageView />} />
           <Route path="/history/*" element={<PageHistory />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
           <Route element={<ProtectedRoute roles={[UserRole.Admin]} />}>
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/settings" element={<AdminSettings />} />

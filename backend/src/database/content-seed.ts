@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.4 — 2026-09-13</summary>
+
+- Nouvel écran "Mon profil" (\`/profile\`, lien depuis le menu utilisateur) : rôle et nombre de commentaires écrits, édition du nom d'affichage.
+
+</details>
+
+<details>
 <summary>0.22.3 — 2026-09-13</summary>
 
 - Nouveaux endpoints \`POST /users/me/avatar\` et \`DELETE /users/me/avatar\` : upload (jpg/png/webp, 2 Mo max) et suppression de sa propre photo de profil, stockée sur Minio comme les autres médias.

@@ -396,6 +396,15 @@
     "deleteConfirmModeratorWithRepliesDescription_other": "This will permanently delete the comment and its {{count}} replies. This cannot be undone.",
     "loginToComment": "Log in to leave a comment."
   },
+  "profile": {
+    "title": "My profile",
+    "commentsCount_one": "{{count}} comment written",
+    "commentsCount_other": "{{count}} comments written",
+    "displayNameLabel": "Display name",
+    "save": "Save",
+    "updateSuccess": "Profile updated.",
+    "updateFailed": "Could not update the profile."
+  },
   "errors": {
     "generic": "An error occurred, please try again."
   }
