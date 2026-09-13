@@ -403,7 +403,19 @@
     "displayNameLabel": "Nom d'affichage",
     "save": "Enregistrer",
     "updateSuccess": "Profil mis à jour.",
-    "updateFailed": "Impossible de mettre à jour le profil."
+    "updateFailed": "Impossible de mettre à jour le profil.",
+    "avatarUploadSuccess": "Photo de profil mise à jour.",
+    "avatarUploadFailed": "Impossible d'envoyer la photo de profil.",
+    "avatarRemoveSuccess": "Photo de profil retirée.",
+    "avatarRemoveFailed": "Impossible de retirer la photo de profil.",
+    "avatarInvalidType": "Formats acceptés : JPG, PNG, WEBP.",
+    "avatarTooLarge": "L'image dépasse la taille maximale de 2 Mo.",
+    "changePhoto": "Changer la photo",
+    "removePhoto": "Retirer la photo",
+    "removePhotoConfirmTitle": "Retirer la photo de profil ?",
+    "removePhotoConfirmDescription": "Votre avatar reviendra à vos initiales.",
+    "cancelPreview": "Annuler",
+    "confirmUpload": "Enregistrer la photo"
   },
   "errors": {
     "generic": "Une erreur est survenue, veuillez réessayer."

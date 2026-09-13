@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.22
 
 <details>
+<summary>0.22.5 — 2026-09-13</summary>
+
+- La page "Mon profil" permet désormais de changer ou retirer sa photo de profil (aperçu avant envoi, confirmation pour le retrait).
+
+</details>
+
+<details>
 <summary>0.22.4 — 2026-09-13</summary>
 
 - Nouvel écran "Mon profil" (\`/profile\`, lien depuis le menu utilisateur) : rôle et nombre de commentaires écrits, édition du nom d'affichage.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { AvatarUploader } from '#components/Profile/AvatarUploader'
 import { ProfileForm } from '#components/Profile/ProfileForm'
 import { ProfileSummary } from '#components/Profile/ProfileSummary'
 import { getMe } from '#api/users'
@@ -48,6 +49,7 @@ export function Profile() {
   return (
     <div className="flex flex-col gap-6 p-8">
       <h1 className="text-2xl font-semibold">{t('profile.title')}</h1>
+      <AvatarUploader user={profile} onUpdate={handleUpdate} />
       <ProfileSummary user={profile} />
       <ProfileForm user={profile} onUpdate={handleUpdate} />
     </div>

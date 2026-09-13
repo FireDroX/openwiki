@@ -403,7 +403,19 @@
     "displayNameLabel": "Display name",
     "save": "Save",
     "updateSuccess": "Profile updated.",
-    "updateFailed": "Could not update the profile."
+    "updateFailed": "Could not update the profile.",
+    "avatarUploadSuccess": "Profile picture updated.",
+    "avatarUploadFailed": "Could not upload the profile picture.",
+    "avatarRemoveSuccess": "Profile picture removed.",
+    "avatarRemoveFailed": "Could not remove the profile picture.",
+    "avatarInvalidType": "Accepted formats: JPG, PNG, WEBP.",
+    "avatarTooLarge": "The image exceeds the 2MB size limit.",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "removePhotoConfirmTitle": "Remove profile picture?",
+    "removePhotoConfirmDescription": "Your avatar will fall back to your initials.",
+    "cancelPreview": "Cancel",
+    "confirmUpload": "Save photo"
   },
   "errors": {
     "generic": "An error occurred, please try again."
