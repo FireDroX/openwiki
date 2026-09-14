@@ -22,7 +22,6 @@ import { ChangeVisibilityDto } from '../dto/in/change-visibility.dto.js';
 import { CreatePageDto } from '../dto/in/create-page.dto.js';
 import { DeletePageQueryDto } from '../dto/in/delete-page-query.dto.js';
 import { MovePageDto } from '../dto/in/move-page.dto.js';
-import { PublishPageDto } from '../dto/in/publish-page.dto.js';
 import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { PageTreeNodeDto } from '../dto/out/page-tree-node.dto.js';
@@ -97,11 +96,7 @@ export class PagesService {
 
   async getTree(currentUser?: AuthenticatedUser): Promise<PageTreeNodeDto[]> {
     const pages = await this.pagesRepository.findAll();
-    const visible = PagesService.hasFullAccess(currentUser)
-      ? pages
-      : pages.filter(
-          (page) => page.visibility === 'public' && page.isPublished,
-        );
+    const visible = await this.filterAccessible(pages, currentUser);
 
     return PageTreeMapper.buildTree(visible);
   }
@@ -128,7 +123,7 @@ export class PagesService {
       throw new PageNotFoundException();
     }
 
-    PagesService.assertAccessible(page, currentUser);
+    await this.assertAccessible(page, currentUser);
 
     const version = await this.pagesRepository.findVersionById(
       page.currentVersionId,
@@ -160,11 +155,7 @@ export class PagesService {
   ): Promise<Page[]> {
     await this.getByIdOrFail(parentId, currentUser);
     const children = await this.pagesRepository.findChildren(parentId);
-    return PagesService.hasFullAccess(currentUser)
-      ? children
-      : children.filter(
-          (page) => page.visibility === 'public' && page.isPublished,
-        );
+    return this.filterAccessible(children, currentUser);
   }
 
   async getByIdOrFail(
@@ -176,7 +167,7 @@ export class PagesService {
       throw new PageNotFoundException();
     }
 
-    PagesService.assertAccessible(page, currentUser);
+    await this.assertAccessible(page, currentUser);
 
     return page;
   }
@@ -346,43 +337,6 @@ export class PagesService {
     });
   }
 
-  async setPublishStatus(
-    id: string,
-    dto: PublishPageDto,
-    userId: string,
-  ): Promise<{ page: Page; version: PageVersion }> {
-    this.validatePublishPage(dto);
-
-    const page = await this.pagesRepository.findById(id);
-    if (!page || !page.currentVersionId) {
-      throw new PageNotFoundException();
-    }
-
-    await this.assertCanEdit(id, userId);
-
-    const version = await this.pagesRepository.findVersionById(
-      page.currentVersionId,
-    );
-    if (!version) {
-      throw new PageNotFoundException();
-    }
-
-    const wasPublished = page.isPublished;
-    const updated = await this.pagesRepository.updatePublishStatus(
-      page,
-      dto.isPublished,
-    );
-
-    if (!wasPublished && updated.isPublished) {
-      this.eventEmitter.emit(
-        PAGE_PUBLISHED_EVENT,
-        new PagePublishedEvent(updated.id, updated.slug, updated.title),
-      );
-    }
-
-    return { page: updated, version };
-  }
-
   async setVisibility(
     id: string,
     dto: ChangeVisibilityDto,
@@ -404,11 +358,19 @@ export class PagesService {
       throw new PageNotFoundException();
     }
 
+    const wasPublic = page.visibility === 'public';
     const updated = await this.pagesRepository.updateVisibility(
       page,
       dto.visibility,
     );
     await this.cascadeVisibility(id, dto.visibility);
+
+    if (!wasPublic && updated.visibility === 'public') {
+      this.eventEmitter.emit(
+        PAGE_PUBLISHED_EVENT,
+        new PagePublishedEvent(updated.id, updated.slug, updated.title),
+      );
+    }
 
     void this.userActivityLogService.record({
       userId,
@@ -508,15 +470,42 @@ export class PagesService {
     return currentUser?.role === 'admin' || currentUser?.role === 'editor';
   }
 
-  private static assertAccessible(
+  private async isAccessible(
     page: Page,
     currentUser?: AuthenticatedUser,
-  ): void {
-    const isPubliclyAccessible =
-      page.visibility === 'public' && page.isPublished;
-    if (!isPubliclyAccessible && !PagesService.hasFullAccess(currentUser)) {
+  ): Promise<boolean> {
+    if (page.visibility === 'public') {
+      return true;
+    }
+    if (PagesService.hasFullAccess(currentUser)) {
+      return true;
+    }
+    if (!currentUser) {
+      return false;
+    }
+    return this.pagePermissionsService.canEdit(currentUser.id, page.id);
+  }
+
+  private async assertAccessible(
+    page: Page,
+    currentUser?: AuthenticatedUser,
+  ): Promise<void> {
+    if (!(await this.isAccessible(page, currentUser))) {
       throw new PageAccessForbiddenException();
     }
+  }
+
+  private async filterAccessible(
+    pages: Page[],
+    currentUser?: AuthenticatedUser,
+  ): Promise<Page[]> {
+    if (PagesService.hasFullAccess(currentUser)) {
+      return pages;
+    }
+    const accessible = await Promise.all(
+      pages.map((page) => this.isAccessible(page, currentUser)),
+    );
+    return pages.filter((_, index) => accessible[index]);
   }
 
   private validateCreatePage(dto: CreatePageDto): void {
@@ -548,12 +537,6 @@ export class PagesService {
 
     if (errors.length > 0) {
       throw new ValidationException(errors.join(', '));
-    }
-  }
-
-  private validatePublishPage(dto: PublishPageDto): void {
-    if (typeof dto.isPublished !== 'boolean') {
-      throw new ValidationException('isPublished must be a boolean value');
     }
   }
 

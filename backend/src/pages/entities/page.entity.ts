@@ -34,9 +34,6 @@ export class Page {
   })
   currentVersionId: string | null;
 
-  @Column({ type: 'boolean', name: 'is_published', default: false })
-  isPublished: boolean;
-
   @Column({ type: 'boolean', name: 'comments_enabled', default: true })
   commentsEnabled: boolean;
 

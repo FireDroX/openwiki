@@ -13,7 +13,6 @@ export class PageMapper {
       title: page.title,
       parentId: page.parentId,
       visibility: page.visibility,
-      isPublished: page.isPublished,
       commentsEnabled: page.commentsEnabled,
       currentVersion: {
         id: version.id,
@@ -40,7 +39,6 @@ export class PageMapper {
       title: page.title,
       content: version.content,
       visibility: page.visibility,
-      isPublished: page.isPublished,
       commentsEnabled: page.commentsEnabled,
       parentId: page.parentId,
       updatedAt: page.updatedAt,

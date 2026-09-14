@@ -10,7 +10,7 @@ import { MediaLibraryPicker } from '#components/PageEditor/MediaLibraryPicker'
 import { PageMetadataForm } from '#components/PageEditor/PageMetadataForm'
 import { Button } from '#components/ui/button'
 import { FormError } from '#components/FormError'
-import { createPage, publishPage } from '#api/pages'
+import { createPage } from '#api/pages'
 import { useEditorState } from '#hooks/useEditorState'
 import { useFileUpload } from '#hooks/useFileUpload'
 import { usePageTree } from '#hooks/usePageTree'
@@ -26,7 +26,7 @@ export function PageCreate() {
   const editorRef = useRef<MarkdownEditorHandle>(null)
   const handleImageUpload = useFileUpload(editorRef, undefined, 'image')
   const handleAttachmentUpload = useFileUpload(editorRef, undefined, 'attachment')
-  const [pendingAction, setPendingAction] = useState<'draft' | 'publish' | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const schema = useMemo(() => createPageMetadataSchema(t), [t])
 
@@ -35,15 +35,12 @@ export function PageCreate() {
     defaultValues: { title: '', slug: '', visibility: 'private', parentId: null },
   })
 
-  function submitAs(action: 'draft' | 'publish') {
+  function submit() {
     return handleSubmit(async (values) => {
-      setPendingAction(action)
+      setIsSaving(true)
       setSaveError(null)
       try {
         const created = await createPage({ ...values, content: editor.content })
-        if (action === 'publish') {
-          await publishPage(created.id, true)
-        }
         const ancestors = values.parentId
           ? (findPathToNode(tree, (node) => node.id === values.parentId) ?? [])
           : []
@@ -54,7 +51,7 @@ export function PageCreate() {
       } catch (error) {
         setSaveError(extractErrorMessage(error))
       } finally {
-        setPendingAction(null)
+        setIsSaving(false)
       }
     })
   }
@@ -75,16 +72,8 @@ export function PageCreate() {
           <Button type="button" variant="ghost" onClick={handleCancel}>
             {t('common.cancel')}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={submitAs('draft')}
-            disabled={pendingAction !== null}
-          >
-            {pendingAction === 'draft' ? t('pageEditor.saving') : t('pageEditor.saveDraft')}
-          </Button>
-          <Button type="button" onClick={submitAs('publish')} disabled={pendingAction !== null}>
-            {pendingAction === 'publish' ? t('pageEditor.publishing') : t('pageEditor.publish')}
+          <Button type="button" onClick={submit()} disabled={isSaving}>
+            {isSaving ? t('pageEditor.creating') : t('pageEditor.create')}
           </Button>
         </>
       }
@@ -99,7 +88,7 @@ export function PageCreate() {
         ref={editorRef}
         value={editor.content}
         onChange={editor.setContent}
-        onSave={submitAs('draft')}
+        onSave={submit()}
         onFilesDropped={handleImageUpload}
         toolbarExtra={
           <>

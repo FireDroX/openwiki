@@ -19,7 +19,6 @@ import { Textarea } from '#components/ui/textarea'
 import {
   changePageVisibility,
   movePage,
-  publishPage,
   setCommentsEnabled,
   updatePage,
   type PageVisibility,
@@ -61,7 +60,7 @@ export function PageEditor() {
   const handleImageUpload = useFileUpload(editorRef, page?.id, 'image')
   const handleAttachmentUpload = useFileUpload(editorRef, page?.id, 'attachment')
   const [changeSummary, setChangeSummary] = useState('')
-  const [pendingAction, setPendingAction] = useState<'draft' | 'publish' | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [currentParentId, setCurrentParentId] = useState<string | null>(null)
   const [commentsEnabled, setCommentsEnabledState] = useState(true)
@@ -137,11 +136,11 @@ export function PageEditor() {
     }
   }
 
-  async function submitSave(action: 'draft' | 'publish') {
-    if (!page || pendingAction) {
+  async function submitSave() {
+    if (!page || isSaving) {
       return
     }
-    setPendingAction(action)
+    setIsSaving(true)
     setSaveError(null)
     try {
       await updatePage(page.id, {
@@ -149,16 +148,13 @@ export function PageEditor() {
         content: editor.content,
         changeSummary: changeSummary || undefined,
       })
-      if (action === 'publish') {
-        await publishPage(page.id, true)
-      }
       editor.markSaved()
-      toast.success(action === 'publish' ? t('pageEditor.pagePublished') : t('pageEditor.pageSaved'))
+      toast.success(t('pageEditor.pageSaved'))
       navigate(returnPath)
     } catch (error) {
       setSaveError(extractErrorMessage(error))
     } finally {
-      setPendingAction(null)
+      setIsSaving(false)
     }
   }
 
@@ -192,16 +188,8 @@ export function PageEditor() {
           <Button type="button" variant="ghost" onClick={handleCancel}>
             {t('common.cancel')}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => submitSave('draft')}
-            disabled={pendingAction !== null}
-          >
-            {pendingAction === 'draft' ? t('pageEditor.saving') : t('pageEditor.saveDraft')}
-          </Button>
-          <Button type="button" onClick={() => submitSave('publish')} disabled={pendingAction !== null}>
-            {pendingAction === 'publish' ? t('pageEditor.publishing') : t('pageEditor.publish')}
+          <Button type="button" onClick={() => submitSave()} disabled={isSaving}>
+            {isSaving ? t('pageEditor.saving') : t('pageEditor.save')}
           </Button>
         </>
       }
@@ -244,7 +232,7 @@ export function PageEditor() {
         ref={editorRef}
         value={editor.content}
         onChange={editor.setContent}
-        onSave={() => submitSave('draft')}
+        onSave={() => submitSave()}
         onFilesDropped={handleImageUpload}
         toolbarExtra={
           <>

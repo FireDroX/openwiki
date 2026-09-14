@@ -113,7 +113,7 @@ Suivre la même logique de couches que le backend côté appels API (wrapper par
 - Les lignes **Attachment** pointent vers des clés d'objet Minio (`pages/{pageId}/{uuid}-{filename}`) ; les fichiers ne sont pas publics par défaut — accès via URLs présignées (`GET /media/:id/url`).
 - **User.role** est `admin | editor | reader` ; la protection de route passe par `JwtAuthGuard` + `RolesGuard` + décorateur `@Roles(...)` (401 non authentifié, 403 mauvais rôle).
 - **IntegrationConfig** (`discord` | `n8n`) porte l'URL webhook/secret/options en JSON ; les notifications Discord sont fire-and-forget (un échec d'envoi ne doit jamais bloquer l'action déclenchante).
-- La visibilité (`public | private`) et l'état de publication (`isPublished`) filtrent les lectures sur pages, recherche, médias et commentaires — "selon visibilité" dans le tableau des endpoints signifie que l'ensemble de réponse doit être filtré selon les droits de l'utilisateur demandeur.
+- La visibilité (`public | private`) est le seul drapeau de lecture sur `Page` (pas de champ `isPublished` séparé) : `public` est lisible par tout le monde y compris anonyme, `private` n'est lisible que par les admins/éditeurs ou par un utilisateur ayant un droit explicite sur cette page ou un de ses ancêtres (`PagePermission`, voir `PagePermissionsService.canEdit`, réutilisé tel quel comme vérification de lecture). `PagesService.setVisibility` déclenche `PAGE_PUBLISHED_EVENT` quand une page passe de private à public (cascade sur les descendants). "selon visibilité" dans le tableau des endpoints signifie que l'ensemble de réponse doit être filtré selon les droits de l'utilisateur demandeur — voir aussi recherche, médias et commentaires.
 
 ## Full API surface and backlog
 

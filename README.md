@@ -109,8 +109,7 @@ Chaque module vit directement sous `src/` (pas de dossier `modules/` intermédia
 | title            | varchar               | dénormalisé depuis la version courante |
 | parentId         | uuid nullable         | FK → Page (arborescence)               |
 | currentVersionId | uuid nullable         | FK → PageVersion                       |
-| isPublished      | boolean               |                                        |
-| visibility       | enum(public, private) |                                        |
+| visibility       | enum(public, private) | public = visible de tous ; private = éditeurs+/permissions explicites |
 | createdById      | uuid                  | FK → User                              |
 | createdAt        | datetime              |                                        |
 | updatedAt        | datetime              |                                        |
@@ -240,7 +239,6 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 | PATCH   | /pages/:id         | éditeur+         | Éditer (nouvelle version) |
 | PATCH   | /pages/:id/move    | éditeur+         | Déplacer dans l'arbre     |
 | DELETE  | /pages/:id         | éditeur+         | Supprimer                 |
-| PATCH   | /pages/:id/publish | éditeur+         | Publier/dépublier         |
 | PATCH   | /pages/:id/visibility | éditeur+      | Changer la visibilité (cascade aux enfants) |
 
 ### Permissions
