@@ -357,6 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.23
+
+<details>
+<summary>0.23.1 — 2026-09-14</summary>
+
+- La médiathèque affiche désormais un aperçu de la première page pour les fichiers PDF (nouveau composant \`PdfPreview\`, rendu natif navigateur via iframe) au lieu d'un écran noir. Un clic sur l'aperçu ouvre le PDF dans un nouvel onglet.
+
+</details>
+
 ## Version 0.22
 
 <details>
