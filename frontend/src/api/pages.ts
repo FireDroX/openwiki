@@ -21,7 +21,6 @@ export interface PageDetail {
   title: string
   content: string
   visibility: PageVisibility
-  isPublished: boolean
   commentsEnabled: boolean
   parentId: string | null
   updatedAt: string
@@ -67,7 +66,6 @@ export interface PageCreateResult {
   title: string
   parentId: string | null
   visibility: PageVisibility
-  isPublished: boolean
 }
 
 export async function createPage(payload: CreatePagePayload): Promise<PageCreateResult> {
@@ -77,10 +75,6 @@ export async function createPage(payload: CreatePagePayload): Promise<PageCreate
 
 export async function movePage(id: string, newParentId: string | null): Promise<void> {
   await apiClient.patch(`/pages/${id}/move`, { newParentId })
-}
-
-export async function publishPage(id: string, isPublished: boolean): Promise<void> {
-  await apiClient.patch(`/pages/${id}/publish`, { isPublished })
 }
 
 export async function changePageVisibility(id: string, visibility: PageVisibility): Promise<void> {

@@ -57,7 +57,6 @@ import { CreatePageDto } from './dto/in/create-page.dto.js';
 import { DeletePageQueryDto } from './dto/in/delete-page-query.dto.js';
 import { GrantPermissionDto } from './dto/in/grant-permission.dto.js';
 import { MovePageDto } from './dto/in/move-page.dto.js';
-import { PublishPageDto } from './dto/in/publish-page.dto.js';
 import { SetCommentsEnabledDto } from './dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from './dto/in/update-page.dto.js';
 import { PageDetailResponseDto } from './dto/out/page-detail-response.dto.js';
@@ -195,45 +194,13 @@ export class PagesController {
     return PageMapper.toResponse(page, version);
   }
 
-  @Patch(':id/publish')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Publier ou dépublier une page' })
-  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
-  @ApiBody({ type: PublishPageDto })
-  @ApiOkResponse({ description: 'État de publication mis à jour.' })
-  @ApiUnauthorizedResponse({
-    description: 'Authentification requise.',
-    type: ErrorResponseDto,
-  })
-  @ApiForbiddenResponse({
-    description: "Droit d'édition insuffisant sur cette page.",
-    type: ErrorResponseDto,
-  })
-  @ApiNotFoundResponse({
-    description: "La page n'existe pas.",
-    type: ErrorResponseDto,
-  })
-  async publish(
-    @Param('id') id: string,
-    @Body() dto: PublishPageDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<ResponseDto<PageResponseDto>> {
-    const { page, version } = await this.pagesService.setPublishStatus(
-      id,
-      dto,
-      user.id,
-    );
-    return PageMapper.toResponse(page, version);
-  }
-
   @Patch(':id/visibility')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: "Changer la visibilité d'une page",
     description:
-      'La nouvelle visibilité est appliquée en cascade à toutes les pages descendantes.',
+      'La nouvelle visibilité est appliquée en cascade à toutes les pages descendantes. Rendre une page publique déclenche PAGE_PUBLISHED_EVENT.',
   })
   @ApiParam({ name: 'id', description: 'Identifiant de la page' })
   @ApiBody({ type: ChangeVisibilityDto })

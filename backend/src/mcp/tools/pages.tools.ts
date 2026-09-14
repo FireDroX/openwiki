@@ -90,7 +90,6 @@ export function buildPagesTools(
           title: page.title,
           content: version.content,
           visibility: page.visibility,
-          isPublished: page.isPublished,
         };
       },
     }),
@@ -132,17 +131,21 @@ export function buildPagesTools(
       },
     }),
     defineMcpTool({
-      name: 'wiki_publish_page',
-      description: 'Publier ou dépublier une page',
-      inputSchema: { pageId: z.string(), isPublished: z.boolean() },
+      name: 'wiki_set_page_visibility',
+      description:
+        "Changer la visibilité d'une page (public/private), appliquée en cascade aux enfants",
+      inputSchema: {
+        pageId: z.string(),
+        visibility: z.enum(PAGE_VISIBILITIES),
+      },
       requiredScopes: [PAGES_WRITE_SCOPE],
       handler: async (input, ctx) => {
-        const { page } = await pagesService.setPublishStatus(
+        const { page } = await pagesService.setVisibility(
           input.pageId,
-          { isPublished: input.isPublished },
+          { visibility: input.visibility },
           ctx.userId,
         );
-        return { id: page.id, isPublished: page.isPublished };
+        return { id: page.id, visibility: page.visibility };
       },
     }),
   ];

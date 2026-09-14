@@ -6,7 +6,6 @@ export interface PageResponseDto {
   title: string;
   parentId: string | null;
   visibility: PageVisibility;
-  isPublished: boolean;
   commentsEnabled: boolean;
   currentVersion: {
     id: string;

@@ -11,9 +11,9 @@ import { ParentPageNotFoundException } from '../../common/exceptions/pages/paren
 import { SlugAlreadyExistsException } from '../../common/exceptions/pages/slug-already-exists.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
+import { ChangeVisibilityDto } from '../dto/in/change-visibility.dto.js';
 import { CreatePageDto } from '../dto/in/create-page.dto.js';
 import { MovePageDto } from '../dto/in/move-page.dto.js';
-import { PublishPageDto } from '../dto/in/publish-page.dto.js';
 import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { Page } from '../entities/page.entity.js';
@@ -41,7 +41,6 @@ function buildPage(overrides: Partial<Page> = {}): Page {
     title: 'Home',
     parentId: null,
     currentVersionId: 'version-1',
-    isPublished: true,
     visibility: 'public',
     commentsEnabled: true,
     createdById: 'user-1',
@@ -70,7 +69,9 @@ describe('PagesService', () => {
   let pagesRepository: {
     [K in keyof PagesRepository]: Mock<PagesRepository[K]>;
   };
-  let pagePermissionsService: { canEdit: ReturnType<typeof vi.fn> };
+  let pagePermissionsService: {
+    canEdit: Mock<(userId: string, pageId: string) => Promise<boolean>>;
+  };
   let eventEmitter: { emit: ReturnType<typeof vi.fn> };
   let userActivityLogService: { record: ReturnType<typeof vi.fn> };
 
@@ -85,7 +86,6 @@ describe('PagesService', () => {
       updateParent: vi.fn(),
       findChildren: vi.fn(),
       softDelete: vi.fn(),
-      updatePublishStatus: vi.fn(),
       updateVisibility: vi.fn(),
       updateCommentsEnabled: vi.fn(),
       countCreatedByUser: vi.fn(),
@@ -260,9 +260,7 @@ describe('PagesService', () => {
 
   describe('getTree', () => {
     it('returns every page for an admin/editor', async () => {
-      const pages = [
-        buildPage({ id: 'p1', visibility: 'private', isPublished: false }),
-      ];
+      const pages = [buildPage({ id: 'p1', visibility: 'private' })];
       pagesRepository.findAll.mockResolvedValue(pages);
 
       const tree = await service.getTree(editor);
@@ -270,10 +268,11 @@ describe('PagesService', () => {
       expect(tree).toHaveLength(1);
     });
 
-    it('filters out private/unpublished pages for a reader', async () => {
+    it('filters out private pages for a reader without an explicit grant', async () => {
+      pagePermissionsService.canEdit.mockResolvedValue(false);
       const pages = [
-        buildPage({ id: 'p1', visibility: 'private', isPublished: false }),
-        buildPage({ id: 'p2', visibility: 'public', isPublished: true }),
+        buildPage({ id: 'p1', visibility: 'private' }),
+        buildPage({ id: 'p2', visibility: 'public' }),
       ];
       pagesRepository.findAll.mockResolvedValue(pages);
 
@@ -281,6 +280,21 @@ describe('PagesService', () => {
 
       expect(tree).toHaveLength(1);
       expect(tree[0].id).toBe('p2');
+    });
+
+    it('includes a private page for a reader with an explicit permission grant', async () => {
+      pagePermissionsService.canEdit.mockImplementation((_userId, pageId) =>
+        Promise.resolve(pageId === 'p1'),
+      );
+      const pages = [
+        buildPage({ id: 'p1', visibility: 'private' }),
+        buildPage({ id: 'p2', visibility: 'private' }),
+      ];
+      pagesRepository.findAll.mockResolvedValue(pages);
+
+      const tree = await service.getTree(reader);
+
+      expect(tree.map((node) => node.id)).toEqual(['p1']);
     });
   });
 
@@ -321,32 +335,45 @@ describe('PagesService', () => {
       );
     });
 
-    it('throws PageAccessForbiddenException for a private page and no full access', async () => {
-      const page = buildPage({ visibility: 'private', isPublished: true });
+    it('throws PageAccessForbiddenException for a private page and no permission', async () => {
+      const page = buildPage({ visibility: 'private' });
+      pagePermissionsService.canEdit.mockResolvedValue(false);
       pagesRepository.findBySlugAndParent.mockResolvedValue(page);
 
       await expect(
         service.findByPath(['secret'], reader),
       ).rejects.toBeInstanceOf(PageAccessForbiddenException);
     });
+
+    it('allows a private page for a reader with an explicit permission grant', async () => {
+      const page = buildPage({ visibility: 'private' });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagePermissionsService.canEdit.mockResolvedValue(true);
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['secret'], reader);
+
+      expect(result.page).toBe(page);
+    });
   });
 
   describe('listChildren / getByIdOrFail', () => {
-    it('lists visible children and hides private ones from a reader', async () => {
-      const parent = buildPage({
-        id: 'parent-1',
-        visibility: 'public',
-        isPublished: true,
-      });
+    it('lists visible children: public always, private only with a grant', async () => {
+      const parent = buildPage({ id: 'parent-1', visibility: 'public' });
       pagesRepository.findById.mockResolvedValue(parent);
+      pagePermissionsService.canEdit.mockImplementation((_userId, pageId) =>
+        Promise.resolve(pageId === 'c2'),
+      );
       pagesRepository.findChildren.mockResolvedValue([
-        buildPage({ id: 'c1', visibility: 'public', isPublished: true }),
-        buildPage({ id: 'c2', visibility: 'private', isPublished: false }),
+        buildPage({ id: 'c1', visibility: 'public' }),
+        buildPage({ id: 'c2', visibility: 'private' }),
+        buildPage({ id: 'c3', visibility: 'private' }),
       ]);
 
       const children = await service.listChildren('parent-1', reader);
 
-      expect(children.map((c) => c.id)).toEqual(['c1']);
+      expect(children.map((c) => c.id)).toEqual(['c1', 'c2']);
     });
 
     it('throws PageNotFoundException when the parent does not exist', async () => {
@@ -400,20 +427,21 @@ describe('PagesService', () => {
     });
   });
 
-  describe('setPublishStatus', () => {
-    it('emits PAGE_PUBLISHED_EVENT when transitioning from unpublished to published', async () => {
-      const page = buildPage({ isPublished: false });
+  describe('setVisibility', () => {
+    it('emits PAGE_PUBLISHED_EVENT when a page becomes public', async () => {
+      const page = buildPage({ visibility: 'private' });
       const version = buildVersion();
-      const dto: PublishPageDto = { isPublished: true };
+      const dto: ChangeVisibilityDto = { visibility: 'public' };
 
       pagesRepository.findById.mockResolvedValue(page);
       pagesRepository.findVersionById.mockResolvedValue(version);
-      pagesRepository.updatePublishStatus.mockResolvedValue({
+      pagesRepository.updateVisibility.mockResolvedValue({
         ...page,
-        isPublished: true,
+        visibility: 'public',
       });
+      pagesRepository.findChildren.mockResolvedValue([]);
 
-      await service.setPublishStatus('page-1', dto, 'user-1');
+      await service.setVisibility('page-1', dto, 'user-1');
 
       expect(eventEmitter.emit).toHaveBeenCalledWith(
         PAGE_PUBLISHED_EVENT,
@@ -421,22 +449,23 @@ describe('PagesService', () => {
       );
     });
 
-    it('does not emit an event when the page was already published', async () => {
-      const page = buildPage({ isPublished: true });
+    it('does not emit an event when the page was already public', async () => {
+      const page = buildPage({ visibility: 'public' });
       pagesRepository.findById.mockResolvedValue(page);
       pagesRepository.findVersionById.mockResolvedValue(buildVersion());
-      pagesRepository.updatePublishStatus.mockResolvedValue(page);
+      pagesRepository.updateVisibility.mockResolvedValue(page);
+      pagesRepository.findChildren.mockResolvedValue([]);
 
-      await service.setPublishStatus('page-1', { isPublished: true }, 'user-1');
+      await service.setVisibility('page-1', { visibility: 'public' }, 'user-1');
 
       expect(eventEmitter.emit).not.toHaveBeenCalled();
     });
 
-    it('throws ValidationException when isPublished is not a boolean', async () => {
+    it('throws ValidationException for an invalid visibility value', async () => {
       await expect(
-        service.setPublishStatus(
+        service.setVisibility(
           'page-1',
-          { isPublished: 'yes' } as unknown as PublishPageDto,
+          { visibility: 'invalid' } as unknown as ChangeVisibilityDto,
           'user-1',
         ),
       ).rejects.toBeInstanceOf(ValidationException);

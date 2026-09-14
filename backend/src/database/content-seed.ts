@@ -315,7 +315,7 @@ Une fois connecté, le client peut lister les tools disponibles (\`tools/list\`)
 | \`wiki_get_page\` | Récupérer une page par son chemin complet (ex. \`docs/guide\`) |
 | \`wiki_list_pages\` | Lister l'arbre entier, ou les enfants directs d'une page |
 | \`wiki_delete_page\` | Supprimer une page (\`cascade\` obligatoire si elle a des enfants) |
-| \`wiki_publish_page\` | Publier ou dépublier une page |
+| \`wiki_set_page_visibility\` | Changer la visibilité d'une page (public/private), en cascade sur les enfants |
 
 **Tags** (\`tags:read\`/\`tags:write\`)
 
@@ -358,6 +358,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         content: `# Notes de version
 
 ## Version 0.22
+
+<details>
+<summary>0.22.14 — 2026-09-14</summary>
+
+- Fusion de \`isPublished\` dans \`visibility\` sur les pages : il n'existe plus qu'un seul état public/privé au lieu de deux drapeaux indépendants (une page pouvait afficher "publique" tout en restant invisible des visiteurs non connectés). Une page privée reste visible aux éditeurs/admins et aux utilisateurs ayant un droit explicite dessus. \`PATCH /pages/:id/publish\` et le tool MCP \`wiki_publish_page\` sont supprimés ; le tool MCP \`wiki_set_page_visibility\` les remplace.
+
+</details>
 
 <details>
 <summary>0.22.13 — 2026-09-13</summary>
@@ -1365,7 +1372,6 @@ async function seedPage(
         slug: seed.slug,
         title: seed.title,
         parentId,
-        isPublished: true,
         visibility: 'public',
         commentsEnabled: false,
         createdById: authorId,
