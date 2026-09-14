@@ -6,7 +6,7 @@ import { Button } from '#components/ui/button'
 export type FileUploadVariant = 'image' | 'attachment'
 
 const VARIANT_CONFIG: Record<FileUploadVariant, { icon: typeof ImagePlus; accept: string; labelKey: string }> = {
-  image: { icon: ImagePlus, accept: 'image/*', labelKey: 'fileUpload.insertImage' },
+  image: { icon: ImagePlus, accept: 'image/*,.pdf', labelKey: 'fileUpload.insertImage' },
   attachment: { icon: Paperclip, accept: '*/*', labelKey: 'fileUpload.attachFile' },
 }
 

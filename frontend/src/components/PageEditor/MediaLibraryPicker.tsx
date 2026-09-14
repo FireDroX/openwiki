@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '#components/ui/select'
 import { MediaLibraryUploadTab } from '#components/PageEditor/MediaLibraryUploadTab'
+import { PdfPreview } from '#components/PdfPreview'
 import { deleteMedia, listMediaLibrary, type AttachmentDto } from '#api/media'
 import { useDebouncedValue } from '#hooks/useDebouncedValue'
 import { extractErrorMessage } from '#lib/api-errors'
@@ -163,6 +164,8 @@ export function MediaLibraryPicker({ pageId, onInsert }: MediaLibraryPickerProps
                     <span className="flex aspect-square items-center justify-center bg-muted">
                       {item.mimeType.startsWith('image/') ? (
                         <img src={item.url} alt={item.filename} className="h-full w-full object-cover" />
+                      ) : item.mimeType === 'application/pdf' ? (
+                        <PdfPreview url={item.url} filename={item.filename} className="h-full w-full" />
                       ) : (
                         <Paperclip className="size-8 text-muted-foreground" />
                       )}

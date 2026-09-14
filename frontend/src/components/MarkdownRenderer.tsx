@@ -4,7 +4,23 @@ import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
 import { ApiReferenceViewer } from '#components/ApiReferenceViewer'
+import { PdfPreview } from '#components/PdfPreview'
 import { cn } from '#lib/utils'
+
+function isPdfUrl(href: string): boolean {
+  const withoutQuery = href.split(/[?#]/)[0]
+  return withoutQuery.toLowerCase().endsWith('.pdf')
+}
+
+function toPlainText(node: ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node)
+  }
+  if (Array.isArray(node)) {
+    return node.map(toPlainText).join('')
+  }
+  return ''
+}
 
 const MARKDOWN_SANITIZE_SCHEMA = {
   ...defaultSchema,
@@ -78,6 +94,19 @@ const markdownComponents = {
     return <>{children}</>
   },
   'api-reference': () => <ApiReferenceViewer />,
+  a({ href, children, node: _node, ...rest }: ComponentProps<'a'> & { node?: unknown }) {
+    if (href && isPdfUrl(href)) {
+      const filename = toPlainText(children) || href.split('/').pop() || href
+      return (
+        <PdfPreview url={href} filename={filename} interactive className="my-2 h-[28rem] max-w-2xl" />
+      )
+    }
+    return (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    )
+  },
   code({ className, children, node: _node, ...rest }: ComponentProps<'code'> & { node?: unknown }) {
     const match = /language-(\w+)/.exec(className ?? '')
     if (match) {
