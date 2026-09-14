@@ -6,9 +6,10 @@ interface PdfPreviewProps {
   url: string
   filename: string
   className?: string
+  interactive?: boolean
 }
 
-export function PdfPreview({ url, filename, className }: PdfPreviewProps) {
+export function PdfPreview({ url, filename, className, interactive = false }: PdfPreviewProps) {
   const [failed, setFailed] = useState(false)
 
   function openInNewTab(event: MouseEvent) {
@@ -30,6 +31,19 @@ export function PdfPreview({ url, filename, className }: PdfPreviewProps) {
         <FileText className="size-8" />
         <span className="w-full truncate text-center text-xs">{filename}</span>
       </button>
+    )
+  }
+
+  if (interactive) {
+    return (
+      <div title={filename} className={cn('block overflow-hidden', className)}>
+        <iframe
+          src={`${url}#toolbar=0&page=1`}
+          title={filename}
+          onError={() => setFailed(true)}
+          className="h-full w-full border-0"
+        />
+      </div>
     )
   }
 

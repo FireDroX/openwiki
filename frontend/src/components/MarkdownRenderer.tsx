@@ -97,7 +97,9 @@ const markdownComponents = {
   a({ href, children, node: _node, ...rest }: ComponentProps<'a'> & { node?: unknown }) {
     if (href && isPdfUrl(href)) {
       const filename = toPlainText(children) || href.split('/').pop() || href
-      return <PdfPreview url={href} filename={filename} className="my-2 h-[28rem] max-w-2xl" />
+      return (
+        <PdfPreview url={href} filename={filename} interactive className="my-2 h-[28rem] max-w-2xl" />
+      )
     }
     return (
       <a href={href} {...rest}>
