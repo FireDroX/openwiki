@@ -32,6 +32,7 @@ import {
   PagePublishedEvent,
 } from '../events/page-published.event.js';
 import { PageTreeMapper } from '../mapper/page-tree.mapper.js';
+import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
 import { PagePermissionsService } from './page-permissions.service.js';
 
@@ -42,6 +43,8 @@ export class PagesService {
   constructor(
     @Inject('PagesRepository')
     private readonly pagesRepository: PagesRepository,
+    @Inject('PageFollowsRepository')
+    private readonly pageFollowRepository: PageFollowRepository,
     private readonly pagePermissionsService: PagePermissionsService,
     private readonly eventEmitter: EventEmitter2,
     private readonly userActivityLogService: UserActivityLogService,
@@ -154,6 +157,44 @@ export class PagesService {
 
   async listPopularPages(limit: number): Promise<Page[]> {
     return this.pagesRepository.findTopByViewCount(limit);
+  }
+
+  async followPage(id: string, userId: string): Promise<void> {
+    await this.getByIdOrFail(id);
+    await this.pageFollowRepository.follow(userId, id);
+  }
+
+  async unfollowPage(id: string, userId: string): Promise<void> {
+    await this.pageFollowRepository.unfollow(userId, id);
+  }
+
+  async getFollowedPages(
+    userId: string,
+  ): Promise<{ page: Page; lastActivityAt: Date }[]> {
+    const pageIds = await this.pageFollowRepository.findFollowedPageIds(userId);
+
+    const entries = await Promise.all(
+      pageIds.map(async (pageId) => {
+        const page = await this.pagesRepository.findById(pageId);
+        if (!page || !page.currentVersionId) {
+          return null;
+        }
+        const version = await this.pagesRepository.findVersionById(
+          page.currentVersionId,
+        );
+        if (!version) {
+          return null;
+        }
+        return { page, lastActivityAt: version.createdAt };
+      }),
+    );
+
+    return entries
+      .filter(
+        (entry): entry is { page: Page; lastActivityAt: Date } =>
+          entry !== null,
+      )
+      .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime());
   }
 
   async listChildren(

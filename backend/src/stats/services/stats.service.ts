@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PagesService } from '../../pages/services/pages.service.js';
+import { FollowedPageDto } from '../dto/out/followed-page.dto.js';
 import { PopularPageDto } from '../dto/out/popular-page.dto.js';
 import { StatsResponseDto } from '../dto/out/stats-response.dto.js';
 import type { StatsRepository } from '../persistence/stats.repository.js';
@@ -34,6 +35,18 @@ export class StatsService {
         title: page.title,
         path: await this.pagesService.getAncestorPath(page),
         viewCount: page.viewCount,
+      })),
+    );
+  }
+
+  async getFollowedPages(userId: string): Promise<FollowedPageDto[]> {
+    const followed = await this.pagesService.getFollowedPages(userId);
+    return Promise.all(
+      followed.map(async ({ page, lastActivityAt }) => ({
+        id: page.id,
+        title: page.title,
+        path: await this.pagesService.getAncestorPath(page),
+        lastActivityAt,
       })),
     );
   }

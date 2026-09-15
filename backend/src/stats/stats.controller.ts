@@ -7,6 +7,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { ResponseDto } from '../common/dto/response.dto.js';
 import {
@@ -14,6 +15,8 @@ import {
   POPULAR_PAGES_MAX_LIMIT,
 } from '../common/variables.global.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
+import { FollowedPageDto } from './dto/out/followed-page.dto.js';
 import { PopularPageDto } from './dto/out/popular-page.dto.js';
 import { StatsResponseDto } from './dto/out/stats-response.dto.js';
 import { StatsExceptionFilter } from './filter/stats-exception.filter.js';
@@ -63,6 +66,22 @@ export class StatsController {
       StatsController.parseLimit(limit),
     );
     return StatsMapper.toPopularPagesResponse(pages);
+  }
+
+  @Get('followed-pages')
+  @ApiOperation({ summary: "Pages suivies par l'utilisateur courant" })
+  @ApiOkResponse({
+    description: 'Pages suivies, triées par activité la plus récente.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async getFollowedPages(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<FollowedPageDto[]>> {
+    const pages = await this.statsService.getFollowedPages(user.id);
+    return StatsMapper.toFollowedPagesResponse(pages);
   }
 
   private static parseLimit(raw?: string): number {

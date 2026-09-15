@@ -31,6 +31,7 @@ describe('StatsService', () => {
   let pagesService: {
     listPopularPages: Mock<PagesService['listPopularPages']>;
     getAncestorPath: Mock<PagesService['getAncestorPath']>;
+    getFollowedPages: Mock<PagesService['getFollowedPages']>;
   };
 
   beforeEach(async () => {
@@ -43,6 +44,7 @@ describe('StatsService', () => {
     pagesService = {
       listPopularPages: vi.fn(),
       getAncestorPath: vi.fn(),
+      getFollowedPages: vi.fn(),
     };
 
     const module = await Test.createTestingModule({
@@ -121,6 +123,32 @@ describe('StatsService', () => {
       pagesService.listPopularPages.mockResolvedValue([]);
 
       const result = await service.getPopularPages(5);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getFollowedPages', () => {
+    it('returns followed pages with their computed path and last activity', async () => {
+      const page = buildPage();
+      const lastActivityAt = new Date('2026-02-01');
+      pagesService.getFollowedPages.mockResolvedValue([
+        { page, lastActivityAt },
+      ]);
+      pagesService.getAncestorPath.mockResolvedValue('/home');
+
+      const result = await service.getFollowedPages('user-1');
+
+      expect(pagesService.getFollowedPages).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual([
+        { id: page.id, title: page.title, path: '/home', lastActivityAt },
+      ]);
+    });
+
+    it('returns an empty list when the user follows nothing', async () => {
+      pagesService.getFollowedPages.mockResolvedValue([]);
+
+      const result = await service.getFollowedPages('user-1');
 
       expect(result).toEqual([]);
     });

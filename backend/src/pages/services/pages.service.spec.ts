@@ -19,6 +19,7 @@ import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { Page } from '../entities/page.entity.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { PAGE_PUBLISHED_EVENT } from '../events/page-published.event.js';
+import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
 import { PagePermissionsService } from './page-permissions.service.js';
 import { PagesService } from './pages.service.js';
@@ -70,6 +71,9 @@ describe('PagesService', () => {
   let pagesRepository: {
     [K in keyof PagesRepository]: Mock<PagesRepository[K]>;
   };
+  let pageFollowRepository: {
+    [K in keyof PageFollowRepository]: Mock<PageFollowRepository[K]>;
+  };
   let pagePermissionsService: {
     canEdit: Mock<(userId: string, pageId: string) => Promise<boolean>>;
   };
@@ -94,6 +98,11 @@ describe('PagesService', () => {
       incrementViewCount: vi.fn(),
       findTopByViewCount: vi.fn(),
     };
+    pageFollowRepository = {
+      follow: vi.fn(),
+      unfollow: vi.fn(),
+      findFollowedPageIds: vi.fn(),
+    };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };
     userActivityLogService = { record: vi.fn().mockResolvedValue(undefined) };
@@ -102,6 +111,7 @@ describe('PagesService', () => {
       providers: [
         PagesService,
         { provide: 'PagesRepository', useValue: pagesRepository },
+        { provide: 'PageFollowsRepository', useValue: pageFollowRepository },
         { provide: PagePermissionsService, useValue: pagePermissionsService },
         { provide: EventEmitter2, useValue: eventEmitter },
         { provide: UserActivityLogService, useValue: userActivityLogService },
@@ -556,6 +566,80 @@ describe('PagesService', () => {
           'user-1',
         ),
       ).rejects.toBeInstanceOf(ValidationException);
+    });
+  });
+
+  describe('followPage', () => {
+    it('follows an existing page', async () => {
+      const page = buildPage();
+      pagesRepository.findById.mockResolvedValue(page);
+
+      await service.followPage(page.id, 'user-1');
+
+      expect(pageFollowRepository.follow).toHaveBeenCalledWith(
+        'user-1',
+        page.id,
+      );
+    });
+
+    it('throws PageNotFoundException for a missing page', async () => {
+      pagesRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.followPage('missing', 'user-1'),
+      ).rejects.toBeInstanceOf(PageNotFoundException);
+      expect(pageFollowRepository.follow).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unfollowPage', () => {
+    it('delegates to the repository', async () => {
+      await service.unfollowPage('page-1', 'user-1');
+
+      expect(pageFollowRepository.unfollow).toHaveBeenCalledWith(
+        'user-1',
+        'page-1',
+      );
+    });
+  });
+
+  describe('getFollowedPages', () => {
+    it('returns followed pages with their last activity date, most recent first', async () => {
+      const older = buildPage({ id: 'page-1', currentVersionId: 'v1' });
+      const newer = buildPage({ id: 'page-2', currentVersionId: 'v2' });
+      const olderVersion = buildVersion({
+        id: 'v1',
+        createdAt: new Date('2026-01-01'),
+      });
+      const newerVersion = buildVersion({
+        id: 'v2',
+        createdAt: new Date('2026-02-01'),
+      });
+      pageFollowRepository.findFollowedPageIds.mockResolvedValue([
+        'page-1',
+        'page-2',
+      ]);
+      pagesRepository.findById.mockImplementation((id: string) =>
+        Promise.resolve(id === 'page-1' ? older : newer),
+      );
+      pagesRepository.findVersionById.mockImplementation((id: string) =>
+        Promise.resolve(id === 'v1' ? olderVersion : newerVersion),
+      );
+
+      const result = await service.getFollowedPages('user-1');
+
+      expect(result).toEqual([
+        { page: newer, lastActivityAt: newerVersion.createdAt },
+        { page: older, lastActivityAt: olderVersion.createdAt },
+      ]);
+    });
+
+    it('returns an empty list when nothing is followed', async () => {
+      pageFollowRepository.findFollowedPageIds.mockResolvedValue([]);
+
+      const result = await service.getFollowedPages('user-1');
+
+      expect(result).toEqual([]);
     });
   });
 });
