@@ -17,6 +17,7 @@ import { MediaModule } from './media/media.module.js';
 import { PagesModule } from './pages/pages.module.js';
 import { SearchModule } from './search/search.module.js';
 import { SecurityModule } from './security/security.module.js';
+import { StatsModule } from './stats/stats.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { TagsModule } from './tags/tags.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -52,6 +53,7 @@ const GLOBAL_THROTTLE_LIMIT = 100;
     ActivityModule,
     McpModule,
     CommentsModule,
+    StatsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard }],
 })
