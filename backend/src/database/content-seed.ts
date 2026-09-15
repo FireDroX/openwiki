@@ -362,7 +362,7 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 <details>
 <summary>0.24.3 — 2026-09-15</summary>
 
-- Possibilité de suivre une page (`POST`/`DELETE /pages/:id/follow`) et nouvel endpoint `GET /stats/followed-pages` : liste les pages suivies par l'utilisateur courant, triées par activité la plus récente.
+- Possibilité de suivre une page (\`POST\`/\`DELETE /pages/:id/follow\`) et nouvel endpoint \`GET /stats/followed-pages\` : liste les pages suivies par l'utilisateur courant, triées par activité la plus récente.
 
 </details>
 
