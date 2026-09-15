@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.24
 
 <details>
+<summary>0.24.4 — 2026-09-15</summary>
+
+- Nouvelle page d'accueil "Tableau de bord" : compteurs globaux, pages les plus consultées et pages suivies. Un bouton "Suivre" apparaît désormais sur chaque page pour l'ajouter à ses pages suivies.
+
+</details>
+
+<details>
 <summary>0.24.3 — 2026-09-15</summary>
 
 - Possibilité de suivre une page (\`POST\`/\`DELETE /pages/:id/follow\`) et nouvel endpoint \`GET /stats/followed-pages\` : liste les pages suivies par l'utilisateur courant, triées par activité la plus récente.

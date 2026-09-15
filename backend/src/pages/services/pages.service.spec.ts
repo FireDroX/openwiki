@@ -102,6 +102,7 @@ describe('PagesService', () => {
       follow: vi.fn(),
       unfollow: vi.fn(),
       findFollowedPageIds: vi.fn(),
+      isFollowing: vi.fn().mockResolvedValue(false),
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };
@@ -380,6 +381,34 @@ describe('PagesService', () => {
 
       expect(pagesRepository.incrementViewCount).toHaveBeenCalledWith(page.id);
       expect(result.page.viewCount).toBe(5);
+    });
+
+    it('reports isFollowed for the current user', async () => {
+      const page = buildPage();
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+      pageFollowRepository.isFollowing.mockResolvedValue(true);
+
+      const result = await service.findByPath(['home'], editor);
+
+      expect(pageFollowRepository.isFollowing).toHaveBeenCalledWith(
+        editor.id,
+        page.id,
+      );
+      expect(result.isFollowed).toBe(true);
+    });
+
+    it('reports isFollowed as false for an anonymous reader', async () => {
+      const page = buildPage({ visibility: 'public' });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['home'], undefined);
+
+      expect(pageFollowRepository.isFollowing).not.toHaveBeenCalled();
+      expect(result.isFollowed).toBe(false);
     });
   });
 

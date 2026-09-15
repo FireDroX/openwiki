@@ -107,7 +107,7 @@ export class PagesService {
   async findByPath(
     segments: string[],
     currentUser?: AuthenticatedUser,
-  ): Promise<{ page: Page; version: PageVersion }> {
+  ): Promise<{ page: Page; version: PageVersion; isFollowed: boolean }> {
     if (segments.length === 0) {
       throw new PageNotFoundException();
     }
@@ -138,7 +138,11 @@ export class PagesService {
     await this.pagesRepository.incrementViewCount(page.id);
     page.viewCount += 1;
 
-    return { page, version };
+    const isFollowed = currentUser
+      ? await this.pageFollowRepository.isFollowing(currentUser.id, page.id)
+      : false;
+
+    return { page, version, isFollowed };
   }
 
   async getAncestorPath(page: Page): Promise<string> {

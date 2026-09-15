@@ -24,6 +24,7 @@ export interface PageDetail {
   commentsEnabled: boolean
   parentId: string | null
   updatedAt: string
+  isFollowed: boolean
 }
 
 export async function getPageByPath(pathSegments: string[]): Promise<PageDetail> {
@@ -83,4 +84,12 @@ export async function changePageVisibility(id: string, visibility: PageVisibilit
 
 export async function setCommentsEnabled(id: string, commentsEnabled: boolean): Promise<void> {
   await apiClient.patch(`/pages/${id}/comments-enabled`, { commentsEnabled })
+}
+
+export async function followPage(id: string): Promise<void> {
+  await apiClient.post(`/pages/${id}/follow`)
+}
+
+export async function unfollowPage(id: string): Promise<void> {
+  await apiClient.delete(`/pages/${id}/follow`)
 }

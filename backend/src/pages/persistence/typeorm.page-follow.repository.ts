@@ -30,4 +30,9 @@ export class TypeormPageFollowRepository implements PageFollowRepository {
     });
     return rows.map((row) => row.pageId);
   }
+
+  async isFollowing(userId: string, pageId: string): Promise<boolean> {
+    const existing = await this.repository.findOneBy({ userId, pageId });
+    return existing !== null;
+  }
 }
