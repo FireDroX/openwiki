@@ -39,4 +39,6 @@ export interface PagesRepository {
   updateCommentsEnabled(page: Page, commentsEnabled: boolean): Promise<Page>;
   countCreatedByUser(userId: string): Promise<number>;
   countVersionsByAuthor(userId: string): Promise<number>;
+  incrementViewCount(id: string): Promise<void>;
+  findTopByViewCount(limit: number): Promise<Page[]>;
 }

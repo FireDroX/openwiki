@@ -1,4 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { PagesService } from '../../pages/services/pages.service.js';
+import { PopularPageDto } from '../dto/out/popular-page.dto.js';
 import { StatsResponseDto } from '../dto/out/stats-response.dto.js';
 import type { StatsRepository } from '../persistence/stats.repository.js';
 
@@ -9,6 +11,7 @@ export class StatsService {
   constructor(
     @Inject('StatsRepository')
     private readonly statsRepository: StatsRepository,
+    private readonly pagesService: PagesService,
   ) {}
 
   async getStats(): Promise<StatsResponseDto> {
@@ -21,6 +24,18 @@ export class StatsService {
       ]);
 
     return { pagesCount, commentsCount, usersCount, mediaCount };
+  }
+
+  async getPopularPages(limit: number): Promise<PopularPageDto[]> {
+    const pages = await this.pagesService.listPopularPages(limit);
+    return Promise.all(
+      pages.map(async (page) => ({
+        id: page.id,
+        title: page.title,
+        path: await this.pagesService.getAncestorPath(page),
+        viewCount: page.viewCount,
+      })),
+    );
   }
 
   private async countCommentsSafely(): Promise<number> {

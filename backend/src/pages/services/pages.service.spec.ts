@@ -43,6 +43,7 @@ function buildPage(overrides: Partial<Page> = {}): Page {
     currentVersionId: 'version-1',
     visibility: 'public',
     commentsEnabled: true,
+    viewCount: 0,
     createdById: 'user-1',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -90,6 +91,8 @@ describe('PagesService', () => {
       updateCommentsEnabled: vi.fn(),
       countCreatedByUser: vi.fn(),
       countVersionsByAuthor: vi.fn(),
+      incrementViewCount: vi.fn(),
+      findTopByViewCount: vi.fn(),
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
     eventEmitter = { emit: vi.fn() };
@@ -355,6 +358,30 @@ describe('PagesService', () => {
       const result = await service.findByPath(['secret'], reader);
 
       expect(result.page).toBe(page);
+    });
+
+    it('increments the view count on each read', async () => {
+      const page = buildPage({ viewCount: 4 });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['home'], editor);
+
+      expect(pagesRepository.incrementViewCount).toHaveBeenCalledWith(page.id);
+      expect(result.page.viewCount).toBe(5);
+    });
+  });
+
+  describe('listPopularPages', () => {
+    it('returns the pages with the most views', async () => {
+      const pages = [buildPage({ id: 'page-1', viewCount: 10 })];
+      pagesRepository.findTopByViewCount.mockResolvedValue(pages);
+
+      const result = await service.listPopularPages(5);
+
+      expect(pagesRepository.findTopByViewCount).toHaveBeenCalledWith(5);
+      expect(result).toBe(pages);
     });
   });
 

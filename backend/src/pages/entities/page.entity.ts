@@ -37,6 +37,9 @@ export class Page {
   @Column({ type: 'boolean', name: 'comments_enabled', default: true })
   commentsEnabled: boolean;
 
+  @Column({ type: 'int', name: 'view_count', default: 0 })
+  viewCount: number;
+
   @Column({ type: 'enum', enum: PAGE_VISIBILITIES, default: 'private' })
   visibility: PageVisibility;
 

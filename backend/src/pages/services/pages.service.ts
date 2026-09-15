@@ -132,6 +132,9 @@ export class PagesService {
       throw new PageNotFoundException();
     }
 
+    await this.pagesRepository.incrementViewCount(page.id);
+    page.viewCount += 1;
+
     return { page, version };
   }
 
@@ -147,6 +150,10 @@ export class PagesService {
       parentId = parent.parentId;
     }
     return `/${segments.join('/')}`;
+  }
+
+  async listPopularPages(limit: number): Promise<Page[]> {
+    return this.pagesRepository.findTopByViewCount(limit);
   }
 
   async listChildren(

@@ -1,14 +1,20 @@
-import { Controller, Get, UseFilters, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseFilters, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { ResponseDto } from '../common/dto/response.dto.js';
+import {
+  POPULAR_PAGES_DEFAULT_LIMIT,
+  POPULAR_PAGES_MAX_LIMIT,
+} from '../common/variables.global.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { PopularPageDto } from './dto/out/popular-page.dto.js';
 import { StatsResponseDto } from './dto/out/stats-response.dto.js';
 import { StatsExceptionFilter } from './filter/stats-exception.filter.js';
 import { StatsMapper } from './mapper/stats.mapper.js';
@@ -34,5 +40,36 @@ export class StatsController {
   async getStats(): Promise<ResponseDto<StatsResponseDto>> {
     const stats = await this.statsService.getStats();
     return StatsMapper.toResponse(stats);
+  }
+
+  @Get('popular-pages')
+  @ApiOperation({ summary: 'Pages les plus consultées' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: `Nombre de pages à renvoyer, défaut ${POPULAR_PAGES_DEFAULT_LIMIT}, max ${POPULAR_PAGES_MAX_LIMIT}.`,
+  })
+  @ApiOkResponse({
+    description: 'Pages triées par nombre de vues décroissant.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async getPopularPages(
+    @Query('limit') limit?: string,
+  ): Promise<ResponseDto<PopularPageDto[]>> {
+    const pages = await this.statsService.getPopularPages(
+      StatsController.parseLimit(limit),
+    );
+    return StatsMapper.toPopularPagesResponse(pages);
+  }
+
+  private static parseLimit(raw?: string): number {
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return POPULAR_PAGES_DEFAULT_LIMIT;
+    }
+    return Math.min(parsed, POPULAR_PAGES_MAX_LIMIT);
   }
 }

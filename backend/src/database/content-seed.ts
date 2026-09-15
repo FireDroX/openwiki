@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.24
 
 <details>
+<summary>0.24.2 — 2026-09-15</summary>
+
+- Nouvel endpoint \`GET /stats/popular-pages\` : renvoie les pages les plus consultées, classées par nombre de vues. Chaque lecture d'une page incrémente désormais son compteur de vues.
+
+</details>
+
+<details>
 <summary>0.24.1 — 2026-09-15</summary>
 
 - Nouvel endpoint \`GET /stats\` : renvoie le nombre total de pages, de commentaires, d'utilisateurs et de médias, pour alimenter les KPI de la future page d'accueil.

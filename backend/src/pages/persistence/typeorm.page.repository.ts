@@ -131,4 +131,15 @@ export class TypeormPagesRepository implements PagesRepository {
   countVersionsByAuthor(userId: string): Promise<number> {
     return this.versionRepository.count({ where: { authorId: userId } });
   }
+
+  async incrementViewCount(id: string): Promise<void> {
+    await this.repository.increment({ id }, 'viewCount', 1);
+  }
+
+  findTopByViewCount(limit: number): Promise<Page[]> {
+    return this.repository.find({
+      order: { viewCount: 'DESC' },
+      take: limit,
+    });
+  }
 }
