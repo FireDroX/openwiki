@@ -9,4 +9,5 @@ export interface PageDetailResponseDto {
   commentsEnabled: boolean;
   parentId: string | null;
   updatedAt: Date;
+  isFollowed: boolean;
 }

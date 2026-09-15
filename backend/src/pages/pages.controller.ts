@@ -647,6 +647,46 @@ export class PagesController {
     return CommentMapper.toResponse(comment, authorNames);
   }
 
+  @Post(':id/follow')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Suivre une page (idempotent)' })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiNoContentResponse({ description: 'Page suivie.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async followPage(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.pagesService.followPage(id, user.id);
+  }
+
+  @Delete(':id/follow')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Ne plus suivre une page (idempotent)' })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiNoContentResponse({ description: 'Page retirée du suivi.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  async unfollowPage(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.pagesService.unfollowPage(id, user.id);
+  }
+
   @Get('*path')
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
@@ -675,7 +715,10 @@ export class PagesController {
     @Param('path') path: string[],
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<ResponseDto<PageDetailResponseDto>> {
-    const { page, version } = await this.pagesService.findByPath(path, user);
-    return PageMapper.toDetailResponse(page, version);
+    const { page, version, isFollowed } = await this.pagesService.findByPath(
+      path,
+      user,
+    );
+    return PageMapper.toDetailResponse(page, version, isFollowed);
   }
 }

@@ -8,6 +8,7 @@ import { MarkdownRenderer } from '#components/MarkdownRenderer'
 import { Skeleton } from '#components/ui/skeleton'
 import { PageBreadcrumb } from '#components/layout/PageBreadcrumb'
 import { CommentThread } from '#components/PageView/CommentThread'
+import { FollowButton } from '#components/PageView/FollowButton'
 import { PageTagList } from '#components/PageView/PageTagList'
 import { useAuth } from '#hooks/useAuth'
 import { useDocumentTitle } from '#hooks/useDocumentTitle'
@@ -111,6 +112,7 @@ export function PageView() {
         <div className="flex items-start justify-between gap-4">
           <PageBreadcrumb title={page.title} parentId={page.parentId} />
           <div className="flex shrink-0 gap-2">
+            {user && <FollowButton key={page.id} pageId={page.id} initialFollowed={page.isFollowed} />}
             <Button variant="outline" size="sm" asChild>
               <Link to={`/history/${pathSegments.join('/')}`}>
                 <History /> {t('pageView.history')}

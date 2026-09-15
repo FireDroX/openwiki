@@ -54,6 +54,8 @@ export const AVATAR_MIME_TO_EXTENSION: Record<string, string> = {
 export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 export const ACCOUNT_LOCKOUT_DURATION_MINUTES = 15;
 export const COMMENT_CONTENT_MAX_LENGTH = 2000;
+export const POPULAR_PAGES_DEFAULT_LIMIT = 5;
+export const POPULAR_PAGES_MAX_LIMIT = 20;
 export const MCP_SCOPES = [
   'pages:read',
   'pages:write',

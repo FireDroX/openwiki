@@ -49,11 +49,32 @@
     "toggle": "Basculer {{title}}"
   },
   "home": {
-    "getStarted": "Commencer"
+    "getStarted": "Commencer",
+    "title": "Tableau de bord",
+    "statistics": "Statistiques",
+    "loadError": "Impossible de charger le tableau de bord.",
+    "stats": {
+      "pages": "Pages",
+      "comments": "Commentaires",
+      "users": "Utilisateurs",
+      "media": "Médias"
+    },
+    "popularPages": {
+      "title": "Pages populaires",
+      "empty": "Aucune page consultée pour le moment.",
+      "views_one": "{{count}} vue",
+      "views_other": "{{count}} vues"
+    },
+    "followedPages": {
+      "title": "Mes pages suivies",
+      "empty": "Vous ne suivez aucune page pour le moment."
+    }
   },
   "pageView": {
     "history": "Historique",
     "edit": "Modifier",
+    "follow": "Suivre",
+    "unfollow": "Suivi",
     "notFoundTitle": "Page introuvable",
     "notFoundDescription": "Cette page n'existe pas ou a été supprimée.",
     "forbiddenTitle": "Accès refusé",
