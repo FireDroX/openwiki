@@ -360,6 +360,20 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.25
 
 <details>
+<summary>0.25.9 — 2026-09-16</summary>
+
+- Correctif de déploiement : \`frontend/nginx.conf\` proxifie désormais aussi \`/api/*\` vers le backend, en plus des endpoints \`.well-known\` OAuth — le conteneur frontend n'a plus besoin de dépendre d'une règle de routage externe pour ces chemins.
+
+</details>
+
+<details>
+<summary>0.25.8 — 2026-09-16</summary>
+
+- Correctif de déploiement : les endpoints de découverte OAuth (\`/.well-known/oauth-protected-resource\`, \`/.well-known/oauth-authorization-server\`) tombaient dans le SPA du frontend au lieu d'atteindre le backend, faute de règle de routage sur ces chemins hors \`/api\`. \`frontend/nginx.conf\` les proxifie désormais directement vers le conteneur backend.
+
+</details>
+
+<details>
 <summary>0.25.7 — 2026-09-16</summary>
 
 - Nouvel onglet "Clients OAuth" dans l'administration MCP (\`/admin/mcp/oauth-clients\`) : liste des clients OAuth enregistrés et de leurs refresh tokens actifs, avec révocation individuelle.
