@@ -30,6 +30,13 @@
       "displayNameMaxLength": "Name cannot exceed {{count}} characters"
     }
   },
+  "oauthConsent": {
+    "title": "Authorize access",
+    "description": "{{name}} would like to connect to OpenWiki on your behalf.",
+    "allow": "Authorize",
+    "deny": "Deny",
+    "notAdmin": "Only an administrator account can authorize this connection."
+  },
   "topbar": {
     "openSidebar": "Open navigation",
     "searchPlaceholder": "Search the wiki...",
@@ -210,6 +217,7 @@
     "settingsTab": "Settings",
     "mcpKeysTab": "MCP API keys",
     "mcpAuditTab": "MCP log",
+    "oauthClientsTab": "OAuth clients",
     "auditLogTab": "Audit log",
     "activityLogTab": "Activity",
     "users": {
@@ -308,6 +316,22 @@
       "detailInput": "Input",
       "detailOutput": "Output",
       "searchPlaceholder": "Search..."
+    },
+    "oauthClients": {
+      "description": "OAuth clients registered by AI tools connected via MCP, and their active refresh tokens.",
+      "loadError": "Failed to load OAuth clients.",
+      "empty": "No OAuth client registered.",
+      "columnClient": "Client",
+      "columnActiveTokens": "Active tokens",
+      "columnCreated": "Registered",
+      "noActiveTokens": "No active token",
+      "tokenCreated": "{{time}}",
+      "revokeSr": "Revoke {{name}}'s access",
+      "revokeConfirmTitle": "Revoke this token?",
+      "revokeConfirmDescription": "{{name}}'s access to {{client}} will be revoked immediately. This action is irreversible.",
+      "revokeConfirmAction": "Revoke",
+      "revoked": "Token revoked.",
+      "revokeFailed": "Failed to revoke the token."
     },
     "auditLog": {
       "allAdmins": "All admins",
