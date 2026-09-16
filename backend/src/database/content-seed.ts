@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.25
 
 <details>
+<summary>0.25.10 — 2026-09-16</summary>
+
+- Correctif de déploiement : le nginx du frontend forçait \`X-Forwarded-Proto\` sur \`$scheme\` (toujours \`http\` dans ce conteneur, qui écoute en HTTP interne derrière la terminaison TLS externe), ce qui faisait générer des URLs \`http://\` dans les métadonnées de découverte OAuth au lieu de \`https://\`. Valeur fixée en dur sur \`https\`, seul protocole utilisé par ce conteneur en production.
+
+</details>
+
+<details>
 <summary>0.25.9 — 2026-09-16</summary>
 
 - Correctif de déploiement : \`frontend/nginx.conf\` proxifie désormais aussi \`/api/*\` vers le backend, en plus des endpoints \`.well-known\` OAuth — le conteneur frontend n'a plus besoin de dépendre d'une règle de routage externe pour ces chemins.
