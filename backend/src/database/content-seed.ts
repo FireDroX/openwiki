@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.25
 
 <details>
+<summary>0.25.11 — 2026-09-16</summary>
+
+- Correctif : \`POST /oauth/authorize/decision\` renvoyait \`{ redirectUrl }\` sans l'enveloppe \`ResponseDto\` standard de l'app, ce qui faisait planter le front (destructuration d'un objet \`undefined\`) au moment de rediriger après un clic sur Autoriser/Refuser sur l'écran de consentement OAuth.
+
+</details>
+
+<details>
 <summary>0.25.10 — 2026-09-16</summary>
 
 - Correctif de déploiement : le nginx du frontend forçait \`X-Forwarded-Proto\` sur \`$scheme\` (toujours \`http\` dans ce conteneur, qui écoute en HTTP interne derrière la terminaison TLS externe), ce qui faisait générer des URLs \`http://\` dans les métadonnées de découverte OAuth au lieu de \`https://\`. Valeur fixée en dur sur \`https\`, seul protocole utilisé par ce conteneur en production.
