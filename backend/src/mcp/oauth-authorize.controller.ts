@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { ResponseDto } from '../common/dto/response.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import {
@@ -130,7 +131,7 @@ export class OAuthAuthorizeController {
   async decide(
     @Body() dto: OAuthAuthorizeDecisionDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<OAuthAuthorizeDecisionResponseDto> {
+  ): Promise<ResponseDto<OAuthAuthorizeDecisionResponseDto>> {
     const client = await this.oauthClientsService.getByClientId(dto.clientId);
     if (!client.redirectUris.includes(dto.redirectUri)) {
       throw new OAuthInvalidRequestException('Unregistered redirect_uri');
@@ -143,13 +144,13 @@ export class OAuthAuthorizeController {
         targetType: 'oauth_client',
         targetId: client.id,
       });
-      return {
+      return new ResponseDto({
         redirectUrl: OAuthAuthorizeController.buildErrorRedirect(
           dto.redirectUri,
           'access_denied',
           dto.state,
         ),
-      };
+      });
     }
 
     if (user.role !== 'admin') {
@@ -187,9 +188,9 @@ export class OAuthAuthorizeController {
     if (dto.state) {
       redirectParams.set('state', dto.state);
     }
-    return {
+    return new ResponseDto({
       redirectUrl: `${dto.redirectUri}?${redirectParams.toString()}`,
-    };
+    });
   }
 
   private getSessionUser(req: Request): AuthenticatedUser | null {
