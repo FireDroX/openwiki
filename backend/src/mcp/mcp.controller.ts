@@ -14,15 +14,15 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { Response } from 'express';
 import { McpExceptionFilter } from './filter/mcp.exception.filter.js';
-import { McpApiKeyGuard } from './guards/mcp-api-key.guard.js';
 import type { McpAuthenticatedRequest } from './guards/mcp-api-key.guard.js';
+import { McpOAuthGuard } from './guards/mcp-oauth.guard.js';
 import { McpServerService } from './services/mcp-server.service.js';
 
 const SESSION_ID_HEADER = 'mcp-session-id';
 
 @ApiExcludeController()
 @Controller('mcp')
-@UseGuards(McpApiKeyGuard)
+@UseGuards(McpOAuthGuard)
 @UseFilters(McpExceptionFilter)
 export class McpController {
   private readonly transports = new Map<

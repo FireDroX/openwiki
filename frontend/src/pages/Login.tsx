@@ -30,7 +30,7 @@ function useLockoutCountdown() {
   return { secondsRemaining, setSecondsRemaining }
 }
 
-function LoginForm() {
+function LoginForm({ redirectTo }: { redirectTo: string | null }) {
   const { t } = useTranslation()
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -54,6 +54,10 @@ function LoginForm() {
     setLockoutSeconds(null)
     try {
       await login({ ...data, turnstileToken })
+      if (redirectTo) {
+        window.location.assign(redirectTo)
+        return
+      }
       navigate('/', { replace: true })
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 423) {
@@ -187,8 +191,13 @@ export function Login() {
   const { status } = useAuth()
   const [searchParams] = useSearchParams()
   const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login'
+  const redirectTo = searchParams.get('redirect')
 
   if (status === 'authenticated') {
+    if (redirectTo) {
+      window.location.assign(redirectTo)
+      return null
+    }
     return <Navigate to="/" replace />
   }
 
@@ -205,7 +214,7 @@ export function Login() {
             <TabsTrigger value="register">{t('auth.registerTab')}</TabsTrigger>
           </TabsList>
           <TabsContent value="login" className="pt-4">
-            <LoginForm />
+            <LoginForm redirectTo={redirectTo} />
           </TabsContent>
           <TabsContent value="register" className="pt-4">
             <RegisterForm />

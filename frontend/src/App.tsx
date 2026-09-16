@@ -9,10 +9,12 @@ import { AdminActivityLog } from '#pages/AdminActivityLog'
 import { AdminAuditLog } from '#pages/AdminAuditLog'
 import { AdminMcpAudit } from '#pages/AdminMcpAudit'
 import { AdminMcpKeys } from '#pages/AdminMcpKeys'
+import { AdminOAuthClients } from '#pages/AdminOAuthClients'
 import { AdminSettings } from '#pages/AdminSettings'
 import { AdminUsers } from '#pages/AdminUsers'
 import { Home } from '#pages/Home'
 import { Login } from '#pages/Login'
+import { OAuthConsent } from '#pages/OAuthConsent'
 import { PageCreate } from '#pages/PageCreate'
 import { PageEditor } from '#pages/PageEditor'
 import { PageHistory } from '#pages/PageHistory'
@@ -33,6 +35,9 @@ export function App() {
     <>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/oauth/consent" element={<OAuthConsent />} />
+        </Route>
         <Route element={<ProtectedRoute roles={EDITOR_ROLES} />}>
           <Route path="/new" element={<PageCreate />} />
           <Route path="/edit/*" element={<PageEditor />} />
@@ -49,6 +54,7 @@ export function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/mcp/api-keys" element={<AdminMcpKeys />} />
+            <Route path="/admin/mcp/oauth-clients" element={<AdminOAuthClients />} />
             <Route path="/admin/mcp/audit-log" element={<AdminMcpAudit />} />
             <Route path="/admin/audit-log" element={<AdminAuditLog />} />
             <Route path="/admin/activity-log" element={<AdminActivityLog />} />

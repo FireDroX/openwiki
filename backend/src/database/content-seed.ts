@@ -357,6 +357,57 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.25
+
+<details>
+<summary>0.25.7 — 2026-09-16</summary>
+
+- Nouvel onglet "Clients OAuth" dans l'administration MCP (\`/admin/mcp/oauth-clients\`) : liste des clients OAuth enregistrés et de leurs refresh tokens actifs, avec révocation individuelle.
+
+</details>
+
+<details>
+<summary>0.25.6 — 2026-09-16</summary>
+
+- Écran de consentement OAuth après connexion : une IA connectée via MCP (ex. Claude Code) peut désormais demander à un compte admin d'autoriser ou de refuser sa connexion.
+
+</details>
+
+<details>
+<summary>0.25.5 — 2026-09-16</summary>
+
+- Le endpoint \`/mcp\` accepte désormais un access token OAuth en plus des clés API \`sk_...\` existantes (aucun changement pour les intégrations déjà en place).
+
+</details>
+
+<details>
+<summary>0.25.4 — 2026-09-16</summary>
+
+- Nouveaux endpoints \`POST /oauth/token\` (échange de code d'autorisation et rafraîchissement) et \`POST /oauth/revoke\` (révocation d'un refresh token).
+
+</details>
+
+<details>
+<summary>0.25.3 — 2026-09-16</summary>
+
+- Nouvel endpoint \`GET /oauth/authorize\` : flux d'autorisation OAuth 2.0 avec PKCE (S256 obligatoire), réservé aux comptes admin, avec redirection vers le login existant si nécessaire.
+
+</details>
+
+<details>
+<summary>0.25.2 — 2026-09-16</summary>
+
+- Découverte OAuth (\`/.well-known/oauth-protected-resource\`, \`/.well-known/oauth-authorization-server\`) et enregistrement dynamique de client (\`POST /oauth/register\`), pour qu'un client MCP se connecte sans configuration manuelle.
+
+</details>
+
+<details>
+<summary>0.25.1 — 2026-09-16</summary>
+
+- Socle de données du serveur d'autorisation OAuth 2.0 pour MCP : nouvelles tables \`oauth_clients\` et \`oauth_refresh_tokens\`.
+
+</details>
+
 ## Version 0.24
 
 <details>

@@ -46,7 +46,13 @@ export class McpExceptionFilter implements ExceptionFilter {
       case 'McpApiKeyNotFoundException':
         return { statusCode: HttpStatus.NOT_FOUND, error: exception.message };
       case 'ValidationException':
+      case 'OAuthInvalidRequestException':
         return { statusCode: HttpStatus.BAD_REQUEST, error: exception.message };
+      case 'OAuthInvalidClientException':
+      case 'OAuthRefreshTokenNotFoundException':
+        return { statusCode: HttpStatus.NOT_FOUND, error: exception.message };
+      case 'OAuthAccessDeniedException':
+        return { statusCode: HttpStatus.FORBIDDEN, error: exception.message };
       default:
         return {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

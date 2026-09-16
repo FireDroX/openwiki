@@ -67,3 +67,12 @@ export const MCP_SCOPES = [
   'media:write',
   'search:read',
 ];
+
+export const OAUTH_CLIENT_ID_PREFIX = 'oauth_client_';
+export const OAUTH_CLIENT_SECRET_PREFIX = 'oauth_secret_';
+export const OAUTH_REFRESH_TOKEN_PREFIX = 'oauth_rt_';
+export const OAUTH_AUTHORIZATION_CODE_PREFIX = 'oauth_code_';
+export const OAUTH_AUTHORIZATION_CODE_EXPIRY_SECONDS = 60;
+export const OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS = 3600;
+export const OAUTH_REFRESH_TOKEN_EXPIRY_DAYS = 30;
+export const OAUTH_PKCE_CODE_CHALLENGE_METHOD = 'S256';

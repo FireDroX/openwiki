@@ -31,6 +31,14 @@ function setupSwagger(app: INestApplication): void {
       'Admin — MCP',
       'Gestion des clés API du serveur MCP (pilotage par IA, réservé aux admins)',
     )
+    .addTag(
+      'Admin — OAuth',
+      'Gestion des clients OAuth MCP et de leurs refresh tokens actifs (réservé aux admins)',
+    )
+    .addTag(
+      'OAuth',
+      "Flux d'autorisation OAuth 2.0 (écran de consentement MCP)",
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
@@ -46,7 +54,12 @@ async function bootstrap() {
     extended: true,
     limit: JSON_BODY_LIMIT,
   });
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: [
+      '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-authorization-server',
+    ],
+  });
   app.enableCors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
