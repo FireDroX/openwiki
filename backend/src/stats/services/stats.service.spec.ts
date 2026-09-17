@@ -105,6 +105,30 @@ describe('StatsService', () => {
     });
   });
 
+  describe('getPublicStats', () => {
+    it('returns only pages and comments counts', async () => {
+      statsRepository.countPages.mockResolvedValue(12);
+      statsRepository.countComments.mockResolvedValue(34);
+
+      const result = await service.getPublicStats();
+
+      expect(result).toEqual({ pagesCount: 12, commentsCount: 34 });
+      expect(statsRepository.countUsers).not.toHaveBeenCalled();
+      expect(statsRepository.countMedia).not.toHaveBeenCalled();
+    });
+
+    it('returns 0 comments without throwing when the comments count fails', async () => {
+      statsRepository.countPages.mockResolvedValue(1);
+      statsRepository.countComments.mockRejectedValue(
+        new Error("Table 'comments' doesn't exist"),
+      );
+
+      const result = await service.getPublicStats();
+
+      expect(result).toEqual({ pagesCount: 1, commentsCount: 0 });
+    });
+  });
+
   describe('getPopularPages', () => {
     it('returns popular pages with their computed path', async () => {
       const page = buildPage({ viewCount: 42 });

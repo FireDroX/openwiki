@@ -8,6 +8,8 @@ export interface DashboardStats {
   mediaCount: number
 }
 
+export type PublicStats = Pick<DashboardStats, 'pagesCount' | 'commentsCount'>
+
 export interface PopularPage {
   id: string
   title: string
@@ -24,6 +26,11 @@ export interface FollowedPage {
 
 export async function getStats(): Promise<DashboardStats> {
   const { data } = await apiClient.get<ResponseDto<DashboardStats>>('/stats')
+  return data.data
+}
+
+export async function getPublicStats(): Promise<PublicStats> {
+  const { data } = await apiClient.get<ResponseDto<PublicStats>>('/stats/public')
   return data.data
 }
 
