@@ -357,6 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.26
+
+<details>
+<summary>0.26.1 — 2026-09-17</summary>
+
+- Nouvelle vue d'accueil pour les visiteurs non connectés : présentation du wiki, 2 KPI publics (pages, commentaires) et appel à créer un compte ou se connecter. Nouvel endpoint public \`GET /stats/public\`.
+
+</details>
+
 ## Version 0.25
 
 <details>

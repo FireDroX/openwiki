@@ -56,7 +56,6 @@
     "toggle": "Basculer {{title}}"
   },
   "home": {
-    "getStarted": "Commencer",
     "title": "Tableau de bord",
     "statistics": "Statistiques",
     "loadError": "Impossible de charger le tableau de bord.",
@@ -75,6 +74,16 @@
     "followedPages": {
       "title": "Mes pages suivies",
       "empty": "Vous ne suivez aucune page pour le moment."
+    },
+    "visitor": {
+      "eyebrow": "Wiki auto-hébergé",
+      "description": "OpenWiki est un wiki auto-hébergé pour organiser et partager les connaissances de votre équipe.",
+      "loadError": "Impossible de charger les statistiques publiques.",
+      "ctaTitle": "Rejoignez ce wiki",
+      "ctaDescription": "Créez un compte sur cette instance pour lire l'intégralité des pages, commenter et contribuer.",
+      "createAccount": "Créer un compte",
+      "signIn": "Se connecter",
+      "selfHost": "Héberger votre propre OpenWiki"
     }
   },
   "pageView": {

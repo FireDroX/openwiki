@@ -56,7 +56,6 @@
     "toggle": "Toggle {{title}}"
   },
   "home": {
-    "getStarted": "Get started",
     "title": "Dashboard",
     "statistics": "Statistics",
     "loadError": "Could not load the dashboard.",
@@ -75,6 +74,16 @@
     "followedPages": {
       "title": "Pages I follow",
       "empty": "You're not following any page yet."
+    },
+    "visitor": {
+      "eyebrow": "Self-hosted wiki",
+      "description": "OpenWiki is a self-hosted wiki for organizing and sharing your team's knowledge.",
+      "loadError": "Could not load the public statistics.",
+      "ctaTitle": "Join this wiki",
+      "ctaDescription": "Create an account on this instance to read every page, comment, and contribute.",
+      "createAccount": "Create account",
+      "signIn": "Sign in",
+      "selfHost": "Host your own OpenWiki"
     }
   },
   "pageView": {
