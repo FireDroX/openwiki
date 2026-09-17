@@ -12,7 +12,7 @@ export class McpAuditLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid', name: 'api_key_id', length: 36 })
+  @Column({ type: 'varchar', name: 'api_key_id', length: 64 })
   apiKeyId: string;
 
   @Column({ type: 'varchar', length: 255, name: 'tool_name' })
