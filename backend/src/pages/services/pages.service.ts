@@ -160,7 +160,7 @@ export class PagesService {
   }
 
   async listPopularPages(limit: number): Promise<Page[]> {
-    return this.pagesRepository.findTopByViewCount(limit);
+    return this.pagesRepository.findTopPublicByViewCount(limit);
   }
 
   async followPage(id: string, userId: string): Promise<void> {

@@ -96,7 +96,7 @@ describe('PagesService', () => {
       countCreatedByUser: vi.fn(),
       countVersionsByAuthor: vi.fn(),
       incrementViewCount: vi.fn(),
-      findTopByViewCount: vi.fn(),
+      findTopPublicByViewCount: vi.fn(),
     };
     pageFollowRepository = {
       follow: vi.fn(),
@@ -413,13 +413,13 @@ describe('PagesService', () => {
   });
 
   describe('listPopularPages', () => {
-    it('returns the pages with the most views', async () => {
+    it('returns the public pages with the most views', async () => {
       const pages = [buildPage({ id: 'page-1', viewCount: 10 })];
-      pagesRepository.findTopByViewCount.mockResolvedValue(pages);
+      pagesRepository.findTopPublicByViewCount.mockResolvedValue(pages);
 
       const result = await service.listPopularPages(5);
 
-      expect(pagesRepository.findTopByViewCount).toHaveBeenCalledWith(5);
+      expect(pagesRepository.findTopPublicByViewCount).toHaveBeenCalledWith(5);
       expect(result).toBe(pages);
     });
   });

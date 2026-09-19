@@ -136,8 +136,9 @@ export class TypeormPagesRepository implements PagesRepository {
     await this.repository.increment({ id }, 'viewCount', 1);
   }
 
-  findTopByViewCount(limit: number): Promise<Page[]> {
+  findTopPublicByViewCount(limit: number): Promise<Page[]> {
     return this.repository.find({
+      where: { visibility: 'public' },
       order: { viewCount: 'DESC' },
       take: limit,
     });
