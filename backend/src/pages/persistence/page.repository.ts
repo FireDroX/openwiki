@@ -40,5 +40,5 @@ export interface PagesRepository {
   countCreatedByUser(userId: string): Promise<number>;
   countVersionsByAuthor(userId: string): Promise<number>;
   incrementViewCount(id: string): Promise<void>;
-  findTopByViewCount(limit: number): Promise<Page[]>;
+  findTopPublicByViewCount(limit: number): Promise<Page[]>;
 }
