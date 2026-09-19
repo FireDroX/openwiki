@@ -603,19 +603,55 @@ describe('PagesService', () => {
       const page = buildPage();
       pagesRepository.findById.mockResolvedValue(page);
 
-      await service.followPage(page.id, 'user-1');
+      await service.followPage(page.id, reader);
 
       expect(pageFollowRepository.follow).toHaveBeenCalledWith(
-        'user-1',
+        reader.id,
         page.id,
       );
+    });
+
+    it('lets an editor follow a private page', async () => {
+      const page = buildPage({ visibility: 'private' });
+      pagesRepository.findById.mockResolvedValue(page);
+
+      await service.followPage(page.id, editor);
+
+      expect(pageFollowRepository.follow).toHaveBeenCalledWith(
+        editor.id,
+        page.id,
+      );
+    });
+
+    it('lets a reader with a grant follow a private page', async () => {
+      const page = buildPage({ visibility: 'private' });
+      pagesRepository.findById.mockResolvedValue(page);
+      pagePermissionsService.canEdit.mockResolvedValue(true);
+
+      await service.followPage(page.id, reader);
+
+      expect(pageFollowRepository.follow).toHaveBeenCalledWith(
+        reader.id,
+        page.id,
+      );
+    });
+
+    it('rejects a reader without a grant on a private page', async () => {
+      const page = buildPage({ visibility: 'private' });
+      pagesRepository.findById.mockResolvedValue(page);
+      pagePermissionsService.canEdit.mockResolvedValue(false);
+
+      await expect(service.followPage(page.id, reader)).rejects.toBeInstanceOf(
+        PageAccessForbiddenException,
+      );
+      expect(pageFollowRepository.follow).not.toHaveBeenCalled();
     });
 
     it('throws PageNotFoundException for a missing page', async () => {
       pagesRepository.findById.mockResolvedValue(null);
 
       await expect(
-        service.followPage('missing', 'user-1'),
+        service.followPage('missing', reader),
       ).rejects.toBeInstanceOf(PageNotFoundException);
       expect(pageFollowRepository.follow).not.toHaveBeenCalled();
     });
@@ -655,7 +691,7 @@ describe('PagesService', () => {
         Promise.resolve(id === 'v1' ? olderVersion : newerVersion),
       );
 
-      const result = await service.getFollowedPages('user-1');
+      const result = await service.getFollowedPages(reader);
 
       expect(result).toEqual([
         { page: newer, lastActivityAt: newerVersion.createdAt },
@@ -666,9 +702,31 @@ describe('PagesService', () => {
     it('returns an empty list when nothing is followed', async () => {
       pageFollowRepository.findFollowedPageIds.mockResolvedValue([]);
 
-      const result = await service.getFollowedPages('user-1');
+      const result = await service.getFollowedPages(reader);
 
       expect(result).toEqual([]);
+    });
+
+    it('omits followed pages the user can no longer access', async () => {
+      const publicPage = buildPage({ id: 'page-1', currentVersionId: 'v1' });
+      const privatePage = buildPage({
+        id: 'page-2',
+        currentVersionId: 'v2',
+        visibility: 'private',
+      });
+      pageFollowRepository.findFollowedPageIds.mockResolvedValue([
+        'page-1',
+        'page-2',
+      ]);
+      pagesRepository.findById.mockImplementation((id: string) =>
+        Promise.resolve(id === 'page-1' ? publicPage : privatePage),
+      );
+      pagesRepository.findVersionById.mockResolvedValue(buildVersion());
+      pagePermissionsService.canEdit.mockResolvedValue(false);
+
+      const result = await service.getFollowedPages(reader);
+
+      expect(result.map((entry) => entry.page.id)).toEqual(['page-1']);
     });
   });
 });

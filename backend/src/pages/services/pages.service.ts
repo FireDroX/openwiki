@@ -163,9 +163,9 @@ export class PagesService {
     return this.pagesRepository.findTopPublicByViewCount(limit);
   }
 
-  async followPage(id: string, userId: string): Promise<void> {
-    await this.getByIdOrFail(id);
-    await this.pageFollowRepository.follow(userId, id);
+  async followPage(id: string, currentUser: AuthenticatedUser): Promise<void> {
+    await this.getByIdOrFail(id, currentUser);
+    await this.pageFollowRepository.follow(currentUser.id, id);
   }
 
   async unfollowPage(id: string, userId: string): Promise<void> {
@@ -173,14 +173,19 @@ export class PagesService {
   }
 
   async getFollowedPages(
-    userId: string,
+    currentUser: AuthenticatedUser,
   ): Promise<{ page: Page; lastActivityAt: Date }[]> {
-    const pageIds = await this.pageFollowRepository.findFollowedPageIds(userId);
+    const pageIds = await this.pageFollowRepository.findFollowedPageIds(
+      currentUser.id,
+    );
 
     const entries = await Promise.all(
       pageIds.map(async (pageId) => {
         const page = await this.pagesRepository.findById(pageId);
         if (!page || !page.currentVersionId) {
+          return null;
+        }
+        if (!(await this.isAccessible(page, currentUser))) {
           return null;
         }
         const version = await this.pagesRepository.findVersionById(
