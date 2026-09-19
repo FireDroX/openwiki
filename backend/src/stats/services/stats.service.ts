@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import { FollowedPageDto } from '../dto/out/followed-page.dto.js';
 import { PopularPageDto } from '../dto/out/popular-page.dto.js';
@@ -49,8 +50,8 @@ export class StatsService {
     );
   }
 
-  async getFollowedPages(userId: string): Promise<FollowedPageDto[]> {
-    const followed = await this.pagesService.getFollowedPages(userId);
+  async getFollowedPages(user: AuthenticatedUser): Promise<FollowedPageDto[]> {
+    const followed = await this.pagesService.getFollowedPages(user);
     return Promise.all(
       followed.map(async ({ page, lastActivityAt }) => ({
         id: page.id,

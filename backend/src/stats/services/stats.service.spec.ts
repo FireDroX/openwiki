@@ -1,9 +1,16 @@
 import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
 import { Page } from '../../pages/entities/page.entity.js';
 import { PagesService } from '../../pages/services/pages.service.js';
 import type { StatsRepository } from '../persistence/stats.repository.js';
 import { StatsService } from './stats.service.js';
+
+const user: AuthenticatedUser = {
+  id: 'user-1',
+  email: 'u@x.com',
+  role: 'reader',
+};
 
 function buildPage(overrides: Partial<Page> = {}): Page {
   return {
@@ -161,9 +168,9 @@ describe('StatsService', () => {
       ]);
       pagesService.getAncestorPath.mockResolvedValue('/home');
 
-      const result = await service.getFollowedPages('user-1');
+      const result = await service.getFollowedPages(user);
 
-      expect(pagesService.getFollowedPages).toHaveBeenCalledWith('user-1');
+      expect(pagesService.getFollowedPages).toHaveBeenCalledWith(user);
       expect(result).toEqual([
         { id: page.id, title: page.title, path: '/home', lastActivityAt },
       ]);
@@ -172,7 +179,7 @@ describe('StatsService', () => {
     it('returns an empty list when the user follows nothing', async () => {
       pagesService.getFollowedPages.mockResolvedValue([]);
 
-      const result = await service.getFollowedPages('user-1');
+      const result = await service.getFollowedPages(user);
 
       expect(result).toEqual([]);
     });

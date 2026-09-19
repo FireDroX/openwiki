@@ -96,7 +96,7 @@ export class StatsController {
   async getFollowedPages(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<FollowedPageDto[]>> {
-    const pages = await this.statsService.getFollowedPages(user.id);
+    const pages = await this.statsService.getFollowedPages(user);
     return StatsMapper.toFollowedPagesResponse(pages);
   }
 

@@ -666,7 +666,7 @@ export class PagesController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<void> {
-    await this.pagesService.followPage(id, user.id);
+    await this.pagesService.followPage(id, user);
   }
 
   @Delete(':id/follow')
