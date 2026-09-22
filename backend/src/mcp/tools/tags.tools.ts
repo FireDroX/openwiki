@@ -15,11 +15,20 @@ export function buildTagsTools(tagsService: TagsService): McpToolDefinition[] {
     defineMcpTool({
       name: 'wiki_create_tag',
       description: 'Créer un tag',
-      inputSchema: { name: z.string() },
+      inputSchema: {
+        name: z.string(),
+        color: z
+          .string()
+          .describe('Couleur hexadécimale du tag (ex. #3b82f6)')
+          .optional(),
+      },
       requiredScopes: [TAGS_WRITE_SCOPE],
       handler: async (input) => {
-        const tag = await tagsService.createTag({ name: input.name });
-        return { id: tag.id, name: tag.name };
+        const tag = await tagsService.createTag({
+          name: input.name,
+          color: input.color,
+        });
+        return { id: tag.id, name: tag.name, color: tag.color };
       },
     }),
     defineMcpTool({
@@ -29,7 +38,11 @@ export function buildTagsTools(tagsService: TagsService): McpToolDefinition[] {
       requiredScopes: [TAGS_READ_SCOPE],
       handler: async () => {
         const tags = await tagsService.listTags();
-        return tags.map((tag) => ({ id: tag.id, name: tag.name }));
+        return tags.map((tag) => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color,
+        }));
       },
     }),
     defineMcpTool({
