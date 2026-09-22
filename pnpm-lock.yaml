@@ -78,6 +78,9 @@ importers:
       mysql2:
         specifier: ^3.24.2
         version: 3.24.2(@types/node@26.5.1)
+      node-diff3:
+        specifier: ^3.2.1
+        version: 3.2.1
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -4475,6 +4478,10 @@ packages:
     peerDependencies:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+
+  node-diff3@3.2.1:
+    resolution: {integrity: sha512-eKZcJ8RtMQ3cIaA15EgmtwG927fYnRlhtdA4Q9HAcCpAZPQhhU2XptnTH9GeAkMiX2bAXxlJSAFa9shFbztPgw==}
+    engines: {bun: '>=1.3.10'}
 
   node-emoji@2.1.3:
     resolution: {integrity: sha512-E2WEOVsgs7O16zsURJ/eH8BqhF029wGpEOnv7Urwdo2wmQanOACwJQh0devF9D9RhoZru0+9JXIS0dBXIAz+lA==}
@@ -10023,6 +10030,8 @@ snapshots:
     dependencies:
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
+
+  node-diff3@3.2.1: {}
 
   node-emoji@2.1.3:
     dependencies:
