@@ -11,9 +11,7 @@ import {
 } from './user-activity-log.repository.js';
 
 @Injectable()
-export class TypeormUserActivityLogRepository
-  implements UserActivityLogRepository
-{
+export class TypeormUserActivityLogRepository implements UserActivityLogRepository {
   constructor(
     @InjectRepository(UserActivityLog)
     private readonly repository: Repository<UserActivityLog>,

@@ -7,7 +7,12 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './services/auth.service.js';
 
 @Module({
-  imports: [UsersModule, JwtModule.register({}), SecurityModule, ActivityModule],
+  imports: [
+    UsersModule,
+    JwtModule.register({}),
+    SecurityModule,
+    ActivityModule,
+  ],
   controllers: [AuthController],
   providers: [AuthService],
 })
