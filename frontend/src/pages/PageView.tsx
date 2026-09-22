@@ -76,6 +76,7 @@ export function PageView() {
   useDocumentTitle(page?.title)
 
   useEffect(() => {
+    setHasNewVersion(false)
     if (!page) {
       return
     }
