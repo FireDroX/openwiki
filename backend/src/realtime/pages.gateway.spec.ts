@@ -135,4 +135,15 @@ describe('PagesGateway', () => {
       expect(server.emit).toHaveBeenCalledWith('page-tree:changed');
     });
   });
+
+  describe('handleCommentChanged', () => {
+    it('broadcasts to the page room', () => {
+      gateway.handleCommentChanged({ pageId: 'page-1' });
+
+      expect(server.to).toHaveBeenCalledWith('page:page-1');
+      expect(emitMock).toHaveBeenCalledWith('comment:changed', {
+        pageId: 'page-1',
+      });
+    });
+  });
 });

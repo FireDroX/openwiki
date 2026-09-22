@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AdminAuditLogService } from '../../admin/services/admin-audit-log.service.js';
 import { UserActivityLogService } from '../../activity/services/user-activity-log.service.js';
 import { CommentDeleteForbiddenException } from '../../common/exceptions/comments/comment-delete-forbidden.exception.js';
@@ -20,6 +21,7 @@ import { ListUserCommentsQueryDto } from '../dto/in/list-user-comments-query.dto
 import { PurgeCommentsDto } from '../dto/in/purge-comments.dto.js';
 import { UpdateCommentDto } from '../dto/in/update-comment.dto.js';
 import { Comment } from '../entities/comment.entity.js';
+import { COMMENT_CHANGED_EVENT } from '../events/comment-changed.event.js';
 import type { CommentsRepository } from '../persistence/comment.repository.js';
 
 export interface AuthorInfo {
@@ -43,6 +45,7 @@ export class CommentsService {
     private readonly usersService: UsersService,
     private readonly adminAuditLogService: AdminAuditLogService,
     private readonly userActivityLogService: UserActivityLogService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async findAllByPage(
@@ -84,6 +87,7 @@ export class CommentsService {
       targetId: comment.id,
       metadata: { pageId },
     });
+    this.eventEmitter.emit(COMMENT_CHANGED_EVENT, { pageId });
     const authorNames = await this.resolveAuthorNames([comment]);
     return { comment, authorNames };
   }
@@ -103,6 +107,7 @@ export class CommentsService {
       dto.content,
       new Date(),
     );
+    this.eventEmitter.emit(COMMENT_CHANGED_EVENT, { pageId: comment.pageId });
     const authorNames = await this.resolveAuthorNames([updated]);
     return { comment: updated, authorNames };
   }
@@ -118,6 +123,7 @@ export class CommentsService {
 
     if (isAuthor) {
       await this.commentsRepository.softDelete(comment);
+      this.eventEmitter.emit(COMMENT_CHANGED_EVENT, { pageId: comment.pageId });
       return;
     }
 
@@ -126,6 +132,7 @@ export class CommentsService {
     }
 
     const deletedIds = await this.hardDeleteWithReplies(comment);
+    this.eventEmitter.emit(COMMENT_CHANGED_EVENT, { pageId: comment.pageId });
 
     if (currentUser.role === 'admin') {
       await this.adminAuditLogService.record({

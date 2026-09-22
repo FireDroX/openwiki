@@ -11,6 +11,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
+import {
+  COMMENT_CHANGED_EVENT,
+  type CommentChangedEvent,
+} from '../comments/events/comment-changed.event.js';
 import { ACCESS_TOKEN_COOKIE } from '../common/variables.global.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
 import { PAGE_TREE_CHANGED_EVENT } from '../pages/events/page-tree-changed.event.js';
@@ -104,6 +108,11 @@ export class PagesGateway implements OnGatewayConnection {
   @OnEvent(PAGE_TREE_CHANGED_EVENT)
   handlePageTreeChanged(): void {
     this.server.emit('page-tree:changed');
+  }
+
+  @OnEvent(COMMENT_CHANGED_EVENT)
+  handleCommentChanged(event: CommentChangedEvent): void {
+    this.server.to(`page:${event.pageId}`).emit('comment:changed', event);
   }
 
   private static extractAccessToken(cookieHeader?: string): string | null {
