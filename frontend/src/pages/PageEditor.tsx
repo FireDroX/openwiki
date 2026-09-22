@@ -158,11 +158,21 @@ export function PageEditor() {
     setIsSaving(true)
     setSaveError(null)
     try {
-      await updatePage(page.id, {
+      const result = await updatePage(page.id, {
         title: getValues('title'),
         content: editor.content,
         changeSummary: changeSummary || undefined,
+        baseVersionId,
       })
+
+      if (result.conflict) {
+        editor.setContent(result.mergedContent ?? editor.content)
+        setBaseVersionId(result.currentVersionId)
+        toast.error(t('pageEditor.realtimeConflictBanner'))
+        return
+      }
+
+      setBaseVersionId(result.currentVersionId)
       editor.markSaved()
       toast.success(t('pageEditor.pageSaved'))
       navigate(returnPath)
@@ -238,6 +248,9 @@ export function PageEditor() {
             <div className="mt-5">
               <PagePermissionsPanel pageId={page.id} />
             </div>
+          )}
+          {editor.content.includes('<<<<<<<') && (
+            <p className="mt-2 text-sm text-destructive">{t('pageEditor.realtimeConflictBanner')}</p>
           )}
           <FormError message={saveError} />
         </>

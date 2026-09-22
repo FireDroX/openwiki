@@ -38,6 +38,7 @@ export interface UpdatePagePayload {
   title?: string
   content?: string
   changeSummary?: string
+  baseVersionId?: string
 }
 
 export interface PageUpdateResult {
@@ -47,6 +48,8 @@ export interface PageUpdateResult {
   content: string
   currentVersionId: string
   updatedAt: string
+  conflict: boolean
+  mergedContent?: string
 }
 
 export async function updatePage(id: string, payload: UpdatePagePayload): Promise<PageUpdateResult> {

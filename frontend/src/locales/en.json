@@ -120,7 +120,8 @@
     "commentsEnabled": "Comments enabled.",
     "commentsDisabled": "Comments disabled.",
     "commentsEnabledChangeFailed": "Failed to update comments.",
-    "realtimeMergedToast": "Your changes were automatically merged with someone else's."
+    "realtimeMergedToast": "Your changes were automatically merged with someone else's.",
+    "realtimeConflictBanner": "Conflict with a concurrent save: resolve the <<<<<<< / ======= / >>>>>>> markers below before saving again."
   },
   "pageMetadataForm": {
     "titleLabel": "Title",

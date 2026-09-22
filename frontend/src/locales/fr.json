@@ -120,7 +120,8 @@
     "commentsEnabled": "Commentaires activés.",
     "commentsDisabled": "Commentaires désactivés.",
     "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires.",
-    "realtimeMergedToast": "Vos modifications ont été fusionnées automatiquement avec celles de quelqu'un d'autre."
+    "realtimeMergedToast": "Vos modifications ont été fusionnées automatiquement avec celles de quelqu'un d'autre.",
+    "realtimeConflictBanner": "Conflit détecté avec une sauvegarde concurrente : résolvez les marqueurs <<<<<<< / ======= / >>>>>>> ci-dessous avant de sauvegarder à nouveau."
   },
   "pageMetadataForm": {
     "titleLabel": "Titre",
