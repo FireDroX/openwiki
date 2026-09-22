@@ -283,6 +283,40 @@ describe('PagesService', () => {
         service.mergePreview('page-1', 'version-1', 'content', 'user-1'),
       ).rejects.toBeInstanceOf(InsufficientPagePermissionException);
     });
+
+    it('throws VersionNotFoundException when baseVersionId belongs to a different page', async () => {
+      const page = buildPage({ id: 'page-1', currentVersionId: 'version-2' });
+      const currentVersion = buildVersion({
+        id: 'version-2',
+        pageId: 'page-1',
+        content: 'Line 1\nLine 2\nLine 3 edited by them',
+      });
+      const otherPagesVersion = buildVersion({
+        id: 'version-foreign',
+        pageId: 'page-2',
+        content: 'secret content from another page',
+      });
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pageMergeService.merge.mockImplementation(
+        (base: string, mine: string, theirs: string) =>
+          new PageMergeService().merge(base, mine, theirs),
+      );
+      pagesRepository.findVersionById.mockImplementation((id: string) =>
+        Promise.resolve(
+          id === 'version-foreign'
+            ? otherPagesVersion
+            : id === 'version-2'
+              ? currentVersion
+              : null,
+        ),
+      );
+
+      await expect(
+        service.mergePreview('page-1', 'version-foreign', 'content', 'user-1'),
+      ).rejects.toBeInstanceOf(VersionNotFoundException);
+      expect(pageMergeService.merge).not.toHaveBeenCalled();
+    });
   });
 
   describe('movePage', () => {

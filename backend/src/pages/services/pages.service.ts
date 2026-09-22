@@ -348,7 +348,7 @@ export class PagesService {
 
     const baseVersion =
       await this.pagesRepository.findVersionById(baseVersionId);
-    if (!baseVersion) {
+    if (!baseVersion || baseVersion.pageId !== page.id) {
       throw new VersionNotFoundException();
     }
 
