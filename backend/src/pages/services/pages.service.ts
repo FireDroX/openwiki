@@ -10,6 +10,7 @@ import { PageHasChildrenException } from '../../common/exceptions/pages/page-has
 import { PageNotFoundException } from '../../common/exceptions/pages/page-not-found.exception.js';
 import { ParentPageNotFoundException } from '../../common/exceptions/pages/parent-page-not-found.exception.js';
 import { SlugAlreadyExistsException } from '../../common/exceptions/pages/slug-already-exists.exception.js';
+import { VersionNotFoundException } from '../../common/exceptions/pages/version-not-found.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import {
   CHANGE_SUMMARY_MAX_LENGTH,
@@ -38,6 +39,7 @@ import {
 import { PageTreeMapper } from '../mapper/page-tree.mapper.js';
 import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
+import { PageMergeService } from './page-merge.service.js';
 import { PagePermissionsService } from './page-permissions.service.js';
 
 const MYSQL_DUPLICATE_ENTRY_CODE = 'ER_DUP_ENTRY';
@@ -50,6 +52,7 @@ export class PagesService {
     @Inject('PageFollowsRepository')
     private readonly pageFollowRepository: PageFollowRepository,
     private readonly pagePermissionsService: PagePermissionsService,
+    private readonly pageMergeService: PageMergeService,
     private readonly eventEmitter: EventEmitter2,
     private readonly userActivityLogService: UserActivityLogService,
   ) {}
@@ -324,6 +327,49 @@ export class PagesService {
       metadata: { changeSummary: dto.changeSummary ?? null },
     });
     return result;
+  }
+
+  async mergePreview(
+    pageId: string,
+    baseVersionId: string,
+    content: string,
+    userId: string,
+  ): Promise<{
+    conflict: boolean;
+    mergedContent: string;
+    newBaseVersionId: string;
+  }> {
+    const page = await this.pagesRepository.findById(pageId);
+    if (!page || !page.currentVersionId) {
+      throw new PageNotFoundException();
+    }
+
+    await this.assertCanEdit(pageId, userId);
+
+    const baseVersion =
+      await this.pagesRepository.findVersionById(baseVersionId);
+    if (!baseVersion) {
+      throw new VersionNotFoundException();
+    }
+
+    const currentVersion = await this.pagesRepository.findVersionById(
+      page.currentVersionId,
+    );
+    if (!currentVersion) {
+      throw new PageNotFoundException();
+    }
+
+    const merged = this.pageMergeService.merge(
+      baseVersion.content,
+      content,
+      currentVersion.content,
+    );
+
+    return {
+      conflict: merged.conflict,
+      mergedContent: merged.content,
+      newBaseVersionId: page.currentVersionId,
+    };
   }
 
   async movePage(

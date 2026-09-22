@@ -1,5 +1,6 @@
 import { ResponseDto } from '../../common/dto/response.dto.js';
 import { PageDetailResponseDto } from '../dto/out/page-detail-response.dto.js';
+import { PageMergePreviewResponseDto } from '../dto/out/page-merge-preview-response.dto.js';
 import { PageResponseDto } from '../dto/out/page-response.dto.js';
 import { PageUpdateResponseDto } from '../dto/out/page-update-response.dto.js';
 import { PageVersion } from '../entities/page-version.entity.js';
@@ -77,5 +78,13 @@ export class PageMapper {
     version: PageVersion,
   ): ResponseDto<PageUpdateResponseDto> {
     return new ResponseDto(PageMapper.toPageUpdateResponseDto(page, version));
+  }
+
+  static toMergePreviewResponse(result: {
+    conflict: boolean;
+    mergedContent: string;
+    newBaseVersionId: string;
+  }): ResponseDto<PageMergePreviewResponseDto> {
+    return new ResponseDto(result);
   }
 }

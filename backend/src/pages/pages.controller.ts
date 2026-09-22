@@ -56,10 +56,12 @@ import { ChangeVisibilityDto } from './dto/in/change-visibility.dto.js';
 import { CreatePageDto } from './dto/in/create-page.dto.js';
 import { DeletePageQueryDto } from './dto/in/delete-page-query.dto.js';
 import { GrantPermissionDto } from './dto/in/grant-permission.dto.js';
+import { MergePreviewDto } from './dto/in/merge-preview.dto.js';
 import { MovePageDto } from './dto/in/move-page.dto.js';
 import { SetCommentsEnabledDto } from './dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from './dto/in/update-page.dto.js';
 import { PageDetailResponseDto } from './dto/out/page-detail-response.dto.js';
+import { PageMergePreviewResponseDto } from './dto/out/page-merge-preview-response.dto.js';
 import { PagePermissionResponseDto } from './dto/out/page-permission-response.dto.js';
 import { PageResponseDto } from './dto/out/page-response.dto.js';
 import { PageTreeNodeDto } from './dto/out/page-tree-node.dto.js';
@@ -156,6 +158,44 @@ export class PagesController {
       user.id,
     );
     return PageMapper.toUpdateResponse(page, version);
+  }
+
+  @Post(':id/merge-preview')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Prévisualiser une fusion à 3 voies sans sauvegarder',
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiBody({ type: MergePreviewDto })
+  @ApiOkResponse({
+    description:
+      "Résultat de la fusion (propre ou en conflit), rien n'est persisté.",
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: "Droit d'édition insuffisant sur cette page.",
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page ou la version de base n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async mergePreview(
+    @Param('id') id: string,
+    @Body() dto: MergePreviewDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<PageMergePreviewResponseDto>> {
+    const result = await this.pagesService.mergePreview(
+      id,
+      dto.baseVersionId,
+      dto.content,
+      user.id,
+    );
+    return PageMapper.toMergePreviewResponse(result);
   }
 
   @Patch(':id/move')

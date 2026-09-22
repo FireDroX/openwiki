@@ -9,6 +9,7 @@ import { PageHasChildrenException } from '../../common/exceptions/pages/page-has
 import { PageNotFoundException } from '../../common/exceptions/pages/page-not-found.exception.js';
 import { ParentPageNotFoundException } from '../../common/exceptions/pages/parent-page-not-found.exception.js';
 import { SlugAlreadyExistsException } from '../../common/exceptions/pages/slug-already-exists.exception.js';
+import { VersionNotFoundException } from '../../common/exceptions/pages/version-not-found.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import type { AuthenticatedUser } from '../../common/strategies/jwt.strategy.js';
 import { ChangeVisibilityDto } from '../dto/in/change-visibility.dto.js';
@@ -19,12 +20,10 @@ import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { Page } from '../entities/page.entity.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { PAGE_PUBLISHED_EVENT } from '../events/page-published.event.js';
-import {
-  PAGE_VERSION_CREATED_EVENT,
-  PageVersionCreatedEvent,
-} from '../events/page-version-created.event.js';
+import { PAGE_VERSION_CREATED_EVENT } from '../events/page-version-created.event.js';
 import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
+import { PageMergeService } from './page-merge.service.js';
 import { PagePermissionsService } from './page-permissions.service.js';
 import { PagesService } from './pages.service.js';
 
@@ -81,6 +80,7 @@ describe('PagesService', () => {
   let pagePermissionsService: {
     canEdit: Mock<(userId: string, pageId: string) => Promise<boolean>>;
   };
+  let pageMergeService: { merge: ReturnType<typeof vi.fn> };
   let eventEmitter: { emit: ReturnType<typeof vi.fn> };
   let userActivityLogService: { record: ReturnType<typeof vi.fn> };
 
@@ -109,6 +109,12 @@ describe('PagesService', () => {
       isFollowing: vi.fn().mockResolvedValue(false),
     };
     pagePermissionsService = { canEdit: vi.fn().mockResolvedValue(true) };
+    pageMergeService = {
+      merge: vi.fn().mockImplementation((base: string, mine: string) => ({
+        conflict: false,
+        content: mine,
+      })),
+    };
     eventEmitter = { emit: vi.fn() };
     userActivityLogService = { record: vi.fn().mockResolvedValue(undefined) };
 
@@ -118,6 +124,7 @@ describe('PagesService', () => {
         { provide: 'PagesRepository', useValue: pagesRepository },
         { provide: 'PageFollowsRepository', useValue: pageFollowRepository },
         { provide: PagePermissionsService, useValue: pagePermissionsService },
+        { provide: PageMergeService, useValue: pageMergeService },
         { provide: EventEmitter2, useValue: eventEmitter },
         { provide: UserActivityLogService, useValue: userActivityLogService },
       ],
@@ -203,6 +210,78 @@ describe('PagesService', () => {
           content: 'updated content',
         }),
       );
+    });
+  });
+
+  describe('mergePreview', () => {
+    it('returns a clean merge without persisting anything', async () => {
+      const page = buildPage({ currentVersionId: 'version-2' });
+      const baseVersion = buildVersion({
+        id: 'version-1',
+        content: 'Line 1\nLine 2\nLine 3',
+      });
+      const currentVersion = buildVersion({
+        id: 'version-2',
+        content: 'Line 1\nLine 2\nLine 3 edited by them',
+      });
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pageMergeService.merge.mockImplementation(
+        (base: string, mine: string, theirs: string) =>
+          new PageMergeService().merge(base, mine, theirs),
+      );
+      pagesRepository.findVersionById.mockImplementation((id: string) =>
+        Promise.resolve(
+          id === 'version-1'
+            ? baseVersion
+            : id === 'version-2'
+              ? currentVersion
+              : null,
+        ),
+      );
+
+      const result = await service.mergePreview(
+        'page-1',
+        'version-1',
+        'Line 1 edited by me\nLine 2\nLine 3',
+        'user-1',
+      );
+
+      expect(result).toEqual({
+        conflict: false,
+        mergedContent: 'Line 1 edited by me\nLine 2\nLine 3 edited by them',
+        newBaseVersionId: 'version-2',
+      });
+      expect(pagesRepository.updateWithNewVersion).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('throws VersionNotFoundException when baseVersionId does not exist', async () => {
+      const page = buildPage({ currentVersionId: 'version-2' });
+      pagesRepository.findById.mockResolvedValue(page);
+      pageMergeService.merge.mockImplementation(
+        (base: string, mine: string, theirs: string) =>
+          new PageMergeService().merge(base, mine, theirs),
+      );
+      pagesRepository.findVersionById.mockResolvedValue(null);
+
+      await expect(
+        service.mergePreview('page-1', 'missing-version', 'content', 'user-1'),
+      ).rejects.toBeInstanceOf(VersionNotFoundException);
+    });
+
+    it('throws InsufficientPagePermissionException when the user cannot edit', async () => {
+      const page = buildPage({ currentVersionId: 'version-2' });
+      pagesRepository.findById.mockResolvedValue(page);
+      pageMergeService.merge.mockImplementation(
+        (base: string, mine: string, theirs: string) =>
+          new PageMergeService().merge(base, mine, theirs),
+      );
+      pagePermissionsService.canEdit.mockResolvedValue(false);
+
+      await expect(
+        service.mergePreview('page-1', 'version-1', 'content', 'user-1'),
+      ).rejects.toBeInstanceOf(InsufficientPagePermissionException);
     });
   });
 
