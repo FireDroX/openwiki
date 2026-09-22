@@ -44,6 +44,7 @@ export class PageMapper {
       parentId: page.parentId,
       updatedAt: page.updatedAt,
       isFollowed,
+      currentVersionId: page.currentVersionId!,
     };
   }
 

@@ -10,4 +10,5 @@ export interface PageDetailResponseDto {
   parentId: string | null;
   updatedAt: Date;
   isFollowed: boolean;
+  currentVersionId: string;
 }

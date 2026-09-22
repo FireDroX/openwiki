@@ -31,6 +31,10 @@ import {
   PAGE_PUBLISHED_EVENT,
   PagePublishedEvent,
 } from '../events/page-published.event.js';
+import {
+  PAGE_VERSION_CREATED_EVENT,
+  PageVersionCreatedEvent,
+} from '../events/page-version-created.event.js';
 import { PageTreeMapper } from '../mapper/page-tree.mapper.js';
 import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
@@ -247,6 +251,18 @@ export class PagesService {
       changeSummary,
       authorId,
     });
+    this.eventEmitter.emit(
+      PAGE_VERSION_CREATED_EVENT,
+      new PageVersionCreatedEvent(
+        result.page.id,
+        result.version.id,
+        authorId,
+        result.page.title,
+        result.version.content,
+        changeSummary,
+        result.page.updatedAt,
+      ),
+    );
     void this.userActivityLogService.record({
       userId: authorId,
       action: 'page.restored',
@@ -288,6 +304,18 @@ export class PagesService {
       changeSummary: dto.changeSummary ?? null,
       authorId,
     });
+    this.eventEmitter.emit(
+      PAGE_VERSION_CREATED_EVENT,
+      new PageVersionCreatedEvent(
+        result.page.id,
+        result.version.id,
+        authorId,
+        result.page.title,
+        result.version.content,
+        dto.changeSummary ?? null,
+        result.page.updatedAt,
+      ),
+    );
     void this.userActivityLogService.record({
       userId: authorId,
       action: 'page.updated',

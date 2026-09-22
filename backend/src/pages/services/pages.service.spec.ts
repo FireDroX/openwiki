@@ -19,6 +19,10 @@ import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { Page } from '../entities/page.entity.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { PAGE_PUBLISHED_EVENT } from '../events/page-published.event.js';
+import {
+  PAGE_VERSION_CREATED_EVENT,
+  PageVersionCreatedEvent,
+} from '../events/page-version-created.event.js';
 import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
 import { PagePermissionsService } from './page-permissions.service.js';
@@ -169,6 +173,36 @@ describe('PagesService', () => {
         service.updatePage('page-1', {}, 'user-2'),
       ).rejects.toBeInstanceOf(InsufficientPagePermissionException);
       expect(pagesRepository.updateWithNewVersion).not.toHaveBeenCalled();
+    });
+
+    it('emits PAGE_VERSION_CREATED_EVENT after a successful save', async () => {
+      const page = buildPage();
+      const currentVersion = buildVersion();
+      const dto: UpdatePageDto = { content: 'updated content' };
+      const newVersion = buildVersion({
+        id: 'version-2',
+        content: 'updated content',
+      });
+      const updatedPage = { ...page, currentVersionId: 'version-2' };
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(currentVersion);
+      pagesRepository.updateWithNewVersion.mockResolvedValue({
+        page: updatedPage,
+        version: newVersion,
+      });
+
+      await service.updatePage('page-1', dto, 'user-1');
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        PAGE_VERSION_CREATED_EVENT,
+        expect.objectContaining({
+          pageId: updatedPage.id,
+          versionId: 'version-2',
+          authorId: 'user-1',
+          content: 'updated content',
+        }),
+      );
     });
   });
 
