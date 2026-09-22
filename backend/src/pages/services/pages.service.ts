@@ -26,7 +26,9 @@ import { MovePageDto } from '../dto/in/move-page.dto.js';
 import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { FindByPathResultDto } from '../dto/out/find-by-path-result.dto.js';
+import { PageMergePreviewResponseDto } from '../dto/out/page-merge-preview-response.dto.js';
 import { PageTreeNodeDto } from '../dto/out/page-tree-node.dto.js';
+import { UpdatePageResultDto } from '../dto/out/update-page-result.dto.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { Page, PAGE_VISIBILITIES } from '../entities/page.entity.js';
 import {
@@ -287,12 +289,7 @@ export class PagesService {
     id: string,
     dto: UpdatePageDto,
     authorId: string,
-  ): Promise<{
-    page: Page;
-    version: PageVersion;
-    conflict: boolean;
-    mergedContent?: string;
-  }> {
+  ): Promise<UpdatePageResultDto> {
     const page = await this.pagesRepository.findById(id);
     if (!page || !page.currentVersionId) {
       throw new PageNotFoundException();
@@ -377,11 +374,7 @@ export class PagesService {
     baseVersionId: string,
     content: string,
     userId: string,
-  ): Promise<{
-    conflict: boolean;
-    mergedContent: string;
-    newBaseVersionId: string;
-  }> {
+  ): Promise<PageMergePreviewResponseDto> {
     const page = await this.pagesRepository.findById(pageId);
     if (!page || !page.currentVersionId) {
       throw new PageNotFoundException();
