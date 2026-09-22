@@ -33,6 +33,7 @@ export class PageMapper {
     page: Page,
     version: PageVersion,
     isFollowed: boolean,
+    canEdit: boolean,
   ): PageDetailResponseDto {
     return {
       id: page.id,
@@ -44,6 +45,7 @@ export class PageMapper {
       parentId: page.parentId,
       updatedAt: page.updatedAt,
       isFollowed,
+      canEdit,
     };
   }
 
@@ -51,9 +53,10 @@ export class PageMapper {
     page: Page,
     version: PageVersion,
     isFollowed: boolean,
+    canEdit: boolean,
   ): ResponseDto<PageDetailResponseDto> {
     return new ResponseDto(
-      PageMapper.toPageDetailResponseDto(page, version, isFollowed),
+      PageMapper.toPageDetailResponseDto(page, version, isFollowed, canEdit),
     );
   }
 

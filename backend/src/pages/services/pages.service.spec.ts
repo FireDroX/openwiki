@@ -410,6 +410,62 @@ describe('PagesService', () => {
       expect(pageFollowRepository.isFollowing).not.toHaveBeenCalled();
       expect(result.isFollowed).toBe(false);
     });
+
+    it('reports canEdit as true for an editor', async () => {
+      const page = buildPage({ visibility: 'public' });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagePermissionsService.canEdit.mockResolvedValue(true);
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['home'], editor);
+
+      expect(pagePermissionsService.canEdit).toHaveBeenCalledWith(
+        editor.id,
+        page.id,
+      );
+      expect(result.canEdit).toBe(true);
+    });
+
+    it('reports canEdit as false for a reader without a permission grant', async () => {
+      const page = buildPage({ visibility: 'public' });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagePermissionsService.canEdit.mockResolvedValue(false);
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['home'], reader);
+
+      expect(result.canEdit).toBe(false);
+    });
+
+    it('reports canEdit as true for a reader with a permission grant inherited from a parent page', async () => {
+      const page = buildPage({ visibility: 'public', parentId: 'parent-1' });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagePermissionsService.canEdit.mockResolvedValue(true);
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['docs', 'home'], reader);
+
+      expect(pagePermissionsService.canEdit).toHaveBeenCalledWith(
+        reader.id,
+        page.id,
+      );
+      expect(result.canEdit).toBe(true);
+    });
+
+    it('reports canEdit as false for an anonymous visitor', async () => {
+      const page = buildPage({ visibility: 'public' });
+      const version = buildVersion({ id: page.currentVersionId! });
+      pagesRepository.findBySlugAndParent.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(version);
+
+      const result = await service.findByPath(['home'], undefined);
+
+      expect(pagePermissionsService.canEdit).not.toHaveBeenCalled();
+      expect(result.canEdit).toBe(false);
+    });
   });
 
   describe('listPopularPages', () => {
