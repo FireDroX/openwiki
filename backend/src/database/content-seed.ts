@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { Page } from '../pages/entities/page.entity.js';
 import { PageVersion } from '../pages/entities/page-version.entity.js';
 import { PageTag } from '../tags/entities/page-tag.entity.js';
@@ -358,6 +358,14 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         content: `# Notes de version
 
 ## Version 0.27
+
+<details>
+<summary>0.27.9 — 2026-09-22</summary>
+
+- Correctif : \`seed:content\` retrouvait la page à mettre à jour par slug seul, sans tenir compte du parent, alors qu'un slug n'est unique que par parent (\`documentation\`, \`installation\`, \`configuration\`...) — une page existante sans rapport mais portant le même slug ailleurs dans l'arbre pouvait se faire écraser (titre/contenu), déplacer et retaguer par erreur à chaque déploiement. La recherche est désormais scopée par parent, comme partout ailleurs dans l'app.
+- Correctif : le panneau de gestion des tags de l'éditeur de page disparaissait entièrement (y compris le bouton "Créer un tag") dès que le chargement des tags existants d'une page échouait, sans aucun message d'erreur.
+
+</details>
 
 <details>
 <summary>0.27.8 — 2026-09-22</summary>
@@ -1562,7 +1570,10 @@ async function seedPage(
   const pageRepository = dataSource.getRepository(Page);
   const versionRepository = dataSource.getRepository(PageVersion);
 
-  let page = await pageRepository.findOneBy({ slug: seed.slug });
+  let page = await pageRepository.findOneBy({
+    slug: seed.slug,
+    parentId: parentId === null ? IsNull() : parentId,
+  });
   const content = seed.content ?? `# ${seed.title}`;
 
   if (!page) {
@@ -1595,7 +1606,6 @@ async function seedPage(
       : null;
     const contentChanged =
       currentVersion?.content !== content || page.title !== seed.title;
-    const moved = page.parentId !== parentId;
     const commentsSettingChanged = page.commentsEnabled !== false;
 
     if (commentsSettingChanged) {
@@ -1617,21 +1627,13 @@ async function seedPage(
       page.currentVersionId = version.id;
     }
 
-    if (moved) {
-      page.parentId = parentId;
-    }
-
-    if (contentChanged || moved || commentsSettingChanged) {
+    if (contentChanged || commentsSettingChanged) {
       page = await pageRepository.save(page);
-      if (contentChanged && moved) {
-        console.log(`Updated and moved page "${seed.slug}".`);
-      } else if (contentChanged) {
-        console.log(`Updated page "${seed.slug}".`);
-      } else if (moved) {
-        console.log(`Moved page "${seed.slug}".`);
-      } else {
-        console.log(`Disabled comments on page "${seed.slug}".`);
-      }
+      console.log(
+        contentChanged
+          ? `Updated page "${seed.slug}".`
+          : `Disabled comments on page "${seed.slug}".`,
+      );
     } else {
       console.log(`Page "${seed.slug}" already up to date, skipping.`);
     }

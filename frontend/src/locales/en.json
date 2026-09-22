@@ -411,6 +411,7 @@
   "tags": {
     "title": "Tags",
     "none": "No tags on this page.",
+    "loadFailed": "Couldn't load existing tags.",
     "addExisting": "Add a tag",
     "createNew": "Create a tag",
     "pickerTitle": "Add an existing tag",

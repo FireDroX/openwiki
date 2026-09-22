@@ -144,6 +144,7 @@ export function PageTagsPanel({ pageId, canDeleteTags }: PageTagsPanelProps) {
       await tagPage(pageId, tag.id)
       setAllTags((current) => [...current, tag])
       setPageTags((current) => [...current, tag])
+      setStatus('ready')
       setCreateOpen(false)
       resetCreateForm()
       toast.success(t('tags.created'))
@@ -154,15 +155,12 @@ export function PageTagsPanel({ pageId, canDeleteTags }: PageTagsPanelProps) {
     }
   }
 
-  if (status === 'error') {
-    return null
-  }
-
   return (
     <Field>
       <FieldLabel>{t('tags.title')}</FieldLabel>
       <div className="flex flex-wrap gap-1.5">
         {status === 'loading' && <p className="text-sm text-muted-foreground">{t('common.loading')}</p>}
+        {status === 'error' && <p className="text-sm text-destructive">{t('tags.loadFailed')}</p>}
         {status === 'ready' && pageTags.length === 0 && (
           <p className="text-sm text-muted-foreground">{t('tags.none')}</p>
         )}
@@ -201,7 +199,7 @@ export function PageTagsPanel({ pageId, canDeleteTags }: PageTagsPanelProps) {
           variant="outline"
           size="sm"
           onClick={() => setCreateOpen(true)}
-          disabled={status !== 'ready'}
+          disabled={status === 'loading'}
         >
           <Plus /> {t('tags.createNew')}
         </Button>

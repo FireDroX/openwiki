@@ -411,6 +411,7 @@
   "tags": {
     "title": "Tags",
     "none": "Aucun tag sur cette page.",
+    "loadFailed": "Impossible de charger les tags existants.",
     "addExisting": "Ajouter un tag",
     "createNew": "Créer un tag",
     "pickerTitle": "Ajouter un tag existant",
