@@ -2,7 +2,6 @@ import { Link, useParams } from 'react-router'
 import { useMemo } from 'react'
 import { History, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { UserRole } from '#api/auth'
 import { Button } from '#components/ui/button'
 import { MarkdownRenderer } from '#components/MarkdownRenderer'
 import { Skeleton } from '#components/ui/skeleton'
@@ -14,8 +13,6 @@ import { useAuth } from '#hooks/useAuth'
 import { useDocumentTitle } from '#hooks/useDocumentTitle'
 import { usePage } from '#hooks/usePage'
 import { usePageTags } from '#hooks/usePageTags'
-
-const EDITOR_ROLES: UserRole[] = [UserRole.Editor, UserRole.Admin]
 
 function PageViewSkeleton() {
   return (
@@ -68,7 +65,7 @@ export function PageView() {
   const { status, page } = usePage(pathSegments)
   const { tags, status: tagsStatus } = usePageTags(page?.id)
   const { user } = useAuth()
-  const canEdit = !!user && EDITOR_ROLES.includes(user.role)
+  const canEdit = !!page?.canEdit
   useDocumentTitle(page?.title)
 
   if (status === 'loading') {

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { UserRole } from '#api/auth'
 import { diffVersions, type DiffChange } from '#api/versions'
 import { Button } from '#components/ui/button'
 import { Skeleton } from '#components/ui/skeleton'
@@ -12,8 +11,6 @@ import { useAuth } from '#hooks/useAuth'
 import { usePage } from '#hooks/usePage'
 import { useVersions } from '#hooks/useVersions'
 import { formatDateTime } from '#utils/relative-time'
-
-const EDITOR_ROLES: UserRole[] = [UserRole.Editor, UserRole.Admin]
 
 function pathFromParam(param: string | undefined): string[] {
   return (param ?? '').split('/').filter(Boolean)
@@ -30,7 +27,7 @@ export function PageHistory() {
   const [diffChanges, setDiffChanges] = useState<DiffChange[] | null>(null)
   const [diffStatus, setDiffStatus] = useState<'idle' | 'loading' | 'error'>('idle')
 
-  const canRestore = !!user && EDITOR_ROLES.includes(user.role)
+  const canRestore = !!page?.canEdit
 
   const selectedVersions = useMemo(
     () =>

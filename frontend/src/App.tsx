@@ -40,6 +40,8 @@ export function App() {
         </Route>
         <Route element={<ProtectedRoute roles={EDITOR_ROLES} />}>
           <Route path="/new" element={<PageCreate />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
           <Route path="/edit/*" element={<PageEditor />} />
         </Route>
         <Route element={<AppLayout />}>

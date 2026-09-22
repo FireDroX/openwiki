@@ -179,6 +179,16 @@ export function PageEditor() {
     )
   }
 
+  if (!page.canEdit) {
+    return (
+      <div className="max-w-3xl space-y-4 p-8">
+        <h1 className="text-2xl font-semibold">{t('pageEditor.forbiddenTitle')}</h1>
+        <p className="text-muted-foreground">{t('pageEditor.forbiddenDescription')}</p>
+        <Button onClick={() => navigate('/')}>{t('pageView.backHome')}</Button>
+      </div>
+    )
+  }
+
   return (
     <EditorLayout
       backTo={returnPath}
