@@ -102,7 +102,12 @@ export class PagesGateway implements OnGatewayConnection {
 
   @OnEvent(PAGE_VERSION_CREATED_EVENT)
   handlePageVersionCreated(event: PageVersionCreatedEvent): void {
-    this.server.to(`page:${event.pageId}`).emit('page:version-created', event);
+    this.server.to(`page:${event.pageId}`).emit('page:version-created', {
+      pageId: event.pageId,
+      versionId: event.versionId,
+      authorId: event.authorId,
+      updatedAt: event.updatedAt,
+    });
   }
 
   @OnEvent(PAGE_TREE_CHANGED_EVENT)

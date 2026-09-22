@@ -110,7 +110,8 @@ describe('PagesGateway', () => {
   });
 
   describe('handlePageVersionCreated', () => {
-    it('broadcasts to the page room', () => {
+    it('broadcasts a trimmed payload to the page room', () => {
+      const updatedAt = new Date();
       const event = new PageVersionCreatedEvent(
         'page-1',
         'version-2',
@@ -118,13 +119,18 @@ describe('PagesGateway', () => {
         'Home',
         'content',
         null,
-        new Date(),
+        updatedAt,
       );
 
       gateway.handlePageVersionCreated(event);
 
       expect(server.to).toHaveBeenCalledWith('page:page-1');
-      expect(emitMock).toHaveBeenCalledWith('page:version-created', event);
+      expect(emitMock).toHaveBeenCalledWith('page:version-created', {
+        pageId: 'page-1',
+        versionId: 'version-2',
+        authorId: 'user-1',
+        updatedAt,
+      });
     });
   });
 
