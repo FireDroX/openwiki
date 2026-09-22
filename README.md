@@ -237,6 +237,7 @@ Table clé/valeur générique pour les réglages globaux (pas par utilisateur). 
 | GET     | /pages/tree        | selon visibilité | Arborescence complète     |
 | GET     | /pages/:slug       | selon visibilité | Lire une page             |
 | PATCH   | /pages/:id         | éditeur+         | Éditer (nouvelle version) |
+| POST    | /pages/:id/merge-preview | éditeur+   | Prévisualiser une fusion à 3 voies (base/mine/theirs) sans sauvegarder |
 | PATCH   | /pages/:id/move    | éditeur+         | Déplacer dans l'arbre     |
 | DELETE  | /pages/:id         | éditeur+         | Supprimer                 |
 | PATCH   | /pages/:id/visibility | éditeur+      | Changer la visibilité (cascade aux enfants) |
