@@ -36,12 +36,16 @@ export function usePageRealtimeSync(
         return
       }
 
-      const result = await mergePreview(pageId as string, {
-        baseVersionId: optionsRef.current.getBaseVersionId(),
-        content: optionsRef.current.getContent(),
-      })
+      try {
+        const result = await mergePreview(pageId as string, {
+          baseVersionId: optionsRef.current.getBaseVersionId(),
+          content: optionsRef.current.getContent(),
+        })
 
-      optionsRef.current.onMergeResult(result)
+        optionsRef.current.onMergeResult(result)
+      } catch (error) {
+        console.error(error)
+      }
     }
 
     socket.on('page:version-created', handleVersionCreated)
