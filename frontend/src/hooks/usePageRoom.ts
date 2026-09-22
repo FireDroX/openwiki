@@ -10,7 +10,13 @@ export function usePageRoom(pageId: string | undefined): void {
     const socket = getRealtimeSocket()
     socket.emit('page:join', { pageId })
 
+    function handleReconnect() {
+      socket.emit('page:join', { pageId })
+    }
+    socket.on('connect', handleReconnect)
+
     return () => {
+      socket.off('connect', handleReconnect)
       socket.emit('page:leave', { pageId })
     }
   }, [pageId])
