@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createComment, deleteComment, listComments, updateComment, type Comment } from '#api/comments'
+import { getRealtimeSocket } from '#lib/realtime-client'
 
 export type CommentsStatus = 'loading' | 'ready' | 'error'
 
@@ -30,6 +31,20 @@ export function useComments(pageId: string | undefined): UseCommentsResult {
   useEffect(() => {
     void reload()
   }, [reload])
+
+  useEffect(() => {
+    if (!pageId) return
+    const socket = getRealtimeSocket()
+    function handleCommentChanged(payload: { pageId: string }) {
+      if (payload.pageId === pageId) {
+        void reload()
+      }
+    }
+    socket.on('comment:changed', handleCommentChanged)
+    return () => {
+      socket.off('comment:changed', handleCommentChanged)
+    }
+  }, [pageId, reload])
 
   async function addComment(content: string, parentId?: string): Promise<void> {
     if (!pageId) return

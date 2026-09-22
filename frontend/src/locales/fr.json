@@ -97,7 +97,9 @@
     "forbiddenDescription": "Vous n'avez pas les droits nécessaires pour consulter cette page.",
     "errorTitle": "Une erreur est survenue",
     "errorDescription": "Impossible de charger cette page pour le moment.",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "newVersionBanner": "Une nouvelle version de cette page est disponible.",
+    "reloadButton": "Recharger"
   },
   "pageEditor": {
     "newPageTitle": "Nouvelle page",
