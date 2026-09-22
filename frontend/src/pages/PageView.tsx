@@ -67,7 +67,7 @@ export function PageView() {
   const { status, page, refresh } = usePage(pathSegments)
   const [hasNewVersion, setHasNewVersion] = useState(false)
   usePageRoom(page?.id)
-  const { tags, status: tagsStatus } = usePageTags(page?.id)
+  const { tags } = usePageTags(page?.id)
   const { user } = useAuth()
   const canEdit = !!page?.canEdit
   useDocumentTitle(page?.title)
@@ -124,10 +124,6 @@ export function PageView() {
         description={t('pageView.errorDescription')}
       />
     )
-  }
-
-  if (tagsStatus === 'loading') {
-    return <PageViewSkeleton />
   }
 
   return (
