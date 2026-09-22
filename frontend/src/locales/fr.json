@@ -112,6 +112,8 @@
     "discardConfirmEdit": "Abandonner les modifications non sauvegardées ?",
     "notFoundTitle": "Page introuvable",
     "notFoundDescription": "Impossible de charger cette page pour édition.",
+    "forbiddenTitle": "Accès refusé",
+    "forbiddenDescription": "Vous n'avez pas les droits nécessaires pour éditer cette page.",
     "changeSummaryLabel": "Résumé de la modification",
     "changeSummaryPlaceholder": "Décrivez votre modification...",
     "pageMoved": "Page déplacée.",

@@ -112,6 +112,8 @@
     "discardConfirmEdit": "Discard unsaved changes?",
     "notFoundTitle": "Page not found",
     "notFoundDescription": "Unable to load this page for editing.",
+    "forbiddenTitle": "Access denied",
+    "forbiddenDescription": "You don't have the rights required to edit this page.",
     "changeSummaryLabel": "Change summary",
     "changeSummaryPlaceholder": "Describe your change...",
     "pageMoved": "Page moved.",

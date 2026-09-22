@@ -25,6 +25,7 @@ import { DeletePageQueryDto } from '../dto/in/delete-page-query.dto.js';
 import { MovePageDto } from '../dto/in/move-page.dto.js';
 import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
+import { FindByPathResultDto } from '../dto/out/find-by-path-result.dto.js';
 import { PageTreeNodeDto } from '../dto/out/page-tree-node.dto.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { Page, PAGE_VISIBILITIES } from '../entities/page.entity.js';
@@ -116,7 +117,7 @@ export class PagesService {
   async findByPath(
     segments: string[],
     currentUser?: AuthenticatedUser,
-  ): Promise<{ page: Page; version: PageVersion; isFollowed: boolean }> {
+  ): Promise<FindByPathResultDto> {
     if (segments.length === 0) {
       throw new PageNotFoundException();
     }
@@ -151,7 +152,11 @@ export class PagesService {
       ? await this.pageFollowRepository.isFollowing(currentUser.id, page.id)
       : false;
 
-    return { page, version, isFollowed };
+    const canEdit = currentUser
+      ? await this.pagePermissionsService.canEdit(currentUser.id, page.id)
+      : false;
+
+    return { page, version, isFollowed, canEdit };
   }
 
   async getAncestorPath(page: Page): Promise<string> {

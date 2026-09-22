@@ -2,7 +2,6 @@ import { Link, useParams } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { History, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { UserRole } from '#api/auth'
 import { Button } from '#components/ui/button'
 import { MarkdownRenderer } from '#components/MarkdownRenderer'
 import { Skeleton } from '#components/ui/skeleton'
@@ -16,8 +15,6 @@ import { usePage } from '#hooks/usePage'
 import { usePageRoom } from '#hooks/usePageRoom'
 import { usePageTags } from '#hooks/usePageTags'
 import { getRealtimeSocket } from '#lib/realtime-client'
-
-const EDITOR_ROLES: UserRole[] = [UserRole.Editor, UserRole.Admin]
 
 function PageViewSkeleton() {
   return (
@@ -72,7 +69,7 @@ export function PageView() {
   usePageRoom(page?.id)
   const { tags, status: tagsStatus } = usePageTags(page?.id)
   const { user } = useAuth()
-  const canEdit = !!user && EDITOR_ROLES.includes(user.role)
+  const canEdit = !!page?.canEdit
   useDocumentTitle(page?.title)
 
   useEffect(() => {

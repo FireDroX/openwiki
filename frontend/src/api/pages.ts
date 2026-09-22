@@ -26,6 +26,7 @@ export interface PageDetail {
   updatedAt: string
   isFollowed: boolean
   currentVersionId: string
+  canEdit: boolean
 }
 
 export async function getPageByPath(pathSegments: string[]): Promise<PageDetail> {
