@@ -97,7 +97,9 @@
     "forbiddenDescription": "You don't have the rights required to view this page.",
     "errorTitle": "An error occurred",
     "errorDescription": "Unable to load this page right now.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "newVersionBanner": "A new version of this page is available.",
+    "reloadButton": "Reload"
   },
   "pageEditor": {
     "newPageTitle": "New page",
@@ -121,7 +123,9 @@
     "visibilityChangeFailed": "Failed to change visibility.",
     "commentsEnabled": "Comments enabled.",
     "commentsDisabled": "Comments disabled.",
-    "commentsEnabledChangeFailed": "Failed to update comments."
+    "commentsEnabledChangeFailed": "Failed to update comments.",
+    "realtimeMergedToast": "Your changes were automatically merged with someone else's.",
+    "realtimeConflictBanner": "Conflict with a concurrent save: resolve the <<<<<<< / ======= / >>>>>>> markers below before saving again."
   },
   "pageMetadataForm": {
     "titleLabel": "Title",

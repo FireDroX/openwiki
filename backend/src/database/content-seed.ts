@@ -357,6 +357,71 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.27
+
+<details>
+<summary>0.27.8 — 2026-09-22</summary>
+
+- Vue de lecture d'une page : bandeau "nouvelle version disponible" quand quelqu'un sauvegarde la page pendant que tu la consultes, avec bouton pour recharger. Le fil de commentaires se met aussi à jour en direct (ajout/modification/suppression) sans avoir à recharger la page.
+
+</details>
+
+<details>
+<summary>0.27.7 — 2026-09-22</summary>
+
+- Les commentaires diffusent désormais un événement temps réel à chaque création/modification/suppression, relayé aux autres personnes en train de regarder la même page.
+
+</details>
+
+<details>
+<summary>0.27.6 — 2026-09-22</summary>
+
+- La sidebar (arborescence des pages) se met à jour automatiquement quand une page est créée, déplacée, renommée, supprimée ou change de visibilité, sans avoir à recharger.
+
+</details>
+
+<details>
+<summary>0.27.5 — 2026-09-22</summary>
+
+- Diffusion temps réel des changements d'arborescence (création, déplacement, suppression, visibilité, renommage) à tous les navigateurs connectés.
+
+</details>
+
+<details>
+<summary>0.27.4 — 2026-09-22</summary>
+
+- Éditeur de page : affichage des marqueurs de conflit \`<<<<<<<\`/\`=======\`/\`>>>>>>>\` en cas de fusion impossible au moment de la sauvegarde, avec bandeau d'alerte tant que le conflit n'est pas résolu.
+
+</details>
+
+<details>
+<summary>0.27.3 — 2026-09-22</summary>
+
+- Connexion WebSocket temps réel dans l'éditeur de page : quand quelqu'un d'autre sauvegarde la page que tu es en train d'éditer, tes modifications non enregistrées sont fusionnées automatiquement avec les siennes plutôt que d'écraser silencieusement l'un ou l'autre.
+
+</details>
+
+<details>
+<summary>0.27.2 — 2026-09-22</summary>
+
+- Nouvelle infrastructure temps réel (WebSocket) : connexion authentifiée par cookie, rooms par page selon les droits de lecture, base pour toutes les mises à jour en direct de l'application.
+
+</details>
+
+<details>
+<summary>0.27.1 — 2026-09-22</summary>
+
+- Filet de sécurité à la sauvegarde d'une page : si la version de base envoyée par le client n'est plus à jour (notification temps réel manquée), le serveur retente automatiquement la fusion avant d'écrire, plutôt que d'écraser une sauvegarde concurrente.
+
+</details>
+
+<details>
+<summary>0.27.0 — 2026-09-22</summary>
+
+- Fusion à 3 voies (façon \`git merge\`) des sauvegardes concurrentes d'une page, au lieu du dernier écrivain qui écrase silencieusement les autres. Nouvel endpoint \`POST /pages/:id/merge-preview\` pour prévisualiser une fusion sans sauvegarder.
+
+</details>
+
 ## Version 0.26
 
 <details>

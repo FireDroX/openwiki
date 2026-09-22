@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { History, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '#components/ui/button'
@@ -12,7 +12,9 @@ import { PageTagList } from '#components/PageView/PageTagList'
 import { useAuth } from '#hooks/useAuth'
 import { useDocumentTitle } from '#hooks/useDocumentTitle'
 import { usePage } from '#hooks/usePage'
+import { usePageRoom } from '#hooks/usePageRoom'
 import { usePageTags } from '#hooks/usePageTags'
+import { getRealtimeSocket } from '#lib/realtime-client'
 
 function PageViewSkeleton() {
   return (
@@ -62,11 +64,36 @@ export function PageView() {
   const { t } = useTranslation()
   const params = useParams()
   const pathSegments = useMemo(() => (params['*'] ?? '').split('/').filter(Boolean), [params])
-  const { status, page } = usePage(pathSegments)
+  const { status, page, refresh } = usePage(pathSegments)
+  const [hasNewVersion, setHasNewVersion] = useState(false)
+  usePageRoom(page?.id)
   const { tags, status: tagsStatus } = usePageTags(page?.id)
   const { user } = useAuth()
   const canEdit = !!page?.canEdit
   useDocumentTitle(page?.title)
+
+  useEffect(() => {
+    setHasNewVersion(false)
+    if (!page) {
+      return
+    }
+    const currentPageId = page.id
+    const socket = getRealtimeSocket()
+    function handleVersionCreated(payload: { pageId: string }) {
+      if (payload.pageId === currentPageId) {
+        setHasNewVersion(true)
+      }
+    }
+    socket.on('page:version-created', handleVersionCreated)
+    return () => {
+      socket.off('page:version-created', handleVersionCreated)
+    }
+  }, [page])
+
+  async function handleReload() {
+    await refresh()
+    setHasNewVersion(false)
+  }
 
   if (status === 'loading') {
     return <PageViewSkeleton />
@@ -126,6 +153,14 @@ export function PageView() {
         </div>
         <PageTagList tags={tags} />
       </div>
+      {hasNewVersion && (
+        <div className="flex items-center justify-between rounded-md border border-primary/30 bg-primary/5 px-4 py-2 text-sm">
+          <span>{t('pageView.newVersionBanner')}</span>
+          <Button size="sm" variant="outline" onClick={handleReload}>
+            {t('pageView.reloadButton')}
+          </Button>
+        </div>
+      )}
       <MarkdownRenderer content={page.content} />
       {page.commentsEnabled && <CommentThread pageId={page.id} />}
     </article>

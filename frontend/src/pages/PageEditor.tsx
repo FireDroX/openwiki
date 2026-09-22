@@ -27,6 +27,7 @@ import { useAuth } from '#hooks/useAuth'
 import { useEditorState } from '#hooks/useEditorState'
 import { useFileUpload } from '#hooks/useFileUpload'
 import { usePage } from '#hooks/usePage'
+import { usePageRealtimeSync } from '#hooks/usePageRealtimeSync'
 import { usePageTree } from '#hooks/usePageTree'
 import { extractErrorMessage } from '#lib/api-errors'
 import { findPathToNode } from '#utils/page-tree'
@@ -64,6 +65,7 @@ export function PageEditor() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [currentParentId, setCurrentParentId] = useState<string | null>(null)
   const [commentsEnabled, setCommentsEnabledState] = useState(true)
+  const [baseVersionId, setBaseVersionId] = useState('')
   const schema = useMemo(() => createPageMetadataSchema(t), [t])
 
   const { control, setValue, watch, getValues, reset } = useForm<PageMetadataFormValues>({
@@ -86,9 +88,22 @@ export function PageEditor() {
       reset({ title: page.title, slug: page.slug, visibility: page.visibility, parentId: page.parentId })
       setCurrentParentId(page.parentId)
       setCommentsEnabledState(page.commentsEnabled)
+      setBaseVersionId(page.currentVersionId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
+
+  usePageRealtimeSync(page?.id, {
+    getBaseVersionId: () => baseVersionId,
+    getContent: () => editor.content,
+    onMergeResult: (result) => {
+      editor.setContent(result.mergedContent)
+      setBaseVersionId(result.newBaseVersionId)
+      if (!result.conflict) {
+        toast.success(t('pageEditor.realtimeMergedToast'))
+      }
+    },
+  })
 
   async function handleParentChange(newParentId: string | null) {
     if (!page) {
@@ -143,11 +158,21 @@ export function PageEditor() {
     setIsSaving(true)
     setSaveError(null)
     try {
-      await updatePage(page.id, {
+      const result = await updatePage(page.id, {
         title: getValues('title'),
         content: editor.content,
         changeSummary: changeSummary || undefined,
+        baseVersionId,
       })
+
+      if (result.conflict) {
+        editor.setContent(result.mergedContent ?? editor.content)
+        setBaseVersionId(result.currentVersionId)
+        toast.error(t('pageEditor.realtimeConflictBanner'))
+        return
+      }
+
+      setBaseVersionId(result.currentVersionId)
       editor.markSaved()
       toast.success(t('pageEditor.pageSaved'))
       navigate(returnPath)
@@ -233,6 +258,9 @@ export function PageEditor() {
             <div className="mt-5">
               <PagePermissionsPanel pageId={page.id} />
             </div>
+          )}
+          {editor.content.includes('<<<<<<<') && (
+            <p className="mt-2 text-sm text-destructive">{t('pageEditor.realtimeConflictBanner')}</p>
           )}
           <FormError message={saveError} />
         </>

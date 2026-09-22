@@ -25,6 +25,7 @@ export interface PageDetail {
   parentId: string | null
   updatedAt: string
   isFollowed: boolean
+  currentVersionId: string
   canEdit: boolean
 }
 
@@ -38,6 +39,7 @@ export interface UpdatePagePayload {
   title?: string
   content?: string
   changeSummary?: string
+  baseVersionId?: string
 }
 
 export interface PageUpdateResult {
@@ -47,6 +49,8 @@ export interface PageUpdateResult {
   content: string
   currentVersionId: string
   updatedAt: string
+  conflict: boolean
+  mergedContent?: string
 }
 
 export async function updatePage(id: string, payload: UpdatePagePayload): Promise<PageUpdateResult> {
@@ -93,4 +97,20 @@ export async function followPage(id: string): Promise<void> {
 
 export async function unfollowPage(id: string): Promise<void> {
   await apiClient.delete(`/pages/${id}/follow`)
+}
+
+export interface MergePreviewPayload {
+  baseVersionId: string
+  content: string
+}
+
+export interface MergePreviewResult {
+  conflict: boolean
+  mergedContent: string
+  newBaseVersionId: string
+}
+
+export async function mergePreview(id: string, payload: MergePreviewPayload): Promise<MergePreviewResult> {
+  const { data } = await apiClient.post<ResponseDto<MergePreviewResult>>(`/pages/${id}/merge-preview`, payload)
+  return data.data
 }

@@ -10,6 +10,7 @@ import { PageHasChildrenException } from '../../common/exceptions/pages/page-has
 import { PageNotFoundException } from '../../common/exceptions/pages/page-not-found.exception.js';
 import { ParentPageNotFoundException } from '../../common/exceptions/pages/parent-page-not-found.exception.js';
 import { SlugAlreadyExistsException } from '../../common/exceptions/pages/slug-already-exists.exception.js';
+import { VersionNotFoundException } from '../../common/exceptions/pages/version-not-found.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import {
   CHANGE_SUMMARY_MAX_LENGTH,
@@ -25,16 +26,24 @@ import { MovePageDto } from '../dto/in/move-page.dto.js';
 import { SetCommentsEnabledDto } from '../dto/in/set-comments-enabled.dto.js';
 import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { FindByPathResultDto } from '../dto/out/find-by-path-result.dto.js';
+import { PageMergePreviewResponseDto } from '../dto/out/page-merge-preview-response.dto.js';
 import { PageTreeNodeDto } from '../dto/out/page-tree-node.dto.js';
+import { UpdatePageResultDto } from '../dto/out/update-page-result.dto.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { Page, PAGE_VISIBILITIES } from '../entities/page.entity.js';
 import {
   PAGE_PUBLISHED_EVENT,
   PagePublishedEvent,
 } from '../events/page-published.event.js';
+import { PAGE_TREE_CHANGED_EVENT } from '../events/page-tree-changed.event.js';
+import {
+  PAGE_VERSION_CREATED_EVENT,
+  PageVersionCreatedEvent,
+} from '../events/page-version-created.event.js';
 import { PageTreeMapper } from '../mapper/page-tree.mapper.js';
 import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
+import { PageMergeService } from './page-merge.service.js';
 import { PagePermissionsService } from './page-permissions.service.js';
 
 const MYSQL_DUPLICATE_ENTRY_CODE = 'ER_DUP_ENTRY';
@@ -47,6 +56,7 @@ export class PagesService {
     @Inject('PageFollowsRepository')
     private readonly pageFollowRepository: PageFollowRepository,
     private readonly pagePermissionsService: PagePermissionsService,
+    private readonly pageMergeService: PageMergeService,
     private readonly eventEmitter: EventEmitter2,
     private readonly userActivityLogService: UserActivityLogService,
   ) {}
@@ -89,6 +99,7 @@ export class PagesService {
         targetId: result.page.id,
         metadata: { title: dto.title, slug: dto.slug },
       });
+      this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
       return result;
     } catch (error) {
       if (PagesService.isDuplicateSlugError(error)) {
@@ -252,6 +263,18 @@ export class PagesService {
       changeSummary,
       authorId,
     });
+    this.eventEmitter.emit(
+      PAGE_VERSION_CREATED_EVENT,
+      new PageVersionCreatedEvent(
+        result.page.id,
+        result.version.id,
+        authorId,
+        result.page.title,
+        result.version.content,
+        changeSummary,
+        result.page.updatedAt,
+      ),
+    );
     void this.userActivityLogService.record({
       userId: authorId,
       action: 'page.restored',
@@ -266,7 +289,7 @@ export class PagesService {
     id: string,
     dto: UpdatePageDto,
     authorId: string,
-  ): Promise<{ page: Page; version: PageVersion }> {
+  ): Promise<UpdatePageResultDto> {
     const page = await this.pagesRepository.findById(id);
     if (!page || !page.currentVersionId) {
       throw new PageNotFoundException();
@@ -284,23 +307,105 @@ export class PagesService {
     this.validateUpdatePage(dto);
 
     const title = dto.title ?? page.title;
-    const content = dto.content ?? currentVersion.content;
+    let content = dto.content ?? currentVersion.content;
+    let changeSummary = dto.changeSummary ?? null;
+
+    if (dto.baseVersionId && dto.baseVersionId !== page.currentVersionId) {
+      const baseVersion = await this.pagesRepository.findVersionById(
+        dto.baseVersionId,
+      );
+      if (!baseVersion || baseVersion.pageId !== page.id) {
+        throw new VersionNotFoundException();
+      }
+
+      const merged = this.pageMergeService.merge(
+        baseVersion.content,
+        content,
+        currentVersion.content,
+      );
+
+      if (merged.conflict) {
+        return {
+          page,
+          version: currentVersion,
+          conflict: true,
+          mergedContent: merged.content,
+        };
+      }
+
+      content = merged.content;
+      changeSummary = dto.changeSummary || 'Fusion automatique';
+    }
 
     const result = await this.pagesRepository.updateWithNewVersion({
       page,
       title,
       content,
-      changeSummary: dto.changeSummary ?? null,
+      changeSummary,
       authorId,
     });
+    this.eventEmitter.emit(
+      PAGE_VERSION_CREATED_EVENT,
+      new PageVersionCreatedEvent(
+        result.page.id,
+        result.version.id,
+        authorId,
+        result.page.title,
+        result.version.content,
+        changeSummary,
+        result.page.updatedAt,
+      ),
+    );
+    if (dto.title !== undefined && dto.title !== page.title) {
+      this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
+    }
     void this.userActivityLogService.record({
       userId: authorId,
       action: 'page.updated',
       targetType: 'page',
       targetId: id,
-      metadata: { changeSummary: dto.changeSummary ?? null },
+      metadata: { changeSummary },
     });
-    return result;
+    return { ...result, conflict: false };
+  }
+
+  async mergePreview(
+    pageId: string,
+    baseVersionId: string,
+    content: string,
+    userId: string,
+  ): Promise<PageMergePreviewResponseDto> {
+    const page = await this.pagesRepository.findById(pageId);
+    if (!page || !page.currentVersionId) {
+      throw new PageNotFoundException();
+    }
+
+    await this.assertCanEdit(pageId, userId);
+
+    const baseVersion =
+      await this.pagesRepository.findVersionById(baseVersionId);
+    if (!baseVersion || baseVersion.pageId !== page.id) {
+      throw new VersionNotFoundException();
+    }
+
+    const currentVersion = await this.pagesRepository.findVersionById(
+      page.currentVersionId,
+    );
+    if (!currentVersion) {
+      throw new PageNotFoundException();
+    }
+
+    const merged = this.pageMergeService.merge(
+      baseVersion.content,
+      content,
+      currentVersion.content,
+    );
+
+    return {
+      conflict: merged.conflict,
+      mergedContent: merged.content,
+      newBaseVersionId: page.currentVersionId,
+    };
   }
 
   async movePage(
@@ -357,6 +462,7 @@ export class PagesService {
         targetId: id,
         metadata: { newParentId },
       });
+      this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
       return { page: moved, version: currentVersion };
     } catch (error) {
       if (PagesService.isDuplicateSlugError(error)) {
@@ -397,6 +503,7 @@ export class PagesService {
       targetId: id,
       metadata: { cascade },
     });
+    this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
   }
 
   async setVisibility(
@@ -433,6 +540,8 @@ export class PagesService {
         new PagePublishedEvent(updated.id, updated.slug, updated.title),
       );
     }
+
+    this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
 
     void this.userActivityLogService.record({
       userId,

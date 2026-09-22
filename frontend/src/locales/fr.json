@@ -97,7 +97,9 @@
     "forbiddenDescription": "Vous n'avez pas les droits nécessaires pour consulter cette page.",
     "errorTitle": "Une erreur est survenue",
     "errorDescription": "Impossible de charger cette page pour le moment.",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "newVersionBanner": "Une nouvelle version de cette page est disponible.",
+    "reloadButton": "Recharger"
   },
   "pageEditor": {
     "newPageTitle": "Nouvelle page",
@@ -121,7 +123,9 @@
     "visibilityChangeFailed": "Échec du changement de visibilité.",
     "commentsEnabled": "Commentaires activés.",
     "commentsDisabled": "Commentaires désactivés.",
-    "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires."
+    "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires.",
+    "realtimeMergedToast": "Vos modifications ont été fusionnées automatiquement avec celles de quelqu'un d'autre.",
+    "realtimeConflictBanner": "Conflit détecté avec une sauvegarde concurrente : résolvez les marqueurs <<<<<<< / ======= / >>>>>>> ci-dessous avant de sauvegarder à nouveau."
   },
   "pageMetadataForm": {
     "titleLabel": "Titre",

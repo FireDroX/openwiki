@@ -3,6 +3,7 @@ import * as authApi from '#api/auth'
 import { getMe } from '#api/users'
 import type { AuthUser, LoginPayload, RegisterPayload } from '#api/auth'
 import { AUTH_LOGOUT_EVENT } from '#lib/api-client'
+import { reconnectRealtimeSocket } from '#lib/realtime-client'
 import { AuthContext, type AuthStatus } from '#hooks/useAuth'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const currentUser = await getMe()
     setUser(currentUser)
     setStatus('authenticated')
+    reconnectRealtimeSocket()
   }
 
   async function register(payload: RegisterPayload) {

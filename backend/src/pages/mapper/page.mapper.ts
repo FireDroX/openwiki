@@ -1,5 +1,6 @@
 import { ResponseDto } from '../../common/dto/response.dto.js';
 import { PageDetailResponseDto } from '../dto/out/page-detail-response.dto.js';
+import { PageMergePreviewResponseDto } from '../dto/out/page-merge-preview-response.dto.js';
 import { PageResponseDto } from '../dto/out/page-response.dto.js';
 import { PageUpdateResponseDto } from '../dto/out/page-update-response.dto.js';
 import { PageVersion } from '../entities/page-version.entity.js';
@@ -45,6 +46,7 @@ export class PageMapper {
       parentId: page.parentId,
       updatedAt: page.updatedAt,
       isFollowed,
+      currentVersionId: page.currentVersionId!,
       canEdit,
     };
   }
@@ -63,6 +65,8 @@ export class PageMapper {
   static toPageUpdateResponseDto(
     page: Page,
     version: PageVersion,
+    conflict = false,
+    mergedContent?: string,
   ): PageUpdateResponseDto {
     return {
       id: page.id,
@@ -71,13 +75,32 @@ export class PageMapper {
       content: version.content,
       currentVersionId: page.currentVersionId!,
       updatedAt: page.updatedAt,
+      conflict,
+      mergedContent,
     };
   }
 
   static toUpdateResponse(
     page: Page,
     version: PageVersion,
+    conflict = false,
+    mergedContent?: string,
   ): ResponseDto<PageUpdateResponseDto> {
-    return new ResponseDto(PageMapper.toPageUpdateResponseDto(page, version));
+    return new ResponseDto(
+      PageMapper.toPageUpdateResponseDto(
+        page,
+        version,
+        conflict,
+        mergedContent,
+      ),
+    );
+  }
+
+  static toMergePreviewResponse(result: {
+    conflict: boolean;
+    mergedContent: string;
+    newBaseVersionId: string;
+  }): ResponseDto<PageMergePreviewResponseDto> {
+    return new ResponseDto(result);
   }
 }

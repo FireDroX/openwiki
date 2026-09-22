@@ -5,4 +5,6 @@ export interface PageUpdateResponseDto {
   content: string;
   currentVersionId: string;
   updatedAt: Date;
+  conflict: boolean;
+  mergedContent?: string;
 }

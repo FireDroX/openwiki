@@ -12,6 +12,7 @@ import { PagesController } from './pages.controller.js';
 import { TypeormPageFollowRepository } from './persistence/typeorm.page-follow.repository.js';
 import { TypeormPagePermissionsRepository } from './persistence/typeorm.page-permission.repository.js';
 import { TypeormPagesRepository } from './persistence/typeorm.page.repository.js';
+import { PageMergeService } from './services/page-merge.service.js';
 import { PagePermissionsService } from './services/page-permissions.service.js';
 import { PagesService } from './services/pages.service.js';
 
@@ -33,6 +34,7 @@ import { PagesService } from './services/pages.service.js';
     { provide: 'PageFollowsRepository', useClass: TypeormPageFollowRepository },
     PagesService,
     PagePermissionsService,
+    PageMergeService,
   ],
   exports: [PagesService],
 })

@@ -42,6 +42,8 @@ apiClient.interceptors.response.use(
         refreshPromise = null
       })
       await refreshPromise
+      const { reconnectRealtimeSocket } = await import('#lib/realtime-client')
+      reconnectRealtimeSocket()
       return apiClient(originalRequest)
     } catch (refreshError) {
       logout()
