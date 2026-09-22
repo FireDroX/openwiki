@@ -1,12 +1,19 @@
 import { apiClient } from '#lib/api-client'
 import type { ResponseDto } from '#api/response-dto'
 
+export interface SearchResultTag {
+  id: string
+  name: string
+  color: string
+}
+
 export interface SearchResult {
   pageId: string
   slug: string
   title: string
   excerpt: string
   score: number
+  tags: SearchResultTag[]
 }
 
 export interface SearchResponse {

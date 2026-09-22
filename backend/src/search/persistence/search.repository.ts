@@ -1,9 +1,16 @@
+export interface SearchMatchTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface SearchMatch {
   pageId: string;
   slug: string;
   title: string;
   content: string;
   score: number;
+  tags: SearchMatchTag[];
 }
 
 export interface SearchRepository {

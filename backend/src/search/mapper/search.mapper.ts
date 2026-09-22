@@ -15,6 +15,7 @@ export class SearchMapper {
       title: match.title,
       excerpt: SearchMapper.buildExcerpt(match.content, query),
       score: match.score,
+      tags: match.tags,
     };
   }
 
