@@ -20,6 +20,7 @@ import { UpdatePageDto } from '../dto/in/update-page.dto.js';
 import { Page } from '../entities/page.entity.js';
 import { PageVersion } from '../entities/page-version.entity.js';
 import { PAGE_PUBLISHED_EVENT } from '../events/page-published.event.js';
+import { PAGE_TREE_CHANGED_EVENT } from '../events/page-tree-changed.event.js';
 import { PAGE_VERSION_CREATED_EVENT } from '../events/page-version-created.event.js';
 import type { PageFollowRepository } from '../persistence/page-follow.repository.js';
 import type { PagesRepository } from '../persistence/page.repository.js';
@@ -329,6 +330,36 @@ describe('PagesService', () => {
 
       expect(pageMergeService.merge).not.toHaveBeenCalled();
     });
+
+    it('emits PAGE_TREE_CHANGED_EVENT only when the title actually changes', async () => {
+      const page = buildPage({ title: 'Old title' });
+      const currentVersion = buildVersion();
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(currentVersion);
+      pagesRepository.updateWithNewVersion.mockResolvedValue({
+        page: { ...page, title: 'New title' },
+        version: buildVersion({ id: 'version-2' }),
+      });
+
+      await service.updatePage('page-1', { title: 'New title' }, 'user-1');
+      expect(eventEmitter.emit).toHaveBeenCalledWith(PAGE_TREE_CHANGED_EVENT);
+
+      eventEmitter.emit.mockClear();
+      pagesRepository.updateWithNewVersion.mockResolvedValue({
+        page,
+        version: buildVersion({ id: 'version-3' }),
+      });
+
+      await service.updatePage(
+        'page-1',
+        { content: 'only content changed' },
+        'user-1',
+      );
+      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+        PAGE_TREE_CHANGED_EVENT,
+      );
+    });
   });
 
   describe('mergePreview', () => {
@@ -482,6 +513,28 @@ describe('PagesService', () => {
       expect(pagesRepository.updateParent).toHaveBeenCalledWith(page, otherId);
       expect(result.page.parentId).toBe(otherId);
     });
+
+    it('emits PAGE_TREE_CHANGED_EVENT after moving a page', async () => {
+      const page = buildPage({ id: pageId, parentId: null });
+      const target = buildPage({ id: otherId, parentId: null });
+      const dto: MovePageDto = { newParentId: otherId };
+
+      pagesRepository.findById.mockImplementation((id: string) => {
+        if (id === pageId) return Promise.resolve(page);
+        if (id === otherId) return Promise.resolve(target);
+        return Promise.resolve(null);
+      });
+      pagesRepository.findVersionById.mockResolvedValue(buildVersion());
+      pagesRepository.findBySlugAndParent.mockResolvedValue(null);
+      pagesRepository.updateParent.mockResolvedValue({
+        ...page,
+        parentId: otherId,
+      });
+
+      await service.movePage(pageId, dto, 'user-1');
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(PAGE_TREE_CHANGED_EVENT);
+    });
   });
 
   describe('createPage', () => {
@@ -534,6 +587,18 @@ describe('PagesService', () => {
       await expect(service.createPage(dto, 'user-1')).rejects.toBeInstanceOf(
         SlugAlreadyExistsException,
       );
+    });
+
+    it('emits PAGE_TREE_CHANGED_EVENT after creating a page', async () => {
+      pagesRepository.findBySlugAndParent.mockResolvedValue(null);
+      pagesRepository.createWithFirstVersion.mockResolvedValue({
+        page: buildPage({ slug: 'new-page' }),
+        version: buildVersion(),
+      });
+
+      await service.createPage(dto, 'user-1');
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(PAGE_TREE_CHANGED_EVENT);
     });
   });
 
@@ -756,6 +821,15 @@ describe('PagesService', () => {
 
       expect(pagesRepository.softDelete).toHaveBeenCalledWith('leaf');
     });
+
+    it('emits PAGE_TREE_CHANGED_EVENT after deleting a page', async () => {
+      pagesRepository.findById.mockResolvedValue(buildPage({ id: 'leaf' }));
+      pagesRepository.findChildren.mockResolvedValue([]);
+
+      await service.deletePage('leaf', {}, 'user-1');
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(PAGE_TREE_CHANGED_EVENT);
+    });
   });
 
   describe('setVisibility', () => {
@@ -780,7 +854,7 @@ describe('PagesService', () => {
       );
     });
 
-    it('does not emit an event when the page was already public', async () => {
+    it('always emits PAGE_TREE_CHANGED_EVENT, but PAGE_PUBLISHED_EVENT only on a private→public transition', async () => {
       const page = buildPage({ visibility: 'public' });
       pagesRepository.findById.mockResolvedValue(page);
       pagesRepository.findVersionById.mockResolvedValue(buildVersion());
@@ -789,7 +863,11 @@ describe('PagesService', () => {
 
       await service.setVisibility('page-1', { visibility: 'public' }, 'user-1');
 
-      expect(eventEmitter.emit).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).toHaveBeenCalledWith(PAGE_TREE_CHANGED_EVENT);
+      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+        PAGE_PUBLISHED_EVENT,
+        expect.anything(),
+      );
     });
 
     it('throws ValidationException for an invalid visibility value', async () => {

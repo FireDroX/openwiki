@@ -13,6 +13,7 @@ import {
 import type { Server, Socket } from 'socket.io';
 import { ACCESS_TOKEN_COOKIE } from '../common/variables.global.js';
 import type { AuthenticatedUser } from '../common/strategies/jwt.strategy.js';
+import { PAGE_TREE_CHANGED_EVENT } from '../pages/events/page-tree-changed.event.js';
 import {
   PAGE_VERSION_CREATED_EVENT,
   PageVersionCreatedEvent,
@@ -98,6 +99,11 @@ export class PagesGateway implements OnGatewayConnection {
   @OnEvent(PAGE_VERSION_CREATED_EVENT)
   handlePageVersionCreated(event: PageVersionCreatedEvent): void {
     this.server.to(`page:${event.pageId}`).emit('page:version-created', event);
+  }
+
+  @OnEvent(PAGE_TREE_CHANGED_EVENT)
+  handlePageTreeChanged(): void {
+    this.server.emit('page-tree:changed');
   }
 
   private static extractAccessToken(cookieHeader?: string): string | null {

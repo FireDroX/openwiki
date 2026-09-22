@@ -127,4 +127,12 @@ describe('PagesGateway', () => {
       expect(emitMock).toHaveBeenCalledWith('page:version-created', event);
     });
   });
+
+  describe('handlePageTreeChanged', () => {
+    it('broadcasts to every connected socket with no room', () => {
+      gateway.handlePageTreeChanged();
+
+      expect(server.emit).toHaveBeenCalledWith('page-tree:changed');
+    });
+  });
 });

@@ -32,6 +32,7 @@ import {
   PAGE_PUBLISHED_EVENT,
   PagePublishedEvent,
 } from '../events/page-published.event.js';
+import { PAGE_TREE_CHANGED_EVENT } from '../events/page-tree-changed.event.js';
 import {
   PAGE_VERSION_CREATED_EVENT,
   PageVersionCreatedEvent,
@@ -95,6 +96,7 @@ export class PagesService {
         targetId: result.page.id,
         metadata: { title: dto.title, slug: dto.slug },
       });
+      this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
       return result;
     } catch (error) {
       if (PagesService.isDuplicateSlugError(error)) {
@@ -352,6 +354,9 @@ export class PagesService {
         result.page.updatedAt,
       ),
     );
+    if (dto.title !== undefined && dto.title !== page.title) {
+      this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
+    }
     void this.userActivityLogService.record({
       userId: authorId,
       action: 'page.updated',
@@ -459,6 +464,7 @@ export class PagesService {
         targetId: id,
         metadata: { newParentId },
       });
+      this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
       return { page: moved, version: currentVersion };
     } catch (error) {
       if (PagesService.isDuplicateSlugError(error)) {
@@ -499,6 +505,7 @@ export class PagesService {
       targetId: id,
       metadata: { cascade },
     });
+    this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
   }
 
   async setVisibility(
@@ -535,6 +542,8 @@ export class PagesService {
         new PagePublishedEvent(updated.id, updated.slug, updated.title),
       );
     }
+
+    this.eventEmitter.emit(PAGE_TREE_CHANGED_EVENT);
 
     void this.userActivityLogService.record({
       userId,
