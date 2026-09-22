@@ -152,12 +152,9 @@ export class PagesController {
     @Body() dto: UpdatePageDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ResponseDto<PageUpdateResponseDto>> {
-    const { page, version } = await this.pagesService.updatePage(
-      id,
-      dto,
-      user.id,
-    );
-    return PageMapper.toUpdateResponse(page, version);
+    const { page, version, conflict, mergedContent } =
+      await this.pagesService.updatePage(id, dto, user.id);
+    return PageMapper.toUpdateResponse(page, version, conflict, mergedContent);
   }
 
   @Post(':id/merge-preview')

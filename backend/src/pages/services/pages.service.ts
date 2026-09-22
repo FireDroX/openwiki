@@ -280,7 +280,12 @@ export class PagesService {
     id: string,
     dto: UpdatePageDto,
     authorId: string,
-  ): Promise<{ page: Page; version: PageVersion }> {
+  ): Promise<{
+    page: Page;
+    version: PageVersion;
+    conflict: boolean;
+    mergedContent?: string;
+  }> {
     const page = await this.pagesRepository.findById(id);
     if (!page || !page.currentVersionId) {
       throw new PageNotFoundException();
@@ -298,13 +303,41 @@ export class PagesService {
     this.validateUpdatePage(dto);
 
     const title = dto.title ?? page.title;
-    const content = dto.content ?? currentVersion.content;
+    let content = dto.content ?? currentVersion.content;
+    let changeSummary = dto.changeSummary ?? null;
+
+    if (dto.baseVersionId && dto.baseVersionId !== page.currentVersionId) {
+      const baseVersion = await this.pagesRepository.findVersionById(
+        dto.baseVersionId,
+      );
+      if (!baseVersion || baseVersion.pageId !== page.id) {
+        throw new VersionNotFoundException();
+      }
+
+      const merged = this.pageMergeService.merge(
+        baseVersion.content,
+        content,
+        currentVersion.content,
+      );
+
+      if (merged.conflict) {
+        return {
+          page,
+          version: currentVersion,
+          conflict: true,
+          mergedContent: merged.content,
+        };
+      }
+
+      content = merged.content;
+      changeSummary = dto.changeSummary || 'Fusion automatique';
+    }
 
     const result = await this.pagesRepository.updateWithNewVersion({
       page,
       title,
       content,
-      changeSummary: dto.changeSummary ?? null,
+      changeSummary,
       authorId,
     });
     this.eventEmitter.emit(
@@ -315,7 +348,7 @@ export class PagesService {
         authorId,
         result.page.title,
         result.version.content,
-        dto.changeSummary ?? null,
+        changeSummary,
         result.page.updatedAt,
       ),
     );
@@ -324,9 +357,9 @@ export class PagesService {
       action: 'page.updated',
       targetType: 'page',
       targetId: id,
-      metadata: { changeSummary: dto.changeSummary ?? null },
+      metadata: { changeSummary },
     });
-    return result;
+    return { ...result, conflict: false };
   }
 
   async mergePreview(

@@ -211,6 +211,124 @@ describe('PagesService', () => {
         }),
       );
     });
+
+    it('merges cleanly and persists when baseVersionId is stale but non-conflicting', async () => {
+      const page = buildPage({ currentVersionId: 'version-2' });
+      const baseVersion = buildVersion({
+        id: 'version-1',
+        content: 'Line 1\nLine 2\nLine 3',
+      });
+      const currentVersion = buildVersion({
+        id: 'version-2',
+        content: 'Line 1\nLine 2\nLine 3 edited by them',
+      });
+      const newVersion = buildVersion({
+        id: 'version-3',
+        content: 'Line 1 edited by me\nLine 2\nLine 3 edited by them',
+      });
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockImplementation((id: string) =>
+        Promise.resolve(
+          id === 'version-1'
+            ? baseVersion
+            : id === 'version-2'
+              ? currentVersion
+              : null,
+        ),
+      );
+      pageMergeService.merge.mockImplementation(() =>
+        new PageMergeService().merge(
+          baseVersion.content,
+          'Line 1 edited by me\nLine 2\nLine 3',
+          currentVersion.content,
+        ),
+      );
+      pagesRepository.updateWithNewVersion.mockResolvedValue({
+        page: { ...page, currentVersionId: 'version-3' },
+        version: newVersion,
+      });
+
+      const dto: UpdatePageDto = {
+        content: 'Line 1 edited by me\nLine 2\nLine 3',
+        baseVersionId: 'version-1',
+      };
+      const result = await service.updatePage('page-1', dto, 'user-1');
+
+      expect(result.conflict).toBe(false);
+      expect(pagesRepository.updateWithNewVersion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: 'Line 1 edited by me\nLine 2\nLine 3 edited by them',
+          changeSummary: 'Fusion automatique',
+        }),
+      );
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        PAGE_VERSION_CREATED_EVENT,
+        expect.anything(),
+      );
+    });
+
+    it('does not persist and returns a conflict when both sides edited the same line', async () => {
+      const page = buildPage({ currentVersionId: 'version-2' });
+      const baseVersion = buildVersion({
+        id: 'version-1',
+        content: 'Line 1\nLine 2\nLine 3',
+      });
+      const currentVersion = buildVersion({
+        id: 'version-2',
+        content: 'Line 1\nLine 2 edited by them\nLine 3',
+      });
+
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockImplementation((id: string) =>
+        Promise.resolve(
+          id === 'version-1'
+            ? baseVersion
+            : id === 'version-2'
+              ? currentVersion
+              : null,
+        ),
+      );
+      pageMergeService.merge.mockImplementation(() =>
+        new PageMergeService().merge(
+          baseVersion.content,
+          'Line 1\nLine 2 edited by me\nLine 3',
+          currentVersion.content,
+        ),
+      );
+
+      const dto: UpdatePageDto = {
+        content: 'Line 1\nLine 2 edited by me\nLine 3',
+        baseVersionId: 'version-1',
+      };
+      const result = await service.updatePage('page-1', dto, 'user-1');
+
+      expect(result.conflict).toBe(true);
+      expect(result.mergedContent).toContain('<<<<<<<');
+      expect(result.page).toBe(page);
+      expect(result.version).toBe(currentVersion);
+      expect(pagesRepository.updateWithNewVersion).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('skips merging entirely when baseVersionId matches the current version', async () => {
+      const page = buildPage();
+      const currentVersion = buildVersion();
+      const dto: UpdatePageDto = {
+        content: 'updated content',
+        baseVersionId: page.currentVersionId!,
+      };
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.findVersionById.mockResolvedValue(currentVersion);
+      pagesRepository.updateWithNewVersion.mockResolvedValue({
+        page,
+        version: currentVersion,
+      });
+
+      await service.updatePage('page-1', dto, 'user-1');
+
+      expect(pageMergeService.merge).not.toHaveBeenCalled();
+    });
   });
 
   describe('mergePreview', () => {

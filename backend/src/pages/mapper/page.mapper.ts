@@ -62,6 +62,8 @@ export class PageMapper {
   static toPageUpdateResponseDto(
     page: Page,
     version: PageVersion,
+    conflict = false,
+    mergedContent?: string,
   ): PageUpdateResponseDto {
     return {
       id: page.id,
@@ -70,14 +72,25 @@ export class PageMapper {
       content: version.content,
       currentVersionId: page.currentVersionId!,
       updatedAt: page.updatedAt,
+      conflict,
+      mergedContent,
     };
   }
 
   static toUpdateResponse(
     page: Page,
     version: PageVersion,
+    conflict = false,
+    mergedContent?: string,
   ): ResponseDto<PageUpdateResponseDto> {
-    return new ResponseDto(PageMapper.toPageUpdateResponseDto(page, version));
+    return new ResponseDto(
+      PageMapper.toPageUpdateResponseDto(
+        page,
+        version,
+        conflict,
+        mergedContent,
+      ),
+    );
   }
 
   static toMergePreviewResponse(result: {
