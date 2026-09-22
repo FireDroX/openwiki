@@ -2,6 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActivityModule } from '../activity/activity.module.js';
 import { CommentsModule } from '../comments/comments.module.js';
+import { TagsModule } from '../tags/tags.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { VersionsModule } from '../versions/versions.module.js';
 import { PageFollow } from './entities/page-follow.entity.js';
@@ -23,6 +24,7 @@ import { PagesService } from './services/pages.service.js';
     forwardRef(() => UsersModule),
     ActivityModule,
     forwardRef(() => CommentsModule),
+    forwardRef(() => TagsModule),
   ],
   controllers: [PagesController],
   providers: [

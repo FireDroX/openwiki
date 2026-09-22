@@ -360,6 +360,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.27
 
 <details>
+<summary>0.27.10 — 2026-09-22</summary>
+
+- Correctif : \`GET\`/\`POST /pages/:id/tags\` et \`DELETE /pages/:id/tags/:tagId\` étaient masqués par la route générique \`GET /pages/*path\` — \`TagsModule\` dépend de \`PagesModule\` (pour vérifier les droits de lecture sur la page), ce qui force Nest à initialiser \`PagesModule\` en premier et donc à enregistrer la route générique de \`PagesController\` avant les routes de tags. Toute requête vers ces endpoints tombait dans \`getByPath\` (chemin \`[id, 'tags']\`) et échouait en 404, empêchant l'affichage des tags sur les pages — y compris les pages par défaut, pourtant bien taguées en base par \`seed:content\`. Les trois routes vivent maintenant directement sur \`PagesController\`, comme les autres sous-ressources de page (versions, permissions, commentaires), déclarées avant la route générique — même correctif que 0.21.6 pour les commentaires.
+- Correctif : la vue de lecture d'une page attendait le chargement complet des tags avant d'afficher quoi que ce soit (contenu compris) ; un échec ou une lenteur sur l'endpoint des tags de page bloquait toute la page au lieu de se limiter à l'absence de badges de tags.
+- Correctif du tool MCP \`wiki_create_tag\` : le schéma d'entrée n'acceptait que \`name\`, ignorant silencieusement une \`color\` transmise par le client alors que le backend la supporte déjà (même mécanisme que celui utilisé par \`seed:content\` pour les couleurs des tags par défaut). \`wiki_create_tag\` et \`wiki_list_tags\` exposent désormais \`color\`.
+
+</details>
+
+<details>
 <summary>0.27.9 — 2026-09-22</summary>
 
 - Correctif : \`seed:content\` retrouvait la page à mettre à jour par slug seul, sans tenir compte du parent, alors qu'un slug n'est unique que par parent (\`documentation\`, \`installation\`, \`configuration\`...) — une page existante sans rapport mais portant le même slug ailleurs dans l'arbre pouvait se faire écraser (titre/contenu), déplacer et retaguer par erreur à chaque déploiement. La recherche est désormais scopée par parent, comme partout ailleurs dans l'app.

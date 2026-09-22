@@ -45,6 +45,10 @@ import { CreateCommentDto } from '../comments/dto/in/create-comment.dto.js';
 import { CommentResponseDto } from '../comments/dto/out/comment-response.dto.js';
 import { CommentMapper } from '../comments/mapper/comment.mapper.js';
 import { CommentsService } from '../comments/services/comments.service.js';
+import { PageTagResponseDto } from '../tags/dto/out/page-tag-response.dto.js';
+import { TagSummaryDto } from '../tags/dto/out/tag-response.dto.js';
+import { TagMapper } from '../tags/mapper/tag.mapper.js';
+import { TagsService } from '../tags/services/tags.service.js';
 import { DiffVersionsDto } from '../versions/dto/in/diff-versions.dto.js';
 import { ListVersionsQueryDto } from '../versions/dto/in/list-versions-query.dto.js';
 import { DiffResponseDto } from '../versions/dto/out/diff-response.dto.js';
@@ -84,6 +88,7 @@ export class PagesController {
     private readonly versionsService: VersionsService,
     private readonly pagePermissionsService: PagePermissionsService,
     private readonly commentsService: CommentsService,
+    private readonly tagsService: TagsService,
   ) {}
 
   @Post()
@@ -722,6 +727,88 @@ export class PagesController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<void> {
     await this.pagesService.unfollowPage(id, user.id);
+  }
+
+  @Get(':id/tags')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: "Lister les tags d'une page" })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiOkResponse({ description: 'Tags associés à la page.' })
+  @ApiForbiddenResponse({
+    description: 'Page privée, accès non autorisé.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async listPageTags(
+    @Param('id') id: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<ResponseDto<TagSummaryDto[]>> {
+    const tags = await this.tagsService.listPageTags(id, user);
+    return TagMapper.toListResponse(tags);
+  }
+
+  @Post(':id/tags')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('editor', 'admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Associer un tag à une page' })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiBody({ schema: { properties: { tagId: { type: 'string' } } } })
+  @ApiCreatedResponse({ description: 'Association créée.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Rôle insuffisant (editor ou admin requis).',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page ou le tag n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'Le tag est déjà associé à cette page.',
+    type: ErrorResponseDto,
+  })
+  async tagPage(
+    @Param('id') id: string,
+    @Body() dto: { tagId: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResponseDto<PageTagResponseDto>> {
+    const pageTag = await this.tagsService.tagPage(id, dto.tagId, user);
+    return TagMapper.toPageTagResponse(pageTag);
+  }
+
+  @Delete(':id/tags/:tagId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('editor', 'admin')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Retirer un tag d'une page" })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiParam({ name: 'tagId', description: 'Identifiant du tag' })
+  @ApiNoContentResponse({ description: 'Association supprimée.' })
+  @ApiUnauthorizedResponse({
+    description: 'Authentification requise.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Rôle insuffisant (editor ou admin requis).',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "L'association n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async untagPage(
+    @Param('id') id: string,
+    @Param('tagId') tagId: string,
+  ): Promise<void> {
+    await this.tagsService.untagPage(id, tagId);
   }
 
   @Get('*path')
