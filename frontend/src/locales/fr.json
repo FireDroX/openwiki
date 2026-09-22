@@ -119,7 +119,8 @@
     "visibilityChangeFailed": "Échec du changement de visibilité.",
     "commentsEnabled": "Commentaires activés.",
     "commentsDisabled": "Commentaires désactivés.",
-    "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires."
+    "commentsEnabledChangeFailed": "Échec de la mise à jour des commentaires.",
+    "realtimeMergedToast": "Vos modifications ont été fusionnées automatiquement avec celles de quelqu'un d'autre."
   },
   "pageMetadataForm": {
     "titleLabel": "Titre",

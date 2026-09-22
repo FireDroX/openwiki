@@ -119,7 +119,8 @@
     "visibilityChangeFailed": "Failed to change visibility.",
     "commentsEnabled": "Comments enabled.",
     "commentsDisabled": "Comments disabled.",
-    "commentsEnabledChangeFailed": "Failed to update comments."
+    "commentsEnabledChangeFailed": "Failed to update comments.",
+    "realtimeMergedToast": "Your changes were automatically merged with someone else's."
   },
   "pageMetadataForm": {
     "titleLabel": "Title",

@@ -94,3 +94,19 @@ export async function followPage(id: string): Promise<void> {
 export async function unfollowPage(id: string): Promise<void> {
   await apiClient.delete(`/pages/${id}/follow`)
 }
+
+export interface MergePreviewPayload {
+  baseVersionId: string
+  content: string
+}
+
+export interface MergePreviewResult {
+  conflict: boolean
+  mergedContent: string
+  newBaseVersionId: string
+}
+
+export async function mergePreview(id: string, payload: MergePreviewPayload): Promise<MergePreviewResult> {
+  const { data } = await apiClient.post<ResponseDto<MergePreviewResult>>(`/pages/${id}/merge-preview`, payload)
+  return data.data
+}
