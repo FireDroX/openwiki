@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { SearchMatch, SearchRepository } from './search.repository.js';
+import {
+  SearchMatch,
+  SearchMatchTag,
+  SearchRepository,
+} from './search.repository.js';
 
 interface SearchRow {
   pageId: string;
@@ -14,6 +18,13 @@ interface CountRow {
   total: string;
 }
 
+interface TagRow {
+  pageId: string;
+  id: string;
+  name: string;
+  color: string;
+}
+
 const BOOLEAN_MODE_OPERATORS = /[+\-<>()~*"@]/g;
 
 function toBooleanModePrefixQuery(query: string): string {
@@ -22,6 +33,13 @@ function toBooleanModePrefixQuery(query: string): string {
     .filter(Boolean)
     .map((term) => `${term.replace(BOOLEAN_MODE_OPERATORS, '')}*`)
     .join(' ');
+}
+
+function toSearchTerms(query: string): string[] {
+  return query
+    .split(/\s+/)
+    .map((term) => term.replace(BOOLEAN_MODE_OPERATORS, ''))
+    .filter(Boolean);
 }
 
 @Injectable()
@@ -39,6 +57,15 @@ export class TypeormSearchRepository implements SearchRepository {
       : '';
     const offset = (page - 1) * limit;
     const booleanQuery = toBooleanModePrefixQuery(query);
+    const tagTerms = toSearchTerms(query);
+    const tagClause = tagTerms.length
+      ? `OR EXISTS (
+           SELECT 1 FROM page_tags pt
+           INNER JOIN tags t ON t.id = pt.tag_id
+           WHERE pt.page_id = p.id AND (${tagTerms.map(() => 't.name LIKE ?').join(' OR ')})
+         )`
+      : '';
+    const tagParams = tagTerms.map((term) => `${term}%`);
 
     const rows = await this.dataSource.query<SearchRow[]>(
       `SELECT
@@ -50,11 +77,11 @@ export class TypeormSearchRepository implements SearchRepository {
        FROM pages p
        INNER JOIN page_versions pv ON pv.id = p.current_version_id
        WHERE p.deleted_at IS NULL
-         AND MATCH (pv.title, pv.content) AGAINST (? IN BOOLEAN MODE)
+         AND (MATCH (pv.title, pv.content) AGAINST (? IN BOOLEAN MODE) ${tagClause})
          ${visibilityClause}
        ORDER BY score DESC
        LIMIT ? OFFSET ?`,
-      [booleanQuery, booleanQuery, limit, offset],
+      [booleanQuery, booleanQuery, ...tagParams, limit, offset],
     );
 
     const countRows = await this.dataSource.query<CountRow[]>(
@@ -62,11 +89,50 @@ export class TypeormSearchRepository implements SearchRepository {
        FROM pages p
        INNER JOIN page_versions pv ON pv.id = p.current_version_id
        WHERE p.deleted_at IS NULL
-         AND MATCH (pv.title, pv.content) AGAINST (? IN BOOLEAN MODE)
+         AND (MATCH (pv.title, pv.content) AGAINST (? IN BOOLEAN MODE) ${tagClause})
          ${visibilityClause}`,
-      [booleanQuery],
+      [booleanQuery, ...tagParams],
     );
 
-    return { items: rows, total: Number(countRows[0]?.total ?? 0) };
+    const tagsByPageId = await this.fetchTagsByPageId(
+      rows.map((row) => row.pageId),
+    );
+
+    return {
+      items: rows.map((row) => ({
+        ...row,
+        tags: tagsByPageId.get(row.pageId) ?? [],
+      })),
+      total: Number(countRows[0]?.total ?? 0),
+    };
+  }
+
+  private async fetchTagsByPageId(
+    pageIds: string[],
+  ): Promise<Map<string, SearchMatchTag[]>> {
+    const tagsByPageId = new Map<string, SearchMatchTag[]>();
+    if (pageIds.length === 0) {
+      return tagsByPageId;
+    }
+
+    const placeholders = pageIds.map(() => '?').join(', ');
+    const rows = await this.dataSource.query<TagRow[]>(
+      `SELECT
+         pt.page_id AS pageId,
+         t.id AS id,
+         t.name AS name,
+         t.color AS color
+       FROM page_tags pt
+       INNER JOIN tags t ON t.id = pt.tag_id
+       WHERE pt.page_id IN (${placeholders})`,
+      pageIds,
+    );
+
+    for (const row of rows) {
+      const tags = tagsByPageId.get(row.pageId) ?? [];
+      tags.push({ id: row.id, name: row.name, color: row.color });
+      tagsByPageId.set(row.pageId, tags);
+    }
+    return tagsByPageId;
   }
 }

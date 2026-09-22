@@ -357,6 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.28
+
+<details>
+<summary>0.28.0 — 2026-09-22</summary>
+
+- \`GET /search\` matche désormais aussi les tags des pages, en plus du titre et du contenu : une page taguée \`javascript\`, par exemple, remonte pour une recherche "javascript" même si ce mot n'apparaît pas dans son texte. Chaque résultat renvoie aussi la liste de ses tags.
+
+</details>
+
 ## Version 0.27
 
 <details>
