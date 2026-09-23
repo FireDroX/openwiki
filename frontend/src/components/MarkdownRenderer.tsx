@@ -128,7 +128,8 @@ const markdownComponents = {
 
 export function MarkdownRenderer({ content, mode = 'restricted' }: MarkdownRendererProps) {
   const scopeId = useId()
-  const remarkPlugins = mode === 'full' ? [remarkGfm, remarkMath] : [remarkGfm]
+  const remarkPlugins: Array<unknown> =
+    mode === 'full' ? [remarkGfm, [remarkMath, { singleDollarTextMath: false }]] : [remarkGfm]
   const rehypePlugins: Array<unknown> =
     mode === 'full'
       ? [rehypeRaw, rehypeHardenFullMode, [rehypeScopeStyles, scopeId], rehypeKatex]
@@ -137,7 +138,7 @@ export function MarkdownRenderer({ content, mode = 'restricted' }: MarkdownRende
   return (
     <div id={mode === 'full' ? scopeId : undefined} className={MARKDOWN_BODY_CLASSES}>
       <ReactMarkdown
-        remarkPlugins={remarkPlugins}
+        remarkPlugins={remarkPlugins as Parameters<typeof ReactMarkdown>[0]['remarkPlugins']}
         rehypePlugins={rehypePlugins as Parameters<typeof ReactMarkdown>[0]['rehypePlugins']}
         components={markdownComponents}
       >

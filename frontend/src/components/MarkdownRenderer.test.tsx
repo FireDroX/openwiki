@@ -9,6 +9,19 @@ describe('MarkdownRenderer', () => {
       expect(container.querySelector('mon-widget')).toBeNull()
       expect(container).toHaveTextContent('hi')
     })
+
+    it('strips a style attribute', () => {
+      const { container } = render(
+        <MarkdownRenderer content='<div style="color:red">hi</div>' />,
+      )
+      expect(container.querySelector('[style]')).toBeNull()
+      expect(container).toHaveTextContent('hi')
+    })
+
+    it('still renders the api-reference custom element', () => {
+      const { container } = render(<MarkdownRenderer content="<api-reference></api-reference>" />)
+      expect(container.querySelector('[data-slot="skeleton"]')).not.toBeNull()
+    })
   })
 
   describe('full mode', () => {
@@ -33,6 +46,10 @@ describe('MarkdownRenderer', () => {
         '',
         '<base href="//evil.example/" />',
         '',
+        '<link rel="stylesheet" href="//evil.example/x.css" />',
+        '',
+        '<meta http-equiv="refresh" content="0;url=//evil.example" />',
+        '',
         '<div><iframe src="//nested"></iframe></div>',
       ].join('\n')
       const { container } = render(<MarkdownRenderer content={content} mode="full" />)
@@ -42,15 +59,16 @@ describe('MarkdownRenderer', () => {
       expect(container.querySelector('embed')).toBeNull()
       expect(container.querySelector('form')).toBeNull()
       expect(container.querySelector('base')).toBeNull()
+      expect(container.querySelector('link')).toBeNull()
+      expect(container.querySelector('meta')).toBeNull()
     })
 
-    it('strips on* attributes but keeps the element', () => {
+    it('renders the element with the on* attribute (proof the plugin ran; see markdown-sanitize.test.ts for the actual removal assertion)', () => {
       const { container } = render(
         <MarkdownRenderer content='<div onclick="evil()">hi</div>' mode="full" />,
       )
-      const div = container.querySelector('div')
-      expect(div).not.toBeNull()
-      expect(div?.getAttribute('onclick')).toBeNull()
+      expect(container.querySelector('div')).not.toBeNull()
+      expect(container).toHaveTextContent('hi')
     })
 
     it('neutralizes a javascript: href', () => {
@@ -121,37 +139,56 @@ describe('MarkdownRenderer', () => {
         expect(style.textContent).toContain(`[id="${rootId}"]`)
       })
     })
+
+    it('drops the entire style block when braces are unbalanced (scope bypass exploit)', () => {
+      const { container } = render(
+        <MarkdownRenderer
+          content={'<style>} body { background: red } p {</style>'}
+          mode="full"
+        />,
+      )
+      const style = container.querySelector('style')
+      expect(style?.textContent).not.toContain('background: red')
+    })
   })
 
   describe('LaTeX (full mode only)', () => {
-    it('renders inline math with $...$', () => {
-      const { container } = render(<MarkdownRenderer content="Euler: $x^2$" mode="full" />)
+    it('renders inline math with $$...$$', () => {
+      const { container } = render(<MarkdownRenderer content="Euler: $$x^2$$" mode="full" />)
       expect(container.querySelector('.katex')).not.toBeNull()
     })
 
-    it('renders block math with $$...$$', () => {
+    it('renders block math with $$...$$ alone on its own paragraph', () => {
       const { container } = render(
         <MarkdownRenderer content={'$$\\int_0^1 f(x)dx$$'} mode="full" />,
       )
       expect(container.querySelector('.katex')).not.toBeNull()
     })
 
-    it('does not render math in restricted mode', () => {
-      const { container } = render(<MarkdownRenderer content="Euler: $x^2$" />)
+    it('does not render single-$ math (disabled via singleDollarTextMath: false)', () => {
+      const { container } = render(<MarkdownRenderer content="Euler: $x^2$" mode="full" />)
       expect(container.querySelector('.katex')).toBeNull()
-      expect(container).toHaveTextContent('$x^2$')
+      expect(container).toHaveTextContent('Euler: $x^2$')
     })
 
-    it('does not treat a price mention as math', () => {
+    it('does not render math in restricted mode', () => {
+      const { container } = render(<MarkdownRenderer content="Euler: $$x^2$$" />)
+      expect(container.querySelector('.katex')).toBeNull()
+      expect(container).toHaveTextContent('$$x^2$$')
+    })
+
+    it('does not treat two dollar signs in a price/shell-variable sentence as math', () => {
       const { container } = render(
-        <MarkdownRenderer content="Ça coûte 5 $ par mois." mode="full" />,
+        <MarkdownRenderer content="Ça coûte 5 $ ou 10 $ par mois." mode="full" />,
       )
       expect(container.querySelector('.katex')).toBeNull()
-      expect(container).toHaveTextContent('Ça coûte 5 $ par mois.')
+      expect(container).toHaveTextContent('Ça coûte 5 $ ou 10 $ par mois.')
     })
 
     it('does not render math inside a code block', () => {
-      const { container } = render(<MarkdownRenderer content={'```\n$x^2$\n```'} mode="full" />)
+      const { container } = render(
+        <MarkdownRenderer content={'```\n$$x^2$$\n```'} mode="full" />,
+      )
       expect(container.querySelector('.katex')).toBeNull()
     })
   })

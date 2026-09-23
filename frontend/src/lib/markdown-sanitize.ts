@@ -1,9 +1,9 @@
 import { visit, SKIP } from 'unist-util-visit'
 import type { Element, Root } from 'hast'
 
-const DENIED_TAG_NAMES = new Set(['script', 'iframe', 'object', 'embed', 'form', 'base'])
+const DENIED_TAG_NAMES = new Set(['script', 'iframe', 'object', 'embed', 'form', 'base', 'link', 'meta'])
 
-const URL_PROPERTY_NAMES = new Set(['href', 'src', 'action', 'formAction', 'cite', 'xlinkHref'])
+const URL_PROPERTY_NAMES = new Set(['href', 'src', 'action', 'formAction', 'cite', 'xLinkHref'])
 
 const DANGEROUS_PROTOCOLS = ['javascript:', 'vbscript:', 'data:text/html']
 
@@ -12,7 +12,8 @@ function isEventHandlerProperty(name: string): boolean {
 }
 
 function hasDangerousProtocol(value: string): boolean {
-  const normalized = value.trim().toLowerCase()
+  // eslint-disable-next-line no-control-regex
+  const normalized = value.replace(/[\u0000- ]/g, '').toLowerCase()
   return DANGEROUS_PROTOCOLS.some((protocol) => normalized.startsWith(protocol))
 }
 
