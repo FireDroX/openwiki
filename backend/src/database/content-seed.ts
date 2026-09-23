@@ -33,16 +33,128 @@ const PAGE_TREE_SEED: PageSeed[] = [
   {
     slug: 'documentation',
     title: 'Documentation',
-    content: `# Documentation
+    content: `<style>
+.doc-hero {
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  background: var(--card);
+  padding: 1.75rem 2rem;
+  margin: 1rem 0 1.75rem;
+}
+.doc-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+}
+.doc-hero p {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+.doc-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.doc-link-card {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  text-decoration: none;
+  color: var(--foreground);
+  background: var(--background);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.doc-link-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.doc-link-card strong {
+  display: block;
+  color: var(--primary);
+  margin-bottom: 0.2rem;
+}
+.doc-link-card span {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+</style>
 
-Bienvenue dans la documentation d'OpenWiki. Utilisez l'arborescence à gauche pour naviguer entre les sections.`,
+<div class="doc-hero">
+  <h1>Documentation OpenWiki</h1>
+  <p>Tout ce qu'il faut pour installer, configurer, déployer et utiliser OpenWiki — utilisez l'arborescence à gauche pour naviguer, ou les raccourcis ci-dessous.</p>
+</div>
+
+<div class="doc-link-grid">
+  <a class="doc-link-card" href="/pages/documentation/guide-demarrage">
+    <strong>Guide de démarrage</strong>
+    <span>Installer, configurer et lancer OpenWiki en local</span>
+  </a>
+  <a class="doc-link-card" href="/pages/documentation/guide-demarrage/deploiement">
+    <strong>Déploiement</strong>
+    <span>Mise en production avec Docker Compose et CI/CD</span>
+  </a>
+  <a class="doc-link-card" href="/pages/documentation/endpoints">
+    <strong>Endpoints</strong>
+    <span>Référence complète de l'API REST</span>
+  </a>
+  <a class="doc-link-card" href="/pages/documentation/mcp">
+    <strong>Intégration MCP</strong>
+    <span>Piloter le wiki depuis un assistant IA</span>
+  </a>
+  <a class="doc-link-card" href="/pages/documentation/marquages-disponibles">
+    <strong>Marquages disponibles</strong>
+    <span>Markdown, HTML/CSS et LaTeX dans le contenu d'une page</span>
+  </a>
+  <a class="doc-link-card" href="/pages/documentation/notes-de-version">
+    <strong>Notes de version</strong>
+    <span>Historique de tous les changements</span>
+  </a>
+</div>`,
     tags: ['documentation'],
     children: [
       {
         slug: 'guide-demarrage',
         title: 'Guide de démarrage',
         tags: ['guide', 'documentation'],
-        content: `# Guide de démarrage
+        content: `<style>
+.step-grid {
+  display: grid;
+  gap: 0.9rem;
+  margin: 1.25rem 0;
+}
+.step-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 1rem 1.25rem;
+}
+.step-number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.step-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+.step-card p {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+</style>
+
+# Guide de démarrage
 
 Ce guide couvre l'installation locale, la configuration, et le déploiement en production d'OpenWiki, de bout en bout.
 
@@ -52,33 +164,62 @@ OpenWiki est un monorepo pnpm avec deux packages : \`backend/\` (NestJS + TypeOR
 
 ## Étapes
 
-1. **Installation** — cloner le dépôt, installer les dépendances, démarrer MySQL et Minio via Docker. Voir [Installation](/pages/documentation/guide-demarrage/installation).
-2. **Configuration** — copier et renseigner les trois fichiers \`.env\` (racine, \`backend/\`, \`frontend/\`). Voir [Configuration](/pages/documentation/guide-demarrage/configuration).
-3. **Migrations** — appliquer le schéma de base de données :
+<div class="step-grid">
 
-\`\`\`bash
-cd backend
-pnpm run migration:run
-\`\`\`
+<div class="step-card">
+<div class="step-number">1</div>
+<div>
+<h3>Installation</h3>
+<p>Cloner le dépôt, installer les dépendances, démarrer MySQL et Minio via Docker. Voir <a href="/pages/documentation/guide-demarrage/installation">Installation</a>.</p>
+</div>
+</div>
 
-4. **Compte de test** (optionnel, développement uniquement) :
+<div class="step-card">
+<div class="step-number">2</div>
+<div>
+<h3>Configuration</h3>
+<p>Copier et renseigner les trois fichiers <code>.env</code> (racine, <code>backend/</code>, <code>frontend/</code>). Voir <a href="/pages/documentation/guide-demarrage/configuration">Configuration</a>.</p>
+</div>
+</div>
 
-\`\`\`bash
-pnpm run seed:dev
-\`\`\`
+<div class="step-card">
+<div class="step-number">3</div>
+<div>
+<h3>Migrations</h3>
+<p>Appliquer le schéma de base de données avec <code>cd backend && pnpm run migration:run</code>.</p>
+</div>
+</div>
 
-5. **Démarrage** (deux terminaux, depuis la racine du dépôt) :
+<div class="step-card">
+<div class="step-number">4</div>
+<div>
+<h3>Compte de test</h3>
+<p>Optionnel, développement uniquement : <code>pnpm run seed:dev</code>.</p>
+</div>
+</div>
 
-\`\`\`bash
-pnpm run back:dev   # backend sur http://localhost:3000
-pnpm run front:dev  # frontend sur http://localhost:5173
-\`\`\`
+<div class="step-card">
+<div class="step-number">5</div>
+<div>
+<h3>Démarrage</h3>
+<p>Deux terminaux depuis la racine du dépôt : <code>pnpm run back:dev</code> (backend sur :3000) et <code>pnpm run front:dev</code> (frontend sur :5173).</p>
+</div>
+</div>
 
-6. Ouvrir [http://localhost:5173](http://localhost:5173) et se connecter avec le compte créé à l'étape 4, ou s'inscrire via la page d'inscription.
+<div class="step-card">
+<div class="step-number">6</div>
+<div>
+<h3>Connexion</h3>
+<p>Ouvrir <a href="http://localhost:5173">http://localhost:5173</a> et se connecter avec le compte créé à l'étape 4, ou s'inscrire via la page d'inscription.</p>
+</div>
+</div>
+
+</div>
 
 ## Étapes suivantes
 
 - Créez votre première page depuis le bouton "Nouvelle page" de la barre latérale.
+- Consultez [Marquages disponibles](/pages/documentation/marquages-disponibles) pour écrire du Markdown, du HTML/CSS ou des formules LaTeX dans vos pages.
 - Consultez la page [Endpoints](/pages/documentation/endpoints) pour la référence complète de l'API.
 - Pour mettre OpenWiki en production, voir [Déploiement](/pages/documentation/guide-demarrage/deploiement).`,
         children: [
@@ -86,12 +227,37 @@ pnpm run front:dev  # frontend sur http://localhost:5173
             slug: 'installation',
             title: 'Installation',
             tags: ['installation'],
-            content: `# Installation
+            content: `<style>
+.callout {
+  display: flex;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.9rem 1.1rem;
+  margin: 1.1rem 0;
+}
+.callout-icon {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+.callout strong {
+  color: var(--primary);
+}
+</style>
+
+# Installation
 
 ## Prérequis
 
 - Node.js 22+, [pnpm](https://pnpm.io/) (version pinnée dans le champ \`packageManager\` de \`package.json\`)
 - Docker + Docker Compose (pour MySQL et Minio)
+
+<div class="callout">
+  <span class="callout-icon">💡</span>
+  <span><strong>Astuce.</strong> Les trois fichiers <code>.env</code> ne sont jamais commités — copiez chaque <code>.env.example</code> et renseignez les valeurs avant de lancer <code>docker compose</code>, sinon le démarrage échoue faute de variables.</span>
+</div>
 
 ## Installation locale (développement)
 
@@ -127,15 +293,30 @@ Passez à la page [Configuration](/pages/documentation/guide-demarrage/configura
             slug: 'configuration',
             title: 'Configuration',
             tags: ['configuration'],
-            content: `# Configuration
+            content: `<style>
+.config-table th {
+  color: var(--primary);
+  text-align: left;
+}
+.config-table code {
+  background: var(--muted);
+  padding: 0.1rem 0.35rem;
+  border-radius: calc(var(--radius) * 0.5);
+}
+</style>
+
+# Configuration
 
 La configuration se fait via trois fichiers \`.env\` distincts, chacun avec un \`.env.example\` à copier :
 
-| Fichier | Rôle |
-| --- | --- |
-| \`.env\` (racine) | Identifiants MySQL/Minio pour \`docker-compose.yml\` |
-| \`backend/.env\` | Port, URL du frontend (CORS), connexion DB, connexion Minio |
-| \`frontend/.env\` | \`VITE_API_URL\`, URL de base de l'API backend (préfixe \`/api\` inclus) |
+<table class="config-table">
+<thead><tr><th>Fichier</th><th>Rôle</th></tr></thead>
+<tbody>
+<tr><td><code>.env</code> (racine)</td><td>Identifiants MySQL/Minio pour <code>docker-compose.yml</code></td></tr>
+<tr><td><code>backend/.env</code></td><td>Port, URL du frontend (CORS), connexion DB, connexion Minio</td></tr>
+<tr><td><code>frontend/.env</code></td><td><code>VITE_API_URL</code>, URL de base de l'API backend (préfixe <code>/api</code> inclus)</td></tr>
+</tbody>
+</table>
 
 Une fois les trois fichiers renseignés, démarrez les serveurs de développement :
 
@@ -148,7 +329,33 @@ pnpm run front:dev  # frontend sur http://localhost:5173
             slug: 'deploiement',
             title: 'Déploiement',
             tags: ['installation', 'configuration'],
-            content: `# Déploiement
+            content: `<style>
+.callout {
+  display: flex;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.9rem 1.1rem;
+  margin: 1.1rem 0;
+}
+.callout.callout-warning {
+  border-left-color: var(--destructive);
+}
+.callout-icon {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+.callout strong {
+  color: var(--primary);
+}
+.callout-warning strong {
+  color: var(--destructive);
+}
+</style>
+
+# Déploiement
 
 ## Docker Compose en production
 
@@ -159,7 +366,10 @@ Deux versions du \`docker-compose\` sont disponibles :
 
 \`backend\`/\`frontend\` se construisent depuis \`backend/Dockerfile\`/\`frontend/Dockerfile\` (contexte = racine du dépôt, pour le workspace pnpm) dans les deux cas. \`backend/Dockerfile\` exécute \`backend/entrypoint.sh\` au démarrage du conteneur : \`pnpm run migration:run\` puis \`pnpm run seed:content\` puis \`node dist/main.js\` — si une migration échoue, le conteneur ne démarre pas (\`set -e\`), plutôt que de tourner sur un schéma incohérent. Le seed de contenu, lui, échoue sans bloquer le démarrage (\`|| echo ...\`, pas de \`set -e\` dessus) — utile sur le tout premier déploiement, où aucun utilisateur n'existe encore pour lui servir d'auteur ; il repasse au déploiement suivant, une fois le premier admin créé. Les deux sont idempotents : redémarrer sans changement ne fait rien.
 
-**Images/médias affichés dans les pages** : \`MINIO_ENDPOINT\` sert au backend pour parler à Minio en interne (ex. le nom du service Docker, injoignable depuis un navigateur) — si les images n'apparaissent pas côté client, c'est qu'il manque \`MINIO_PUBLIC_ENDPOINT\` (+ \`MINIO_PUBLIC_PORT\`/\`MINIO_PUBLIC_USE_SSL\`) dans \`backend/.env\`, pointant vers un hôte Minio joignable publiquement (ex. tunnel Cloudflare dédié) : c'est cette valeur, et seulement elle, qui sert à signer les URLs présignées données au navigateur. Sans elle, \`getPresignedUrl\` retombe sur \`MINIO_ENDPOINT\`, ce qui casse toute image en prod si celui-ci n'est pas un hôte public.
+<div class="callout callout-warning">
+  <span class="callout-icon">⚠️</span>
+  <span><strong>Images/médias affichés dans les pages.</strong> <code>MINIO_ENDPOINT</code> sert au backend pour parler à Minio en interne (ex. le nom du service Docker, injoignable depuis un navigateur) — si les images n'apparaissent pas côté client, c'est qu'il manque <code>MINIO_PUBLIC_ENDPOINT</code> (+ <code>MINIO_PUBLIC_PORT</code>/<code>MINIO_PUBLIC_USE_SSL</code>) dans <code>backend/.env</code>, pointant vers un hôte Minio joignable publiquement (ex. tunnel Cloudflare dédié) : c'est cette valeur, et seulement elle, qui sert à signer les URLs présignées données au navigateur. Sans elle, <code>getPresignedUrl</code> retombe sur <code>MINIO_ENDPOINT</code>, ce qui casse toute image en prod si celui-ci n'est pas un hôte public.</span>
+</div>
 
 **Sur le serveur, une seule fois (version complète) :**
 
@@ -200,7 +410,10 @@ docker run -d --name minio --network mariadb-network --restart unless-stopped \\
   minio/minio server /data --console-address ":9001"
 \`\`\`
 
-Ces trois fichiers \`.env\` ne sont **jamais commités** (\`.gitignore\`) : sur un premier \`git clone\` sans eux, \`docker compose up\` échoue (variables manquantes) — c'est attendu, pas un bug. Une fois créés à la main comme ci-dessus, tous les déploiements suivants (manuels ou automatiques via CI/CD) fonctionnent.
+<div class="callout">
+  <span class="callout-icon">💡</span>
+  <span>Ces trois fichiers <code>.env</code> ne sont <strong>jamais commités</strong> (<code>.gitignore</code>) : sur un premier <code>git clone</code> sans eux, <code>docker compose up</code> échoue (variables manquantes) — c'est attendu, pas un bug. Une fois créés à la main comme ci-dessus, tous les déploiements suivants (manuels ou automatiques via CI/CD) fonctionnent.</span>
+</div>
 
 ## CI/CD
 
@@ -241,7 +454,37 @@ La documentation ci-dessous est générée automatiquement à partir des routes 
         slug: 'mcp',
         title: 'Intégration MCP',
         tags: ['mcp'],
-        content: `# Intégration MCP
+        content: `<style>
+.callout {
+  display: flex;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--destructive);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.9rem 1.1rem;
+  margin: 1.1rem 0;
+}
+.callout-icon {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+.callout strong {
+  color: var(--destructive);
+}
+.scope-badge {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: calc(var(--radius) * 0.6);
+  padding: 0.1rem 0.5rem;
+}
+</style>
+
+# Intégration MCP
 
 OpenWiki expose un serveur [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) permettant à un assistant IA compatible (Claude Desktop, Claude Code, etc.) de piloter le wiki directement : créer et modifier des pages, gérer des tags, des utilisateurs, uploader des médias et lancer des recherches.
 
@@ -256,23 +499,29 @@ curl -X POST http://localhost:3000/api/admin/mcp/api-keys \\
   -d '{ "name": "Claude Desktop", "scopes": ["pages:read", "pages:write"] }'
 \`\`\`
 
-La clé en clair n'est affichée **qu'une seule fois**, à la création — copiez-la immédiatement, elle n'est plus jamais récupérable ensuite (seuls son nom, ses scopes et sa dernière utilisation restent visibles). Une clé peut être révoquée à tout moment depuis la même page.
+<div class="callout">
+  <span class="callout-icon">⚠️</span>
+  <span>La clé en clair n'est affichée <strong>qu'une seule fois</strong>, à la création — copiez-la immédiatement, elle n'est plus jamais récupérable ensuite (seuls son nom, ses scopes et sa dernière utilisation restent visibles). Une clé peut être révoquée à tout moment depuis la même page.</span>
+</div>
 
 ## 2. Scopes disponibles
 
 Chaque clé porte un ou plusieurs scopes, qui déterminent les tools visibles et utilisables :
 
-| Scope | Donne accès à |
-| --- | --- |
-| \`pages:read\` | Lire des pages, lister l'arborescence, rechercher |
-| \`pages:write\` | Créer, modifier, publier, supprimer des pages |
-| \`tags:read\` | Lister les tags |
-| \`tags:write\` | Créer des tags, (dé)taguer une page |
-| \`users:read\` | Lister les utilisateurs |
-| \`users:write\` | Créer un utilisateur, modifier son rôle |
-| \`media:read\` | Obtenir l'URL présignée d'un média |
-| \`media:write\` | Uploader une image |
-| \`search:read\` | Rechercher (\`pages:read\` suffit aussi) |
+<table>
+<thead><tr><th>Scope</th><th>Donne accès à</th></tr></thead>
+<tbody>
+<tr><td><span class="scope-badge">pages:read</span></td><td>Lire des pages, lister l'arborescence, rechercher</td></tr>
+<tr><td><span class="scope-badge">pages:write</span></td><td>Créer, modifier, publier, supprimer des pages</td></tr>
+<tr><td><span class="scope-badge">tags:read</span></td><td>Lister les tags</td></tr>
+<tr><td><span class="scope-badge">tags:write</span></td><td>Créer des tags, (dé)taguer une page</td></tr>
+<tr><td><span class="scope-badge">users:read</span></td><td>Lister les utilisateurs</td></tr>
+<tr><td><span class="scope-badge">users:write</span></td><td>Créer un utilisateur, modifier son rôle</td></tr>
+<tr><td><span class="scope-badge">media:read</span></td><td>Obtenir l'URL présignée d'un média</td></tr>
+<tr><td><span class="scope-badge">media:write</span></td><td>Uploader une image</td></tr>
+<tr><td><span class="scope-badge">search:read</span></td><td>Rechercher (<code>pages:read</code> suffit aussi)</td></tr>
+</tbody>
+</table>
 
 Un tool nécessitant un scope absent de la clé n'apparaît même pas dans \`tools/list\`.
 
@@ -352,10 +601,273 @@ Une fois connecté, le client peut lister les tools disponibles (\`tools/list\`)
 Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, entrée/sortie (tronquées), statut, message d'erreur. Consultable, filtrable par clé API, depuis [Administration → Journal d'activité MCP](/admin/mcp/audit-log).`,
       },
       {
+        slug: 'marquages-disponibles',
+        title: 'Marquages disponibles',
+        tags: ['guide', 'documentation'],
+        content: `<style>
+.markup-example {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 1rem 0 1.5rem;
+  background: var(--border);
+}
+.markup-example > div {
+  background: var(--background);
+  padding: 1rem;
+  min-width: 0;
+}
+.markup-example .markup-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.markup-example pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.8rem;
+}
+@media (max-width: 640px) {
+  .markup-example {
+    grid-template-columns: 1fr;
+  }
+}
+.mode-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+.mode-badge.pages-only {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.callout {
+  display: flex;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.9rem 1.1rem;
+  margin: 1.1rem 0;
+}
+.callout-icon {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+.callout strong {
+  color: var(--primary);
+}
+.deny-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+.deny-list code {
+  background: var(--destructive);
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: calc(var(--radius) * 0.6);
+  font-size: 0.8rem;
+}
+</style>
+
+# Marquages disponibles
+
+Le contenu d'une page est écrit en Markdown. Les pages (mais pas les commentaires — voir l'encart ci-dessous) supportent en plus du HTML et du CSS arbitraires, et des formules mathématiques en LaTeX. <span class="mode-badge pages-only">Pages uniquement</span>
+
+<div class="callout">
+  <span class="callout-icon">ℹ️</span>
+  <span>Les fonctionnalités marquées <span class="mode-badge pages-only">Pages uniquement</span> sur cette page (HTML/CSS libre, LaTeX) ne s'appliquent qu'au <strong>contenu des pages</strong>, réservé aux comptes editor/admin. Les <strong>commentaires</strong> restent en Markdown restreint pour tous les utilisateurs authentifiés.</span>
+</div>
+
+## Markdown de base
+
+La syntaxe [CommonMark](https://commonmark.org/) + [GFM](https://github.github.com/gfm/) habituelle fonctionne partout (pages et commentaires) : titres, listes, tableaux, blocs de code, liens, images, citations, texte barré, cases à cocher.
+
+<div class="markup-example">
+<div>
+<div class="markup-label">Markdown</div>
+<pre>## Titre
+- **gras**, *italique*, ~~barré~~
+- [lien](https://exemple.fr)
+- \`code en ligne\`
+| A | B |
+|---|---|
+| 1 | 2 |</pre>
+</div>
+<div>
+<div class="markup-label">Rendu</div>
+
+## Titre
+
+- **gras**, *italique*, ~~barré~~
+- [lien](https://exemple.fr)
+- \`code en ligne\`
+
+| A | B |
+|---|---|
+| 1 | 2 |
+
+</div>
+</div>
+
+## HTML et balises custom <span class="mode-badge pages-only">Pages uniquement</span>
+
+N'importe quelle balise HTML peut être écrite directement dans le contenu, y compris des balises custom inconnues (ex. pour styliser un composant maison). Seules ces balises sont retirées, ainsi que tout attribut \`on*\` (\`onclick\`, etc.) et les URLs \`javascript:\` :
+
+<div class="deny-list">
+<code>&lt;script&gt;</code>
+<code>&lt;iframe&gt;</code>
+<code>&lt;object&gt;</code>
+<code>&lt;embed&gt;</code>
+<code>&lt;form&gt;</code>
+<code>&lt;base&gt;</code>
+<code>&lt;link&gt;</code>
+<code>&lt;meta&gt;</code>
+</div>
+
+<div class="markup-example">
+<div>
+<div class="markup-label">Markdown</div>
+<pre>&lt;mon-badge&gt;Nouveau&lt;/mon-badge&gt;
+&lt;div style="color: var(--primary); font-weight: 700"&gt;
+  Du HTML avec un style inline.
+&lt;/div&gt;</pre>
+</div>
+<div>
+<div class="markup-label">Rendu</div>
+
+<mon-badge>Nouveau</mon-badge>
+
+<div style="color: var(--primary); font-weight: 700">
+  Du HTML avec un style inline.
+</div>
+
+</div>
+</div>
+
+## CSS scopé à la page <span class="mode-badge pages-only">Pages uniquement</span>
+
+Un bloc \`<style>\` écrit dans le contenu s'applique — mais uniquement au contenu de **cette page**. Techniquement, le CSS est automatiquement enveloppé dans la règle native [\`@scope\`](https://developer.mozilla.org/fr/docs/Web/CSS/@scope), pour qu'un sélecteur générique comme \`p { color: red }\` ne puisse jamais affecter la sidebar, la barre du haut, ou une autre page.
+
+<div class="markup-example">
+<div>
+<div class="markup-label">Markdown</div>
+<pre>&lt;style&gt;
+.exemple-carte {
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+}
+&lt;/style&gt;
+&lt;div class="exemple-carte"&gt;Carte stylée&lt;/div&gt;</pre>
+</div>
+<div>
+<div class="markup-label">Rendu</div>
+
+<style>
+.exemple-carte {
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+}
+</style>
+
+<div class="exemple-carte">Carte stylée</div>
+
+</div>
+</div>
+
+## Formules LaTeX <span class="mode-badge pages-only">Pages uniquement</span>
+
+Les formules mathématiques s'écrivent entre doubles dollars : \`$$formule$$\` — en ligne dans une phrase, ou seule sur son propre paragraphe pour un rendu centré en bloc. Rendu via [KaTeX](https://katex.org/).
+
+<div class="callout">
+  <span class="callout-icon">ℹ️</span>
+  <span>Seul le double dollar <code>$$...$$</code> est reconnu — pas de simple dollar <code>$...$</code>, qui n'offre aucune protection fiable contre les faux positifs (un prix comme "5 $ ou 10 $" serait interprété comme une formule).</span>
+</div>
+
+<div class="markup-example">
+<div>
+<div class="markup-label">Markdown</div>
+<pre>Formule d'Euler : $$e^{i\\pi} + 1 = 0$$
+$$
+\\int_0^1 x^2 \\, dx = \\frac{1}{3}
+$$</pre>
+</div>
+<div>
+<div class="markup-label">Rendu</div>
+
+Formule d'Euler : $$e^{i\\pi} + 1 = 0$$
+
+$$
+\\int_0^1 x^2 \\, dx = \\frac{1}{3}
+$$
+
+</div>
+</div>
+
+## Récapitulatif
+
+| Marquage | Pages | Commentaires |
+| --- | --- | --- |
+| Markdown / GFM | ✅ | ✅ |
+| HTML arbitraire (sauf balises interdites) | ✅ | ❌ (HTML très restreint) |
+| CSS (\`<style>\`, scopé) | ✅ | ❌ |
+| LaTeX (\`$$...$$\`) | ✅ | ❌ |`,
+      },
+      {
         slug: 'notes-de-version',
         title: 'Notes de version',
         tags: ['changelog'],
         content: `# Notes de version
+
+## Version 0.29
+
+<details>
+<summary>0.29.3 — 2026-09-23</summary>
+
+- Les pages, leur historique de versions, et l'aperçu de l'éditeur affichent désormais le HTML/CSS personnalisé et les formules LaTeX du contenu — les commentaires restent inchangés (rendu restreint comme avant).
+
+</details>
+
+<details>
+<summary>0.29.2 — 2026-09-23</summary>
+
+- Support des formules mathématiques en LaTeX dans le contenu des pages, avec la syntaxe \`$formule$\` pour une formule en ligne et \`$$formule$$\` pour une formule en bloc.
+
+</details>
+
+<details>
+<summary>0.29.1 — 2026-09-23</summary>
+
+- Le CSS personnalisé écrit dans une page reste désormais cantonné à cette page : il ne peut plus affecter le reste de l'interface (sidebar, barre du haut, autres pages).
+
+</details>
+
+<details>
+<summary>0.29.0 — 2026-09-23</summary>
+
+- Nouvelle base technique pour un rendu HTML plus permissif sur le contenu des pages (balises et attributs personnalisés autorisés, sauf ceux posant un risque réel : \`<script>\`, \`<iframe>\`, \`<object>\`, \`<embed>\`, \`<form>\`, \`<base>\`, et tout attribut \`on*\`).
+
+</details>
 
 ## Version 0.28
 

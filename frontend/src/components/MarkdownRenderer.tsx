@@ -1,10 +1,15 @@
-import { type ComponentProps, type ReactNode, useEffect, useState } from 'react'
+import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import 'katex/dist/katex.min.css'
 import { ApiReferenceViewer } from '#components/ApiReferenceViewer'
 import { PdfPreview } from '#components/PdfPreview'
+import { rehypeHardenFullMode } from '#lib/markdown-sanitize'
+import { rehypeScopeStyles } from '#lib/markdown-css-scope'
 import { cn } from '#lib/utils'
 
 function isPdfUrl(href: string): boolean {
@@ -71,6 +76,7 @@ function CodeBlock({ language, code }: CodeBlockProps) {
 
 interface MarkdownRendererProps {
   content: string
+  mode?: 'full' | 'restricted'
 }
 
 const MARKDOWN_BODY_CLASSES = cn(
@@ -120,12 +126,20 @@ const markdownComponents = {
   },
 }
 
-export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, mode = 'restricted' }: MarkdownRendererProps) {
+  const scopeId = useId()
+  const remarkPlugins: Array<unknown> =
+    mode === 'full' ? [remarkGfm, [remarkMath, { singleDollarTextMath: false }]] : [remarkGfm]
+  const rehypePlugins: Array<unknown> =
+    mode === 'full'
+      ? [rehypeRaw, rehypeHardenFullMode, [rehypeScopeStyles, scopeId], rehypeKatex]
+      : [rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]]
+
   return (
-    <div className={MARKDOWN_BODY_CLASSES}>
+    <div id={mode === 'full' ? scopeId : undefined} className={MARKDOWN_BODY_CLASSES}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]]}
+        remarkPlugins={remarkPlugins as Parameters<typeof ReactMarkdown>[0]['remarkPlugins']}
+        rehypePlugins={rehypePlugins as Parameters<typeof ReactMarkdown>[0]['rehypePlugins']}
         components={markdownComponents}
       >
         {content}
