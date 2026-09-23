@@ -52,7 +52,7 @@ export function VersionContentDialog({ pageId, versionId }: VersionContentDialog
           {version && <DialogDescription>{formatDateTime(version.createdAt)}</DialogDescription>}
         </DialogHeader>
         {version ? (
-          <MarkdownRenderer content={version.content} />
+          <MarkdownRenderer content={version.content} mode="full" />
         ) : (
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />

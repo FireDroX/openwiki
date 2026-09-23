@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.29
 
 <details>
+<summary>0.29.3 — 2026-09-23</summary>
+
+- Les pages, leur historique de versions, et l'aperçu de l'éditeur affichent désormais le HTML/CSS personnalisé et les formules LaTeX du contenu — les commentaires restent inchangés (rendu restreint comme avant).
+
+</details>
+
+<details>
 <summary>0.29.2 — 2026-09-23</summary>
 
 - Support des formules mathématiques en LaTeX dans le contenu des pages, avec la syntaxe \`$formule$\` pour une formule en ligne et \`$$formule$$\` pour une formule en bloc.

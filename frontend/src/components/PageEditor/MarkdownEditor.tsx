@@ -187,7 +187,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
               mobileView === 'edit' && 'hidden',
             )}
           >
-            <MarkdownRenderer content={debouncedValue} />
+            <MarkdownRenderer content={debouncedValue} mode="full" />
           </div>
         </div>
       </div>

@@ -158,7 +158,7 @@ export function PageView() {
           </Button>
         </div>
       )}
-      <MarkdownRenderer content={page.content} />
+      <MarkdownRenderer content={page.content} mode="full" />
       {page.commentsEnabled && <CommentThread pageId={page.id} />}
       <ContributorsList pageId={page.id} />
     </article>
