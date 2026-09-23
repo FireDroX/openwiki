@@ -3,8 +3,26 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { VersionNotFoundException } from '../../common/exceptions/pages/version-not-found.exception.js';
 import { ValidationException } from '../../common/exceptions/validation.exception.js';
 import { PageVersion } from '../../pages/entities/page-version.entity.js';
+import { User } from '../../users/entities/user.entity.js';
+import { UsersService } from '../../users/services/users.service.js';
 import type { VersionsRepository } from '../persistence/version.repository.js';
 import { VersionsService } from './versions.service.js';
+
+function buildUser(overrides: Partial<User> = {}): User {
+  return {
+    id: 'user-1',
+    email: 'user@example.com',
+    displayName: 'User One',
+    passwordHash: 'hash',
+    role: 'reader',
+    avatarUrl: null,
+    failedLoginAttempts: 0,
+    lockedUntil: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
 
 function buildVersion(overrides: Partial<PageVersion> = {}): PageVersion {
   return {
@@ -24,18 +42,22 @@ describe('VersionsService', () => {
   let versionsRepository: {
     [K in keyof VersionsRepository]: Mock<VersionsRepository[K]>;
   };
+  let usersService: { findById: Mock<UsersService['findById']> };
 
   beforeEach(async () => {
     versionsRepository = {
       create: vi.fn(),
       findAllByPageId: vi.fn(),
       findByIdAndPageId: vi.fn(),
+      findContributorsByPageId: vi.fn(),
     };
+    usersService = { findById: vi.fn() };
 
     const module = await Test.createTestingModule({
       providers: [
         VersionsService,
         { provide: 'VersionsRepository', useValue: versionsRepository },
+        { provide: UsersService, useValue: usersService },
       ],
     }).compile();
 
@@ -134,6 +156,63 @@ describe('VersionsService', () => {
         changeSummary: 'summary',
       });
       expect(result).toBe(created);
+    });
+  });
+
+  describe('getContributors', () => {
+    it('resolves each contributor to their display name and avatar, most recent first', async () => {
+      versionsRepository.findContributorsByPageId.mockResolvedValue([
+        { authorId: 'user-1', lastContributedAt: new Date('2026-01-02') },
+        { authorId: 'user-2', lastContributedAt: new Date('2026-01-01') },
+      ]);
+      usersService.findById.mockImplementation((id: string) =>
+        Promise.resolve(
+          buildUser({
+            id,
+            displayName: id === 'user-1' ? 'User One' : 'User Two',
+            avatarUrl:
+              id === 'user-1' ? 'https://example.com/avatar.png' : null,
+          }),
+        ),
+      );
+
+      const contributors = await service.getContributors('page-1');
+
+      expect(contributors).toEqual([
+        {
+          id: 'user-1',
+          displayName: 'User One',
+          avatarUrl: 'https://example.com/avatar.png',
+        },
+        { id: 'user-2', displayName: 'User Two', avatarUrl: null },
+      ]);
+    });
+
+    it('skips contributors whose user no longer exists', async () => {
+      versionsRepository.findContributorsByPageId.mockResolvedValue([
+        { authorId: 'user-1', lastContributedAt: new Date() },
+        { authorId: 'deleted-user', lastContributedAt: new Date() },
+      ]);
+      usersService.findById.mockImplementation((id: string) =>
+        id === 'user-1'
+          ? Promise.resolve(buildUser({ id }))
+          : Promise.reject(new Error('not found')),
+      );
+
+      const contributors = await service.getContributors('page-1');
+
+      expect(contributors).toEqual([
+        { id: 'user-1', displayName: 'User One', avatarUrl: null },
+      ]);
+    });
+
+    it('returns an empty array when the page has no versions', async () => {
+      versionsRepository.findContributorsByPageId.mockResolvedValue([]);
+
+      const contributors = await service.getContributors('page-1');
+
+      expect(contributors).toEqual([]);
+      expect(usersService.findById).not.toHaveBeenCalled();
     });
   });
 });

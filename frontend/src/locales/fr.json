@@ -443,6 +443,9 @@
     "responses": "Réponses",
     "loadError": "Impossible de charger la documentation de l'API."
   },
+  "contributors": {
+    "title": "Contributeurs"
+  },
   "comments": {
     "title_one": "{{count}} commentaire",
     "title_other": "{{count}} commentaires",

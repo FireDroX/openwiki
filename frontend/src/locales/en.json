@@ -443,6 +443,9 @@
     "responses": "Responses",
     "loadError": "Unable to load the API documentation."
   },
+  "contributors": {
+    "title": "Contributors"
+  },
   "comments": {
     "title_one": "{{count}} comment",
     "title_other": "{{count}} comments",

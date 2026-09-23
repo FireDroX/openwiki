@@ -13,6 +13,11 @@ export interface FindAllByPageResult {
   total: number;
 }
 
+export interface ContributorRow {
+  authorId: string;
+  lastContributedAt: Date;
+}
+
 export interface VersionsRepository {
   create(input: CreateVersionInput): Promise<PageVersion>;
   findAllByPageId(
@@ -21,4 +26,5 @@ export interface VersionsRepository {
     limit: number,
   ): Promise<FindAllByPageResult>;
   findByIdAndPageId(id: string, pageId: string): Promise<PageVersion | null>;
+  findContributorsByPageId(pageId: string): Promise<ContributorRow[]>;
 }
