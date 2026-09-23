@@ -150,6 +150,16 @@ describe('MarkdownRenderer', () => {
       const style = container.querySelector('style')
       expect(style?.textContent).not.toContain('background: red')
     })
+
+    it('drops a style block where an unterminated string hides an unbalanced brace', () => {
+      const { container } = render(
+        <MarkdownRenderer
+          content={'<style>p { content: "\nbroken } body { background: red } p {" }</style>\n\nhello'}
+          mode="full"
+        />,
+      )
+      expect(container.querySelector('style')?.textContent).not.toContain('background: red')
+    })
   })
 
   describe('LaTeX (full mode only)', () => {

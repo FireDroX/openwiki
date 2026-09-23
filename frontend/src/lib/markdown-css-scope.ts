@@ -9,28 +9,38 @@ function scrubDangerousCss(css: string): string {
 
 function hasBalancedBraces(css: string): boolean {
   let depth = 0
-  let i = 0
-  const length = css.length
+  let quote: '"' | "'" | null = null
+  let index = 0
 
-  while (i < length) {
-    const char = css[i]
+  while (index < css.length) {
+    const char = css[index]
 
-    if (char === '/' && css[i + 1] === '*') {
-      const end = css.indexOf('*/', i + 2)
-      i = end === -1 ? length : end + 2
+    if (quote) {
+      if (char === '\\' && index + 1 < css.length) {
+        index += 2
+        continue
+      }
+      if (char === '\n' || char === '\r' || char === '\f') {
+        quote = null
+        index += 1
+        continue
+      }
+      if (char === quote) {
+        quote = null
+      }
+      index += 1
       continue
     }
 
     if (char === '"' || char === "'") {
-      const quote = char
-      i += 1
-      while (i < length && css[i] !== quote) {
-        if (css[i] === '\\') {
-          i += 1
-        }
-        i += 1
-      }
-      i += 1
+      quote = char
+      index += 1
+      continue
+    }
+
+    if (char === '/' && css[index + 1] === '*') {
+      const end = css.indexOf('*/', index + 2)
+      index = end === -1 ? css.length : end + 2
       continue
     }
 
@@ -43,10 +53,10 @@ function hasBalancedBraces(css: string): boolean {
       }
     }
 
-    i += 1
+    index += 1
   }
 
-  return depth === 0
+  return depth === 0 && quote === null
 }
 
 export function rehypeScopeStyles(scopeId: string) {
