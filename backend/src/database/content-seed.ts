@@ -357,6 +357,15 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
         tags: ['changelog'],
         content: `# Notes de version
 
+## Version 0.29
+
+<details>
+<summary>0.29.0 — 2026-09-23</summary>
+
+- Nouvelle base technique pour un rendu HTML plus permissif sur le contenu des pages (balises et attributs personnalisés autorisés, sauf ceux posant un risque réel : \`<script>\`, \`<iframe>\`, \`<object>\`, \`<embed>\`, \`<form>\`, \`<base>\`, et tout attribut \`on*\`).
+
+</details>
+
 ## Version 0.28
 
 <details>

@@ -5,6 +5,7 @@ import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
 import { ApiReferenceViewer } from '#components/ApiReferenceViewer'
 import { PdfPreview } from '#components/PdfPreview'
+import { rehypeHardenFullMode } from '#lib/markdown-sanitize'
 import { cn } from '#lib/utils'
 
 function isPdfUrl(href: string): boolean {
@@ -71,6 +72,7 @@ function CodeBlock({ language, code }: CodeBlockProps) {
 
 interface MarkdownRendererProps {
   content: string
+  mode?: 'full' | 'restricted'
 }
 
 const MARKDOWN_BODY_CLASSES = cn(
@@ -120,12 +122,17 @@ const markdownComponents = {
   },
 }
 
-export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, mode = 'restricted' }: MarkdownRendererProps) {
+  const rehypePlugins: Array<unknown> =
+    mode === 'full'
+      ? [rehypeRaw, rehypeHardenFullMode]
+      : [rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]]
+
   return (
     <div className={MARKDOWN_BODY_CLASSES}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]]}
+        rehypePlugins={rehypePlugins as Parameters<typeof ReactMarkdown>[0]['rehypePlugins']}
         components={markdownComponents}
       >
         {content}
