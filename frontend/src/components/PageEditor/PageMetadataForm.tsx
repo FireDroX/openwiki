@@ -114,7 +114,7 @@ export function PageMetadataForm({
                 />
               </div>
             ) : (
-              <p className="truncate text-sm text-muted-foreground">
+              <p dir="rtl" className="truncate text-left text-sm text-muted-foreground">
                 {pathPrefix}
                 {field.value}
               </p>
@@ -129,10 +129,13 @@ export function PageMetadataForm({
         <Button
           type="button"
           variant="outline"
-          className="justify-start"
+          className="justify-start overflow-hidden"
           onClick={() => setParentPickerOpen(true)}
         >
-          <FolderTree /> {parentLabel}
+          <FolderTree />
+          <span dir="rtl" className="min-w-0 flex-1 truncate text-left">
+            {parentLabel}
+          </span>
         </Button>
       </Field>
       <Controller
@@ -177,17 +180,31 @@ export function PageMetadataForm({
           </label>
         </Field>
       )}
-      <CommandDialog open={parentPickerOpen} onOpenChange={setParentPickerOpen} title={t('pageMetadataForm.choosePage')}>
+      <CommandDialog
+        open={parentPickerOpen}
+        onOpenChange={setParentPickerOpen}
+        title={t('pageMetadataForm.choosePage')}
+        className="left-4 right-4 w-auto max-w-none translate-x-0 sm:left-1/2 sm:right-auto sm:w-fit sm:max-w-[calc(100%-2rem)] sm:-translate-x-1/2"
+      >
         <Command>
           <CommandInput placeholder={t('pageMetadataForm.searchPage')} />
           <CommandList>
             <CommandEmpty>{t('pageMetadataForm.noPageFound')}</CommandEmpty>
             <CommandGroup>
-              <CommandItem value={t('pageMetadataForm.none')} onSelect={() => selectParent(null)}>
+              <CommandItem
+                value={t('pageMetadataForm.none')}
+                onSelect={() => selectParent(null)}
+                className="whitespace-nowrap"
+              >
                 {t('pageMetadataForm.none')}
               </CommandItem>
               {parentOptions.map((node) => (
-                <CommandItem key={node.id} value={node.path} onSelect={() => selectParent(node.id)}>
+                <CommandItem
+                  key={node.id}
+                  value={node.path}
+                  onSelect={() => selectParent(node.id)}
+                  className="whitespace-nowrap"
+                >
                   {node.path}
                 </CommandItem>
               ))}
