@@ -43,3 +43,7 @@ export async function listMediaLibrary(query: MediaLibraryQuery = {}): Promise<M
 export async function deleteMedia(id: string): Promise<void> {
   await apiClient.delete(`/media/${id}`)
 }
+
+export function mediaRawUrl(id: string): string {
+  return `${import.meta.env.VITE_API_URL}/media/${id}/raw`
+}

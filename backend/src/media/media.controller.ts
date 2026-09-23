@@ -7,12 +7,14 @@ import {
   HttpStatus,
   Param,
   Post,
+  Res,
   UploadedFile,
   UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -174,6 +176,35 @@ export class MediaController {
       user,
     );
     return AttachmentMapper.toPresignedUrlResponse(url, expiresIn);
+  }
+
+  @Get(':id/raw')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({
+    summary: 'Rediriger vers le fichier via une URL présignée fraîche',
+    description:
+      "URL stable à référencer depuis le contenu Markdown des pages : régénère une URL présignée à chaque appel et redirige (302), donc ne devient jamais invalide contrairement à une URL présignée embarquée telle quelle.",
+  })
+  @ApiParam({ name: 'id', description: "Identifiant de l'attachment" })
+  @ApiBadRequestResponse({
+    description: "L'id n'est pas un UUID valide.",
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Page privée, accès non autorisé.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "Le média n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async getRaw(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<void> {
+    const { url } = await this.mediaService.getPresignedUrl(id, user);
+    res.redirect(url);
   }
 
   @Delete(':id')

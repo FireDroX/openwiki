@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { MarkdownEditorHandle } from '#components/PageEditor/MarkdownEditor'
-import { uploadFile } from '#api/media'
+import { mediaRawUrl, uploadFile } from '#api/media'
 import { extractErrorMessage } from '#lib/api-errors'
 
 export function uploadErrorMessage(error: unknown, t: TFunction): string {
@@ -33,7 +33,7 @@ export function useFileUpload(editorRef: RefObject<MarkdownEditorHandle | null>,
 
       try {
         const attachment = await uploadFile(file, pageId)
-        const markdown = `${isImage ? '!' : ''}[${attachment.filename}](${attachment.url})`
+        const markdown = `${isImage ? '!' : ''}[${attachment.filename}](${mediaRawUrl(attachment.id)})`
         editorRef.current?.replaceText(placeholder, markdown)
       } catch (error) {
         editorRef.current?.replaceText(placeholder, '')
