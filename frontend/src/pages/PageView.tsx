@@ -128,10 +128,10 @@ export function PageView() {
 
   return (
     <article className="space-y-6 p-8">
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-4">
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <PageBreadcrumb title={page.title} parentId={page.parentId} />
-          <div className="flex shrink-0 gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
             {user && <FollowButton key={page.id} pageId={page.id} initialFollowed={page.isFollowed} />}
             <Button variant="outline" size="sm" asChild>
               <Link to={`/history/${pathSegments.join('/')}`}>

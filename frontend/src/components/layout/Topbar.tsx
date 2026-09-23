@@ -16,6 +16,7 @@ import { GLOBAL_SEARCH_OPEN_EVENT } from '#components/GlobalSearchCommand'
 import { UserRole } from '#api/auth'
 import { useAuth } from '#hooks/useAuth'
 import { useCurrentUser } from '#hooks/useCurrentUser'
+import { cn } from '#lib/utils'
 
 interface TopbarProps {
   onOpenSidebar: () => void
@@ -38,7 +39,10 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
       </Link>
       <button
         type="button"
-        className="flex max-w-md flex-1 items-center"
+        className={cn(
+          'max-w-md flex-1 items-center',
+          status === 'authenticated' ? 'flex' : 'hidden sm:flex'
+        )}
         onClick={() => window.dispatchEvent(new Event(GLOBAL_SEARCH_OPEN_EVENT))}
       >
         <InputGroup className="pointer-events-none w-full">
@@ -92,11 +96,16 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 text-xs sm:px-2.5 sm:text-[0.8rem]"
+            asChild
+          >
             <Link to="/login">{t('auth.loginTab')}</Link>
           </Button>
-          <Button size="sm" asChild>
+          <Button size="sm" className="px-2 text-xs sm:px-2.5 sm:text-[0.8rem]" asChild>
             <Link to="/login?tab=register">{t('auth.registerTab')}</Link>
           </Button>
         </div>
