@@ -1,8 +1,11 @@
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import 'katex/dist/katex.min.css'
 import { ApiReferenceViewer } from '#components/ApiReferenceViewer'
 import { PdfPreview } from '#components/PdfPreview'
 import { rehypeHardenFullMode } from '#lib/markdown-sanitize'
@@ -125,15 +128,16 @@ const markdownComponents = {
 
 export function MarkdownRenderer({ content, mode = 'restricted' }: MarkdownRendererProps) {
   const scopeId = useId()
+  const remarkPlugins = mode === 'full' ? [remarkGfm, remarkMath] : [remarkGfm]
   const rehypePlugins: Array<unknown> =
     mode === 'full'
-      ? [rehypeRaw, rehypeHardenFullMode, [rehypeScopeStyles, scopeId]]
+      ? [rehypeRaw, rehypeHardenFullMode, [rehypeScopeStyles, scopeId], rehypeKatex]
       : [rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]]
 
   return (
     <div id={mode === 'full' ? scopeId : undefined} className={MARKDOWN_BODY_CLASSES}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={remarkPlugins}
         rehypePlugins={rehypePlugins as Parameters<typeof ReactMarkdown>[0]['rehypePlugins']}
         components={markdownComponents}
       >

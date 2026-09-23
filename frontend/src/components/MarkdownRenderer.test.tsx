@@ -122,4 +122,37 @@ describe('MarkdownRenderer', () => {
       })
     })
   })
+
+  describe('LaTeX (full mode only)', () => {
+    it('renders inline math with $...$', () => {
+      const { container } = render(<MarkdownRenderer content="Euler: $x^2$" mode="full" />)
+      expect(container.querySelector('.katex')).not.toBeNull()
+    })
+
+    it('renders block math with $$...$$', () => {
+      const { container } = render(
+        <MarkdownRenderer content={'$$\\int_0^1 f(x)dx$$'} mode="full" />,
+      )
+      expect(container.querySelector('.katex')).not.toBeNull()
+    })
+
+    it('does not render math in restricted mode', () => {
+      const { container } = render(<MarkdownRenderer content="Euler: $x^2$" />)
+      expect(container.querySelector('.katex')).toBeNull()
+      expect(container).toHaveTextContent('$x^2$')
+    })
+
+    it('does not treat a price mention as math', () => {
+      const { container } = render(
+        <MarkdownRenderer content="Ça coûte 5 $ par mois." mode="full" />,
+      )
+      expect(container.querySelector('.katex')).toBeNull()
+      expect(container).toHaveTextContent('Ça coûte 5 $ par mois.')
+    })
+
+    it('does not render math inside a code block', () => {
+      const { container } = render(<MarkdownRenderer content={'```\n$x^2$\n```'} mode="full" />)
+      expect(container.querySelector('.katex')).toBeNull()
+    })
+  })
 })

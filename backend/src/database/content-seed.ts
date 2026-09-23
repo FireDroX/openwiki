@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.29
 
 <details>
+<summary>0.29.2 — 2026-09-23</summary>
+
+- Support des formules mathématiques en LaTeX dans le contenu des pages, avec la syntaxe \`$formule$\` pour une formule en ligne et \`$$formule$$\` pour une formule en bloc.
+
+</details>
+
+<details>
 <summary>0.29.1 — 2026-09-23</summary>
 
 - Le CSS personnalisé écrit dans une page reste désormais cantonné à cette page : il ne peut plus affecter le reste de l'interface (sidebar, barre du haut, autres pages).
