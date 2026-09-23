@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PageVersion } from '../../pages/entities/page-version.entity.js';
 import {
+  ContributorRow,
   CreateVersionInput,
   FindAllByPageResult,
   VersionsRepository,
@@ -36,5 +37,21 @@ export class TypeormVersionsRepository implements VersionsRepository {
 
   findByIdAndPageId(id: string, pageId: string): Promise<PageVersion | null> {
     return this.repository.findOne({ where: { id, pageId } });
+  }
+
+  async findContributorsByPageId(pageId: string): Promise<ContributorRow[]> {
+    const rows = await this.repository
+      .createQueryBuilder('version')
+      .select('version.authorId', 'authorId')
+      .addSelect('MAX(version.createdAt)', 'lastContributedAt')
+      .where('version.pageId = :pageId', { pageId })
+      .groupBy('version.authorId')
+      .orderBy('lastContributedAt', 'DESC')
+      .getRawMany<{ authorId: string; lastContributedAt: Date }>();
+
+    return rows.map((row) => ({
+      authorId: row.authorId,
+      lastContributedAt: new Date(row.lastContributedAt),
+    }));
   }
 }

@@ -32,7 +32,7 @@ import {
 } from '#components/ui/select'
 import { MediaLibraryUploadTab } from '#components/PageEditor/MediaLibraryUploadTab'
 import { PdfPreview } from '#components/PdfPreview'
-import { deleteMedia, listMediaLibrary, type AttachmentDto } from '#api/media'
+import { deleteMedia, listMediaLibrary, mediaRawUrl, type AttachmentDto } from '#api/media'
 import { useDebouncedValue } from '#hooks/useDebouncedValue'
 import { extractErrorMessage } from '#lib/api-errors'
 
@@ -40,9 +40,8 @@ const PAGE_SIZE = 24
 const SEARCH_DEBOUNCE_MS = 300
 
 function toMarkdown(item: AttachmentDto): string {
-  return item.mimeType.startsWith('image/')
-    ? `![${item.filename}](${item.url})`
-    : `[${item.filename}](${item.url})`
+  const url = mediaRawUrl(item.id)
+  return item.mimeType.startsWith('image/') ? `![${item.filename}](${url})` : `[${item.filename}](${url})`
 }
 
 interface MediaLibraryPickerProps {

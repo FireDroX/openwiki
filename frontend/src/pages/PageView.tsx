@@ -7,6 +7,7 @@ import { MarkdownRenderer } from '#components/MarkdownRenderer'
 import { Skeleton } from '#components/ui/skeleton'
 import { PageBreadcrumb } from '#components/layout/PageBreadcrumb'
 import { CommentThread } from '#components/PageView/CommentThread'
+import { ContributorsList } from '#components/PageView/ContributorsList'
 import { FollowButton } from '#components/PageView/FollowButton'
 import { PageTagList } from '#components/PageView/PageTagList'
 import { useAuth } from '#hooks/useAuth'
@@ -159,6 +160,7 @@ export function PageView() {
       )}
       <MarkdownRenderer content={page.content} />
       {page.commentsEnabled && <CommentThread pageId={page.id} />}
+      <ContributorsList pageId={page.id} />
     </article>
   )
 }

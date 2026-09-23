@@ -12,6 +12,7 @@ import {
   UUID_REGEX,
 } from '../../common/variables.global.js';
 import { PageVersion } from '../../pages/entities/page-version.entity.js';
+import { UsersService } from '../../users/services/users.service.js';
 import { ListVersionsQueryDto } from '../dto/in/list-versions-query.dto.js';
 import {
   DiffChangeType,
@@ -19,11 +20,18 @@ import {
 } from '../dto/out/diff-response.dto.js';
 import type { VersionsRepository } from '../persistence/version.repository.js';
 
+export interface ContributorInfo {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
 @Injectable()
 export class VersionsService {
   constructor(
     @Inject('VersionsRepository')
     private readonly versionsRepository: VersionsRepository,
+    private readonly usersService: UsersService,
   ) {}
 
   async findAllByPage(
@@ -38,6 +46,25 @@ export class VersionsService {
       limit,
     );
     return { items, total, page, limit };
+  }
+
+  async getContributors(pageId: string): Promise<ContributorInfo[]> {
+    const rows = await this.versionsRepository.findContributorsByPageId(pageId);
+    const entries = await Promise.all(
+      rows.map(async (row) => {
+        try {
+          const author = await this.usersService.findById(row.authorId);
+          return {
+            id: author.id,
+            displayName: author.displayName,
+            avatarUrl: author.avatarUrl,
+          };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return entries.filter((entry): entry is ContributorInfo => entry !== null);
   }
 
   async findOne(pageId: string, versionId: string): Promise<PageVersion> {

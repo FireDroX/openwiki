@@ -58,3 +58,14 @@ export async function restoreVersion(pageId: string, versionId: string): Promise
   )
   return data.data
 }
+
+export interface Contributor {
+  id: string
+  displayName: string
+  avatarUrl: string | null
+}
+
+export async function listContributors(pageId: string): Promise<Contributor[]> {
+  const { data } = await apiClient.get<ResponseDto<Contributor[]>>(`/pages/${pageId}/versions/contributors`)
+  return data.data
+}

@@ -51,6 +51,7 @@ import { TagMapper } from '../tags/mapper/tag.mapper.js';
 import { TagsService } from '../tags/services/tags.service.js';
 import { DiffVersionsDto } from '../versions/dto/in/diff-versions.dto.js';
 import { ListVersionsQueryDto } from '../versions/dto/in/list-versions-query.dto.js';
+import { ContributorResponseDto } from '../versions/dto/out/contributor-response.dto.js';
 import { DiffResponseDto } from '../versions/dto/out/diff-response.dto.js';
 import { VersionDetailResponseDto } from '../versions/dto/out/version-detail-response.dto.js';
 import { VersionSummaryResponseDto } from '../versions/dto/out/version-summary-response.dto.js';
@@ -396,6 +397,34 @@ export class PagesController {
     const { items, total, page, limit } =
       await this.versionsService.findAllByPage(id, query);
     return VersionMapper.toPaginatedResponse(items, total, page, limit);
+  }
+
+  @Get(':id/versions/contributors')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({
+    summary: "Lister les contributeurs d'une page",
+    description:
+      'Authentification optionnelle : droits alignés sur la visibilité de la page.',
+  })
+  @ApiParam({ name: 'id', description: 'Identifiant de la page' })
+  @ApiOkResponse({
+    description: 'Liste dédupliquée des contributeurs, plus récent en premier.',
+  })
+  @ApiForbiddenResponse({
+    description: 'Page privée, accès non autorisé.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "La page n'existe pas.",
+    type: ErrorResponseDto,
+  })
+  async listContributors(
+    @Param('id') id: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<ResponseDto<ContributorResponseDto[]>> {
+    await this.pagesService.getByIdOrFail(id, user);
+    const contributors = await this.versionsService.getContributors(id);
+    return VersionMapper.toContributorsResponse(contributors);
   }
 
   @Get(':id/versions/:versionId')
