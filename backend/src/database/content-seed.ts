@@ -360,6 +360,13 @@ Chaque appel de tool (succès ou échec) est tracé — clé utilisée, tool, en
 ## Version 0.29
 
 <details>
+<summary>0.29.1 — 2026-09-23</summary>
+
+- Le CSS personnalisé écrit dans une page reste désormais cantonné à cette page : il ne peut plus affecter le reste de l'interface (sidebar, barre du haut, autres pages).
+
+</details>
+
+<details>
 <summary>0.29.0 — 2026-09-23</summary>
 
 - Nouvelle base technique pour un rendu HTML plus permissif sur le contenu des pages (balises et attributs personnalisés autorisés, sauf ceux posant un risque réel : \`<script>\`, \`<iframe>\`, \`<object>\`, \`<embed>\`, \`<form>\`, \`<base>\`, et tout attribut \`on*\`).

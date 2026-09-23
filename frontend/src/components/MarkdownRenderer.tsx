@@ -1,4 +1,4 @@
-import { type ComponentProps, type ReactNode, useEffect, useState } from 'react'
+import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import { ApiReferenceViewer } from '#components/ApiReferenceViewer'
 import { PdfPreview } from '#components/PdfPreview'
 import { rehypeHardenFullMode } from '#lib/markdown-sanitize'
+import { rehypeScopeStyles } from '#lib/markdown-css-scope'
 import { cn } from '#lib/utils'
 
 function isPdfUrl(href: string): boolean {
@@ -123,13 +124,14 @@ const markdownComponents = {
 }
 
 export function MarkdownRenderer({ content, mode = 'restricted' }: MarkdownRendererProps) {
+  const scopeId = useId()
   const rehypePlugins: Array<unknown> =
     mode === 'full'
-      ? [rehypeRaw, rehypeHardenFullMode]
+      ? [rehypeRaw, rehypeHardenFullMode, [rehypeScopeStyles, scopeId]]
       : [rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]]
 
   return (
-    <div className={MARKDOWN_BODY_CLASSES}>
+    <div id={mode === 'full' ? scopeId : undefined} className={MARKDOWN_BODY_CLASSES}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={rehypePlugins as Parameters<typeof ReactMarkdown>[0]['rehypePlugins']}

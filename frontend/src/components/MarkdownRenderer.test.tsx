@@ -68,5 +68,58 @@ describe('MarkdownRenderer', () => {
       expect(div).not.toBeNull()
       expect(div?.getAttribute('style')).toBe('color: red;')
     })
+
+    it('scopes a <style> block to the rendered content root', () => {
+      const { container } = render(
+        <MarkdownRenderer content={'<style>p { color: red }</style>\n\nhello'} mode="full" />,
+      )
+      const style = container.querySelector('style')
+      const rootId = container.firstElementChild?.getAttribute('id')
+      expect(rootId).toBeTruthy()
+      expect(style?.textContent).toContain(`@scope ([id="${rootId}"])`)
+      expect(style?.textContent).toContain('p { color: red }')
+    })
+
+    it('strips @import rules from a <style> block', () => {
+      const { container } = render(
+        <MarkdownRenderer
+          content={'<style>@import url(http://evil.example/x.css);\np { color: red }</style>'}
+          mode="full"
+        />,
+      )
+      expect(container.querySelector('style')?.textContent).not.toContain('@import')
+    })
+
+    it('strips a javascript: url() from a <style> block', () => {
+      const { container } = render(
+        <MarkdownRenderer
+          content={'<style>p { background: url(javascript:alert(1)) }</style>'}
+          mode="full"
+        />,
+      )
+      expect(container.querySelector('style')?.textContent).not.toContain('javascript:')
+    })
+
+    it('does not crash on an empty style block', () => {
+      const { container } = render(
+        <MarkdownRenderer content={'<style></style>\n\nhello'} mode="full" />,
+      )
+      expect(container.querySelector('style')).not.toBeNull()
+    })
+
+    it('scopes multiple style blocks to the same root id', () => {
+      const { container } = render(
+        <MarkdownRenderer
+          content={'<style>p { color: red }</style>\n\n<style>a { color: blue }</style>'}
+          mode="full"
+        />,
+      )
+      const styles = container.querySelectorAll('style')
+      const rootId = container.firstElementChild?.getAttribute('id')
+      expect(styles).toHaveLength(2)
+      styles.forEach((style) => {
+        expect(style.textContent).toContain(`[id="${rootId}"]`)
+      })
+    })
   })
 })
