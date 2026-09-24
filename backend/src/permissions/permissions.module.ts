@@ -8,6 +8,7 @@ import { PageAccessRule } from './entities/page-access-rule.entity.js';
 import { UserPermission } from './entities/user-permission.entity.js';
 import { TypeormGroupsRepository } from './persistence/typeorm.groups.repository.js';
 import { TypeormPageAccessRulesRepository } from './persistence/typeorm.page-access-rules.repository.js';
+import { TypeormPageHierarchyRepository } from './persistence/typeorm.page-hierarchy.repository.js';
 import { TypeormSubjectPermissionsRepository } from './persistence/typeorm.subject-permissions.repository.js';
 
 @Module({
@@ -31,11 +32,16 @@ import { TypeormSubjectPermissionsRepository } from './persistence/typeorm.subje
       provide: 'PageAccessRulesRepository',
       useClass: TypeormPageAccessRulesRepository,
     },
+    {
+      provide: 'PageHierarchyRepository',
+      useClass: TypeormPageHierarchyRepository,
+    },
   ],
   exports: [
     'GroupsRepository',
     'SubjectPermissionsRepository',
     'PageAccessRulesRepository',
+    'PageHierarchyRepository',
   ],
 })
 export class PermissionsModule {}
