@@ -9,9 +9,7 @@ import {
 } from './page-access-rules.repository.js';
 
 @Injectable()
-export class TypeormPageAccessRulesRepository
-  implements PageAccessRulesRepository
-{
+export class TypeormPageAccessRulesRepository implements PageAccessRulesRepository {
   constructor(
     @InjectRepository(PageAccessRule)
     private readonly rules: Repository<PageAccessRule>,

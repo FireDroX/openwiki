@@ -61,7 +61,14 @@ describe('Permissions schema (e2e)', () => {
     await expect(
       dataSource.query(
         'INSERT INTO `page_access_rules` (`id`, `user_id`, `group_id`, `applies_to`, `actions`, `granted_by_id`) VALUES (?, ?, ?, ?, ?, ?)',
-        [randomUUID(), userId, groupId, 'subtree', JSON.stringify(['page.read']), granterId],
+        [
+          randomUUID(),
+          userId,
+          groupId,
+          'subtree',
+          JSON.stringify(['page.read']),
+          granterId,
+        ],
       ),
     ).rejects.toThrow();
   });
@@ -85,14 +92,26 @@ describe('Permissions schema (e2e)', () => {
     await expect(
       dataSource.query(
         'INSERT INTO `page_access_rules` (`id`, `user_id`, `applies_to`, `actions`, `granted_by_id`) VALUES (?, ?, ?, ?, ?)',
-        [randomUUID(), userId, 'subtree', JSON.stringify(['page.read']), granterId],
+        [
+          randomUUID(),
+          userId,
+          'subtree',
+          JSON.stringify(['page.read']),
+          granterId,
+        ],
       ),
     ).resolves.toBeDefined();
 
     await expect(
       dataSource.query(
         'INSERT INTO `page_access_rules` (`id`, `group_id`, `applies_to`, `actions`, `granted_by_id`) VALUES (?, ?, ?, ?, ?)',
-        [randomUUID(), groupId, 'subtree', JSON.stringify(['page.read']), granterId],
+        [
+          randomUUID(),
+          groupId,
+          'subtree',
+          JSON.stringify(['page.read']),
+          granterId,
+        ],
       ),
     ).resolves.toBeDefined();
   });
@@ -119,9 +138,18 @@ describe('Permissions schema (e2e)', () => {
     await dataSource.query('DELETE FROM `groups` WHERE `id` = ?', [groupId]);
 
     const [members, permissions, rules] = await Promise.all([
-      dataSource.query('SELECT * FROM `group_members` WHERE `group_id` = ?', [groupId]),
-      dataSource.query('SELECT * FROM `group_permissions` WHERE `group_id` = ?', [groupId]),
-      dataSource.query('SELECT * FROM `page_access_rules` WHERE `id` = ?', [ruleId]),
+      dataSource.query<unknown[]>(
+        'SELECT * FROM `group_members` WHERE `group_id` = ?',
+        [groupId],
+      ),
+      dataSource.query<unknown[]>(
+        'SELECT * FROM `group_permissions` WHERE `group_id` = ?',
+        [groupId],
+      ),
+      dataSource.query<unknown[]>(
+        'SELECT * FROM `page_access_rules` WHERE `id` = ?',
+        [ruleId],
+      ),
     ]);
     expect(members).toHaveLength(0);
     expect(permissions).toHaveLength(0);
@@ -145,8 +173,14 @@ describe('Permissions schema (e2e)', () => {
     await dataSource.query('DELETE FROM `users` WHERE `id` = ?', [userId]);
 
     const [permissions, rules] = await Promise.all([
-      dataSource.query('SELECT * FROM `user_permissions` WHERE `user_id` = ?', [userId]),
-      dataSource.query('SELECT * FROM `page_access_rules` WHERE `id` = ?', [ruleId]),
+      dataSource.query<unknown[]>(
+        'SELECT * FROM `user_permissions` WHERE `user_id` = ?',
+        [userId],
+      ),
+      dataSource.query<unknown[]>(
+        'SELECT * FROM `page_access_rules` WHERE `id` = ?',
+        [ruleId],
+      ),
     ]);
     expect(permissions).toHaveLength(0);
     expect(rules).toHaveLength(0);
@@ -161,7 +195,14 @@ describe('Permissions schema (e2e)', () => {
 
     await dataSource.query(
       'INSERT INTO `page_access_rules` (`id`, `user_id`, `page_id`, `applies_to`, `actions`, `granted_by_id`) VALUES (?, ?, ?, ?, ?, ?)',
-      [ruleId, userId, rootPageId, 'subtree', JSON.stringify(['page.read']), granterId],
+      [
+        ruleId,
+        userId,
+        rootPageId,
+        'subtree',
+        JSON.stringify(['page.read']),
+        granterId,
+      ],
     );
     await dataSource.query(
       'INSERT INTO `page_access_exclusions` (`rule_id`, `page_id`) VALUES (?, ?)',
@@ -170,13 +211,13 @@ describe('Permissions schema (e2e)', () => {
 
     await dataSource.query('DELETE FROM `pages` WHERE `id` = ?', [rootPageId]);
 
-    const rules = await dataSource.query(
+    const rules = await dataSource.query<unknown[]>(
       'SELECT * FROM `page_access_rules` WHERE `id` = ?',
       [ruleId],
     );
     expect(rules).toHaveLength(0);
 
-    const exclusionsAfterRuleDelete = await dataSource.query(
+    const exclusionsAfterRuleDelete = await dataSource.query<unknown[]>(
       'SELECT * FROM `page_access_exclusions` WHERE `rule_id` = ?',
       [ruleId],
     );
@@ -192,16 +233,25 @@ describe('Permissions schema (e2e)', () => {
 
     await dataSource.query(
       'INSERT INTO `page_access_rules` (`id`, `user_id`, `page_id`, `applies_to`, `actions`, `granted_by_id`) VALUES (?, ?, ?, ?, ?, ?)',
-      [ruleId, userId, rootPageId, 'subtree', JSON.stringify(['page.read']), granterId],
+      [
+        ruleId,
+        userId,
+        rootPageId,
+        'subtree',
+        JSON.stringify(['page.read']),
+        granterId,
+      ],
     );
     await dataSource.query(
       'INSERT INTO `page_access_exclusions` (`rule_id`, `page_id`) VALUES (?, ?)',
       [ruleId, excludedPageId],
     );
 
-    await dataSource.query('DELETE FROM `pages` WHERE `id` = ?', [excludedPageId]);
+    await dataSource.query('DELETE FROM `pages` WHERE `id` = ?', [
+      excludedPageId,
+    ]);
 
-    const exclusions = await dataSource.query(
+    const exclusions = await dataSource.query<unknown[]>(
       'SELECT * FROM `page_access_exclusions` WHERE `rule_id` = ?',
       [ruleId],
     );
@@ -211,7 +261,7 @@ describe('Permissions schema (e2e)', () => {
   it('defaults new users to is_active = true', async () => {
     const userId = await insertUser(dataSource);
 
-    const [row] = await dataSource.query(
+    const [row] = await dataSource.query<{ is_active: number }[]>(
       'SELECT `is_active` FROM `users` WHERE `id` = ?',
       [userId],
     );

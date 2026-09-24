@@ -32,6 +32,10 @@ import { TypeormSubjectPermissionsRepository } from './persistence/typeorm.subje
       useClass: TypeormPageAccessRulesRepository,
     },
   ],
-  exports: ['GroupsRepository', 'SubjectPermissionsRepository', 'PageAccessRulesRepository'],
+  exports: [
+    'GroupsRepository',
+    'SubjectPermissionsRepository',
+    'PageAccessRulesRepository',
+  ],
 })
 export class PermissionsModule {}

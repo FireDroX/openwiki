@@ -6,9 +6,7 @@ import { UserPermission } from '../entities/user-permission.entity.js';
 import { SubjectPermissionsRepository } from './subject-permissions.repository.js';
 
 @Injectable()
-export class TypeormSubjectPermissionsRepository
-  implements SubjectPermissionsRepository
-{
+export class TypeormSubjectPermissionsRepository implements SubjectPermissionsRepository {
   constructor(
     @InjectRepository(UserPermission)
     private readonly userPermissions: Repository<UserPermission>,
