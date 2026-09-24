@@ -28,11 +28,11 @@ export class TypeormPageHierarchyRepository implements PageHierarchyRepository {
       `WITH RECURSIVE chain AS (
         SELECT id, parent_id, visibility, id AS root_id, 0 AS depth
         FROM pages
-        WHERE id IN (${placeholders})
+        WHERE id IN (${placeholders}) AND deleted_at IS NULL
         UNION ALL
         SELECT p.id, p.parent_id, p.visibility, c.root_id, c.depth + 1
         FROM pages p
-        INNER JOIN chain c ON p.id = c.parent_id
+        INNER JOIN chain c ON p.id = c.parent_id AND p.deleted_at IS NULL
       )
       SELECT root_id, id, visibility, depth FROM chain ORDER BY root_id, depth ASC`,
       pageIds,

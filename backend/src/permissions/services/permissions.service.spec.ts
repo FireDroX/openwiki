@@ -712,7 +712,21 @@ describe('PermissionsService', () => {
           ]),
         ),
       );
-      await service.filterReadable(member, pages);
+      pageAccessRulesRepository.findByUserId.mockResolvedValue([
+        buildRule({
+          id: 'rule-1',
+          userId: member.id,
+          pageId: null,
+          appliesTo: 'subtree',
+          actions: ['page.read'],
+        }),
+      ]);
+      pageAccessRulesRepository.findExclusionsForRules.mockResolvedValue(
+        new Map([['rule-1', ['p50']]]),
+      );
+      const result = await service.filterReadable(member, pages);
+      expect(result.map((p) => p.id)).not.toContain('p50');
+      expect(result.length).toBe(99);
       expect(pageHierarchyRepository.findChains).toHaveBeenCalledTimes(1);
       expect(groupsRepository.findGroupIdsForUser).toHaveBeenCalledTimes(1);
       expect(subjectPermissionsRepository.findForUser).toHaveBeenCalledTimes(1);
@@ -725,12 +739,58 @@ describe('PermissionsService', () => {
         pageAccessRulesRepository.findExclusionsForRules,
       ).toHaveBeenCalledTimes(1);
     });
+
+    it('keeps only public pages for an inactive user, even with a covering rule on a private page', async () => {
+      const inactiveMember = buildUser({ isActive: false });
+      const pages = [
+        buildPage({ id: 'pub', visibility: 'public' }),
+        buildPage({ id: 'priv', visibility: 'private' }),
+      ];
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['pub', { pageId: 'pub', visibility: 'public', chainIds: ['pub'] }],
+          [
+            'priv',
+            { pageId: 'priv', visibility: 'private', chainIds: ['priv'] },
+          ],
+        ]),
+      );
+      pageAccessRulesRepository.findByUserId.mockResolvedValue([
+        buildRule({
+          userId: inactiveMember.id,
+          pageId: 'priv',
+          appliesTo: 'page',
+          actions: ['page.read'],
+        }),
+      ]);
+      const result = await service.filterReadable(inactiveMember, pages);
+      expect(result.map((p) => p.id)).toEqual(['pub']);
+    });
   });
 
   describe('explain', () => {
     it('reports granted: false with no sources for a nonexistent page', async () => {
       pageHierarchyRepository.findChains.mockResolvedValue(new Map());
       const result = await service.explain(buildUser(), 'page.edit', 'missing');
+      expect(result).toEqual({ granted: false, sources: [] });
+    });
+
+    it('reports granted: false for an inactive user, even with a covering rule on the page', async () => {
+      const inactiveMember = buildUser({ isActive: false });
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }],
+        ]),
+      );
+      pageAccessRulesRepository.findByUserId.mockResolvedValue([
+        buildRule({
+          userId: inactiveMember.id,
+          pageId: 'p1',
+          appliesTo: 'page',
+          actions: ['page.edit'],
+        }),
+      ]);
+      const result = await service.explain(inactiveMember, 'page.edit', 'p1');
       expect(result).toEqual({ granted: false, sources: [] });
     });
 
