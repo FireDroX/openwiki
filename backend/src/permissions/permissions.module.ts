@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PermissionsGuard } from '../common/guards/permissions.guard.js';
 import { UsersModule } from '../users/users.module.js';
@@ -24,7 +24,7 @@ import { PermissionsService } from './services/permissions.service.js';
       PageAccessRule,
       PageAccessExclusion,
     ]),
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   providers: [
     { provide: 'GroupsRepository', useClass: TypeormGroupsRepository },
