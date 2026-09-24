@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { Page } from '../../pages/entities/page.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 import { PageAccessRule } from '../entities/page-access-rule.entity.js';
 import type { GroupsRepository } from '../persistence/groups.repository.js';
@@ -35,6 +36,24 @@ function buildRule(overrides: Partial<PageAccessRule> = {}): PageAccessRule {
     actions: ['page.read'],
     grantedById: 'admin-1',
     createdAt: new Date(),
+    ...overrides,
+  };
+}
+
+function buildPage(overrides: Partial<Page> = {}): Page {
+  return {
+    id: 'page-1',
+    slug: 'home',
+    title: 'Home',
+    parentId: null,
+    currentVersionId: 'version-1',
+    visibility: 'public',
+    commentsEnabled: true,
+    viewCount: 0,
+    createdById: 'user-1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
     ...overrides,
   };
 }
@@ -507,16 +526,25 @@ describe('PermissionsService', () => {
 
     it('denies a subtree rule for a page outside its subtree (a sibling of the rule root)', async () => {
       const member = buildUser();
-      pageHierarchyRepository.findChains.mockResolvedValue(chainFor('sibling', 'private', ['sibling', 'root']));
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        chainFor('sibling', 'private', ['sibling', 'root']),
+      );
       pageAccessRulesRepository.findByUserId.mockResolvedValue([
-        buildRule({ userId: member.id, pageId: 'parent', appliesTo: 'subtree', actions: ['page.edit'] }),
+        buildRule({
+          userId: member.id,
+          pageId: 'parent',
+          appliesTo: 'subtree',
+          actions: ['page.edit'],
+        }),
       ]);
       expect(await service.can(member, 'page.edit', 'sibling')).toBe(false);
     });
 
     it('denies page.read on a private page to an active member with no covering rule', async () => {
       const member = buildUser();
-      pageHierarchyRepository.findChains.mockResolvedValue(chainFor('p1', 'private', ['p1']));
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        chainFor('p1', 'private', ['p1']),
+      );
       expect(await service.can(member, 'page.read', 'p1')).toBe(false);
       expect(await service.getEffectivePageActions(member, 'p1')).toEqual([]);
     });
@@ -567,10 +595,17 @@ describe('PermissionsService', () => {
     it('returns the union of the public floor and rule-granted actions for an active member', async () => {
       const member = buildUser();
       pageHierarchyRepository.findChains.mockResolvedValue(
-        new Map([['p1', { pageId: 'p1', visibility: 'public', chainIds: ['p1'] }]]),
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'public', chainIds: ['p1'] }],
+        ]),
       );
       pageAccessRulesRepository.findByUserId.mockResolvedValue([
-        buildRule({ userId: member.id, pageId: 'p1', appliesTo: 'page', actions: ['page.edit'] }),
+        buildRule({
+          userId: member.id,
+          pageId: 'p1',
+          appliesTo: 'page',
+          actions: ['page.edit'],
+        }),
       ]);
       const result = await service.getEffectivePageActions(member, 'p1');
       expect(new Set(result)).toEqual(new Set(['page.read', 'page.edit']));
@@ -579,18 +614,243 @@ describe('PermissionsService', () => {
     it('returns just page.read for an inactive user on a public page', async () => {
       const inactiveMember = buildUser({ isActive: false });
       pageHierarchyRepository.findChains.mockResolvedValue(
-        new Map([['p1', { pageId: 'p1', visibility: 'public', chainIds: ['p1'] }]]),
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'public', chainIds: ['p1'] }],
+        ]),
       );
-      expect(await service.getEffectivePageActions(inactiveMember, 'p1')).toEqual(['page.read']);
+      expect(
+        await service.getEffectivePageActions(inactiveMember, 'p1'),
+      ).toEqual(['page.read']);
     });
 
     it('returns every action for an inactive admin', async () => {
       const inactiveAdmin = buildUser({ role: 'admin', isActive: false });
       pageHierarchyRepository.findChains.mockResolvedValue(
-        new Map([['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }]]),
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }],
+        ]),
       );
       const result = await service.getEffectivePageActions(inactiveAdmin, 'p1');
       expect(result.length).toBe(9);
+    });
+  });
+
+  describe('filterReadable', () => {
+    it('returns an empty array for an empty input without querying anything', async () => {
+      expect(await service.filterReadable(buildUser(), [])).toEqual([]);
+      expect(pageHierarchyRepository.findChains).not.toHaveBeenCalled();
+    });
+
+    it('returns every page for an admin without loading rule context', async () => {
+      const admin = buildUser({ role: 'admin' });
+      const pages = [
+        buildPage({ id: 'p1' }),
+        buildPage({ id: 'p2', visibility: 'private' }),
+      ];
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'public', chainIds: ['p1'] }],
+          ['p2', { pageId: 'p2', visibility: 'private', chainIds: ['p2'] }],
+        ]),
+      );
+      const result = await service.filterReadable(admin, pages);
+      expect(result).toEqual(pages);
+      expect(groupsRepository.findGroupIdsForUser).not.toHaveBeenCalled();
+    });
+
+    it('keeps public pages and drops private pages for an anonymous caller', async () => {
+      const pages = [
+        buildPage({ id: 'pub', visibility: 'public' }),
+        buildPage({ id: 'priv', visibility: 'private' }),
+      ];
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['pub', { pageId: 'pub', visibility: 'public', chainIds: ['pub'] }],
+          [
+            'priv',
+            { pageId: 'priv', visibility: 'private', chainIds: ['priv'] },
+          ],
+        ]),
+      );
+      const result = await service.filterReadable(undefined, pages);
+      expect(result.map((p) => p.id)).toEqual(['pub']);
+    });
+
+    it('keeps a private page the member has a direct read rule for', async () => {
+      const member = buildUser();
+      const pages = [buildPage({ id: 'priv', visibility: 'private' })];
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          [
+            'priv',
+            { pageId: 'priv', visibility: 'private', chainIds: ['priv'] },
+          ],
+        ]),
+      );
+      pageAccessRulesRepository.findByUserId.mockResolvedValue([
+        buildRule({
+          userId: member.id,
+          pageId: 'priv',
+          appliesTo: 'page',
+          actions: ['page.read'],
+        }),
+      ]);
+      const result = await service.filterReadable(member, pages);
+      expect(result.map((p) => p.id)).toEqual(['priv']);
+    });
+
+    it('makes a constant number of repository calls regardless of page count', async () => {
+      const member = buildUser();
+      const pages = Array.from({ length: 100 }, (_, i) =>
+        buildPage({ id: `p${i}`, visibility: 'private' }),
+      );
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map(
+          pages.map((p) => [
+            p.id,
+            { pageId: p.id, visibility: 'private' as const, chainIds: [p.id] },
+          ]),
+        ),
+      );
+      await service.filterReadable(member, pages);
+      expect(pageHierarchyRepository.findChains).toHaveBeenCalledTimes(1);
+      expect(groupsRepository.findGroupIdsForUser).toHaveBeenCalledTimes(1);
+      expect(subjectPermissionsRepository.findForUser).toHaveBeenCalledTimes(1);
+      expect(subjectPermissionsRepository.findForGroups).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(pageAccessRulesRepository.findByUserId).toHaveBeenCalledTimes(1);
+      expect(pageAccessRulesRepository.findByGroupIds).toHaveBeenCalledTimes(1);
+      expect(
+        pageAccessRulesRepository.findExclusionsForRules,
+      ).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('explain', () => {
+    it('reports granted: false with no sources for a nonexistent page', async () => {
+      pageHierarchyRepository.findChains.mockResolvedValue(new Map());
+      const result = await service.explain(buildUser(), 'page.edit', 'missing');
+      expect(result).toEqual({ granted: false, sources: [] });
+    });
+
+    it('reports the admin origin for an admin', async () => {
+      const admin = buildUser({ role: 'admin' });
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }],
+        ]),
+      );
+      const result = await service.explain(admin, 'page.delete', 'p1');
+      expect(result.granted).toBe(true);
+      expect(result.sources).toEqual([
+        {
+          origin: 'admin',
+          ruleId: null,
+          pageId: null,
+          appliesTo: null,
+          excludedPageIds: [],
+          groupId: null,
+          groupName: null,
+        },
+      ]);
+    });
+
+    it('reports the public origin for page.read on a public page', async () => {
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'public', chainIds: ['p1'] }],
+        ]),
+      );
+      const result = await service.explain(undefined, 'page.read', 'p1');
+      expect(result.granted).toBe(true);
+      expect(result.sources[0].origin).toBe('public');
+    });
+
+    it('distinguishes a direct source from a group source', async () => {
+      const member = buildUser();
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }],
+        ]),
+      );
+      groupsRepository.findGroupIdsForUser.mockResolvedValue(['group-a']);
+      groupsRepository.findByIds.mockResolvedValue([
+        {
+          id: 'group-a',
+          name: 'Éditeurs',
+          description: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+      pageAccessRulesRepository.findByUserId.mockResolvedValue([
+        buildRule({
+          id: 'rule-direct',
+          userId: member.id,
+          pageId: 'p1',
+          appliesTo: 'page',
+          actions: ['page.edit'],
+        }),
+      ]);
+      pageAccessRulesRepository.findByGroupIds.mockResolvedValue([
+        buildRule({
+          id: 'rule-group',
+          groupId: 'group-a',
+          pageId: 'p1',
+          appliesTo: 'page',
+          actions: ['page.edit'],
+        }),
+      ]);
+      const result = await service.explain(member, 'page.edit', 'p1');
+      expect(result.granted).toBe(true);
+      const origins = result.sources.map((s) => s.origin).sort();
+      expect(origins).toEqual(['direct', 'group']);
+      const groupSource = result.sources.find((s) => s.origin === 'group');
+      expect(groupSource?.groupId).toBe('group-a');
+      expect(groupSource?.groupName).toBe('Éditeurs');
+    });
+
+    it('reports granted: false with no sources when nothing covers the action', async () => {
+      const member = buildUser();
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }],
+        ]),
+      );
+      const result = await service.explain(member, 'page.edit', 'p1');
+      expect(result).toEqual({ granted: false, sources: [] });
+    });
+
+    it('reports the implied page.read as granted, sourced from a rule that only lists page.edit', async () => {
+      const member = buildUser();
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        new Map([
+          ['p1', { pageId: 'p1', visibility: 'private', chainIds: ['p1'] }],
+        ]),
+      );
+      pageAccessRulesRepository.findByUserId.mockResolvedValue([
+        buildRule({
+          id: 'rule-1',
+          userId: member.id,
+          pageId: 'p1',
+          appliesTo: 'page',
+          actions: ['page.edit'],
+        }),
+      ]);
+      const result = await service.explain(member, 'page.read', 'p1');
+      expect(result.granted).toBe(true);
+      expect(result.sources).toEqual([
+        {
+          origin: 'direct',
+          ruleId: 'rule-1',
+          pageId: 'p1',
+          appliesTo: 'page',
+          excludedPageIds: [],
+          groupId: null,
+          groupName: null,
+        },
+      ]);
     });
   });
 });
