@@ -412,6 +412,75 @@ describe('PagesService', () => {
     });
   });
 
+  describe('createNewVersionFromContent', () => {
+    it('creates a new version from the given content when the user can restore', async () => {
+      const page = buildPage();
+      const newVersion = buildVersion({
+        id: 'version-2',
+        content: 'restored content',
+      });
+      pagesRepository.findById.mockResolvedValue(page);
+      pagesRepository.updateWithNewVersion.mockResolvedValue({
+        page: { ...page, currentVersionId: 'version-2' },
+        version: newVersion,
+      });
+
+      const result = await service.createNewVersionFromContent(
+        'page-1',
+        'restored content',
+        'user-1',
+        'Restored from version version-0',
+      );
+
+      expect(permissionsService.can).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'user-1' }),
+        'page.restore_version',
+        'page-1',
+      );
+      expect(pagesRepository.updateWithNewVersion).toHaveBeenCalledWith({
+        page,
+        title: page.title,
+        content: 'restored content',
+        changeSummary: 'Restored from version version-0',
+        authorId: 'user-1',
+      });
+      expect(result.version.id).toBe('version-2');
+    });
+
+    it('throws PageNotFoundException when the page does not exist', async () => {
+      pagesRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.createNewVersionFromContent(
+          'missing',
+          'content',
+          'user-1',
+          null,
+        ),
+      ).rejects.toBeInstanceOf(PageNotFoundException);
+    });
+
+    it('throws InsufficientPagePermissionException when the user lacks page.restore_version', async () => {
+      pagesRepository.findById.mockResolvedValue(buildPage());
+      permissionsService.can.mockResolvedValue(false);
+
+      await expect(
+        service.createNewVersionFromContent(
+          'page-1',
+          'content',
+          'user-2',
+          null,
+        ),
+      ).rejects.toBeInstanceOf(InsufficientPagePermissionException);
+      expect(permissionsService.can).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'user-2' }),
+        'page.restore_version',
+        'page-1',
+      );
+      expect(pagesRepository.updateWithNewVersion).not.toHaveBeenCalled();
+    });
+  });
+
   describe('mergePreview', () => {
     it('returns a clean merge without persisting anything', async () => {
       const page = buildPage({ currentVersionId: 'version-2' });

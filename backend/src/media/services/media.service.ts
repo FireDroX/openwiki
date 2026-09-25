@@ -134,7 +134,9 @@ export class MediaService {
     const page = MediaService.parsePage(query.page);
     const limit = MediaService.parseLimit(query.limit);
     const type = MediaService.parseType(query.type);
-    const user = await this.usersService.findById(currentUser.id);
+    const user = await this.usersService
+      .findById(currentUser.id)
+      .catch(() => undefined);
     const restrictToPublic =
       !(await this.permissionsService.hasUnrestrictedPageAccess(
         user,

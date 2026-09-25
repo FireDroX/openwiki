@@ -100,7 +100,7 @@ export class TagsService {
     currentUser?: AuthenticatedUser,
   ): Promise<void> {
     const user = currentUser
-      ? await this.usersService.findById(currentUser.id)
+      ? await this.usersService.findById(currentUser.id).catch(() => undefined)
       : undefined;
     if (
       !(await this.permissionsService.can(user, 'page.manage_tags', pageId))

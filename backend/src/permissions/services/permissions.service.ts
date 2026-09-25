@@ -240,10 +240,11 @@ export class PermissionsService {
     }
     const context = await this.loadUserContext(user);
     return context.rules.some(
-      ({ rule }) =>
+      ({ rule, excludedPageIds }) =>
         rule.appliesTo === 'subtree' &&
         rule.pageId === null &&
-        rule.actions.includes(action),
+        rule.actions.includes(action) &&
+        excludedPageIds.length === 0,
     );
   }
 

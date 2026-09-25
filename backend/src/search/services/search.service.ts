@@ -36,7 +36,7 @@ export class SearchService {
     const page = SearchService.parsePage(query.page);
     const limit = SearchService.parseLimit(query.limit);
     const user = currentUser
-      ? await this.usersService.findById(currentUser.id)
+      ? await this.usersService.findById(currentUser.id).catch(() => undefined)
       : undefined;
     const restrictToPublic =
       !(await this.permissionsService.hasUnrestrictedPageAccess(
