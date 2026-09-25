@@ -82,6 +82,7 @@ describe('PermissionsService', () => {
       findByIds: vi.fn().mockResolvedValue([]),
       findByName: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
       delete: vi.fn(),
       findMemberIds: vi.fn(),
       findGroupIdsForUser: vi.fn().mockResolvedValue([]),
@@ -97,6 +98,7 @@ describe('PermissionsService', () => {
     pageAccessRulesRepository = {
       findByUserId: vi.fn().mockResolvedValue([]),
       findByGroupIds: vi.fn().mockResolvedValue([]),
+      findByPageIdsOrWholeWiki: vi.fn().mockResolvedValue([]),
       findById: vi.fn(),
       create: vi.fn(),
       updateActions: vi.fn(),
