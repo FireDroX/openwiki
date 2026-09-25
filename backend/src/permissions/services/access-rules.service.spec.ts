@@ -93,6 +93,10 @@ describe('AccessRulesService', () => {
     hasUnrestrictedPageAccess: Mock<
       PermissionsService['hasUnrestrictedPageAccess']
     >;
+    hasUnrestrictedActionOnSubtree: Mock<
+      PermissionsService['hasUnrestrictedActionOnSubtree']
+    >;
+    hasGlobal: Mock<PermissionsService['hasGlobal']>;
   };
   let adminAuditLogService: { record: ReturnType<typeof vi.fn> };
 
@@ -145,6 +149,8 @@ describe('AccessRulesService', () => {
     permissionsService = {
       getEffectivePageActions: vi.fn().mockResolvedValue([]),
       hasUnrestrictedPageAccess: vi.fn().mockResolvedValue(false),
+      hasUnrestrictedActionOnSubtree: vi.fn().mockResolvedValue(true),
+      hasGlobal: vi.fn().mockResolvedValue(true),
     };
     adminAuditLogService = { record: vi.fn().mockResolvedValue(undefined) };
 
@@ -410,6 +416,30 @@ describe('AccessRulesService', () => {
         'page.delete',
       );
     });
+
+    it('blocks a subtree grant when the actor is themselves excluded somewhere inside that subtree', async () => {
+      pageHierarchyRepository.findChains.mockResolvedValue(
+        chainFor('parent', ['parent']),
+      );
+      permissionsService.hasUnrestrictedActionOnSubtree.mockResolvedValue(
+        false,
+      );
+
+      await expect(
+        service.createAccessRule(
+          { type: 'user', id: 'user-1' },
+          { pageId: 'parent', appliesTo: 'subtree', actions: ['page.edit'] },
+          'actor-1',
+        ),
+      ).rejects.toBeInstanceOf(InsufficientPermissionException);
+      expect(
+        permissionsService.hasUnrestrictedActionOnSubtree,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'actor-1' }),
+        'parent',
+        'page.edit',
+      );
+    });
   });
 
   describe('listAccessRulesForPage', () => {
@@ -557,6 +587,19 @@ describe('AccessRulesService', () => {
       expect(adminAuditLogService.record).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'group.permissions.update' }),
       );
+    });
+
+    it('blocks an actor from granting a global permission they do not themselves hold', async () => {
+      permissionsService.hasGlobal.mockResolvedValue(false);
+
+      await expect(
+        service.setGlobalPermissions(
+          { type: 'user', id: 'user-1' },
+          ['user.manage'],
+          'actor-1',
+        ),
+      ).rejects.toBeInstanceOf(InsufficientPermissionException);
+      expect(subjectPermissionsRepository.setForUser).not.toHaveBeenCalled();
     });
   });
 });

@@ -79,6 +79,9 @@ export class AccessRulesService {
     AccessRulesService.validateGlobalPermissions(permissions);
     const deduped = [...new Set(permissions)];
 
+    const actor = await this.usersService.findById(actorId);
+    await this.assertNoGlobalEscalation(actor, deduped);
+
     if (subject.type === 'user') {
       await this.subjectPermissionsRepository.setForUser(subject.id, deduped);
     } else {
@@ -128,7 +131,7 @@ export class AccessRulesService {
     const actions = AccessRulesService.normalizeActions(dto.actions);
 
     const actor = await this.usersService.findById(actorId);
-    await this.assertNoEscalation(actor, dto.pageId, actions);
+    await this.assertNoEscalation(actor, dto.pageId, dto.appliesTo, actions);
 
     const rule = await this.pageAccessRulesRepository.create({
       userId: subject.type === 'user' ? subject.id : null,
@@ -290,7 +293,12 @@ export class AccessRulesService {
       AccessRulesService.validateActions(dto.actions);
       actions = AccessRulesService.normalizeActions(dto.actions);
       const actor = await this.usersService.findById(actorId);
-      await this.assertNoEscalation(actor, rule.pageId, actions);
+      await this.assertNoEscalation(
+        actor,
+        rule.pageId,
+        rule.appliesTo,
+        actions,
+      );
       await this.pageAccessRulesRepository.updateActions(rule.id, actions);
     }
 
@@ -367,6 +375,11 @@ export class AccessRulesService {
       await this.usersService.findById(subject.id);
       return;
     }
+    if (subject.type !== 'group') {
+      throw new ValidationException(
+        'subject.type must be either "user" or "group"',
+      );
+    }
     const group = await this.groupsRepository.findById(subject.id);
     if (!group) {
       throw new GroupNotFoundException();
@@ -419,24 +432,56 @@ export class AccessRulesService {
   private async assertNoEscalation(
     actor: User,
     pageId: string | null,
+    appliesTo: PageAccessRuleScope,
     actions: PageAction[],
   ): Promise<void> {
-    if (pageId !== null) {
-      const allowed = new Set(
-        await this.permissionsService.getEffectivePageActions(actor, pageId),
-      );
-      if (actions.some((action) => !allowed.has(action))) {
-        throw new InsufficientPermissionException();
+    if (pageId === null) {
+      for (const action of actions) {
+        if (
+          !(await this.permissionsService.hasUnrestrictedPageAccess(
+            actor,
+            action,
+          ))
+        ) {
+          throw new InsufficientPermissionException();
+        }
       }
       return;
     }
-    for (const action of actions) {
-      if (
-        !(await this.permissionsService.hasUnrestrictedPageAccess(
-          actor,
-          action,
-        ))
-      ) {
+
+    if (appliesTo === 'subtree') {
+      // A subtree grant hands out `action` on pageId AND every descendant —
+      // getEffectivePageActions only confirms pageId itself, so an actor
+      // whose own subtree access is narrowed by an exclusion somewhere
+      // inside this subtree must not be able to re-grant it unrestricted.
+      for (const action of actions) {
+        if (
+          !(await this.permissionsService.hasUnrestrictedActionOnSubtree(
+            actor,
+            pageId,
+            action,
+          ))
+        ) {
+          throw new InsufficientPermissionException();
+        }
+      }
+      return;
+    }
+
+    const allowed = new Set(
+      await this.permissionsService.getEffectivePageActions(actor, pageId),
+    );
+    if (actions.some((action) => !allowed.has(action))) {
+      throw new InsufficientPermissionException();
+    }
+  }
+
+  private async assertNoGlobalEscalation(
+    actor: User,
+    permissions: GlobalPermission[],
+  ): Promise<void> {
+    for (const permission of permissions) {
+      if (!(await this.permissionsService.hasGlobal(actor, permission))) {
         throw new InsufficientPermissionException();
       }
     }
